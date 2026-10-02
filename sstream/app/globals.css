@@ -1,0 +1,404 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   Østreams design tokens
+   ----------------------------------------------------------------------------
+   COLOUR ROLES (from the brand guide)
+     gold      #C89B3C  icons, CTAs, links, key statistics,
+                        highlight fills, live indicators
+     ink       #2B211A  primary surface / wordmark ink
+     cream     #F3EFE6  light backgrounds, cards on dark
+     taupe     #A69377  captions, muted text, dividers
+     gold-deep #8A6A2A  hover / active, secondary emphasis
+
+   VERIFIED CONTRAST (WCAG 2.1 relative luminance, computed, not eyeballed)
+
+     ON INK #2B211A  (L 0.0168)
+       cream       13.70 : 1   AAA  any size
+       gold         6.15 : 1   AA   any size
+       taupe        5.29 : 1   AA   any size
+       gold-deep    3.13 : 1   AA   LARGE TEXT ONLY
+
+     ON CREAM #F3EFE6  (L 0.8650)
+       ink         13.70 : 1   AAA  any size
+       ink / 70%    5.47 : 1   AA   any size   <-- the muted-text floor on cream
+       gold-deep    4.38 : 1   AA   LARGE TEXT ONLY
+       taupe        2.59 : 1   FAIL
+       gold         2.23 : 1   FAIL
+
+   And the fill pairings, which is where gold earns its keep:
+       ink on gold         6.15 : 1   AA  any size -- on EITHER surface
+       ink/70 on gold      3.53 : 1   FAIL -- so muted text on a gold fill is
+                                             full ink, never 70%
+
+   THE TWO RULES
+     1. Taupe and gold are DARK-SURFACE text colours. On cream, muted text is
+        ink at 70% and emphasis is gold-deep. Gold text on cream is 2.23:1 and
+        fails; taupe on cream is 2.59:1 and fails.
+     2. Gold is a FILL and an accent, never a large background. The brand guide
+        is explicit about this, which is why the client-crawl band is cream and
+        the footer phrase band is ink rather than either of them being a field
+        of gold. Where gold does fill -- a button, an inline highlight, a row
+        marker -- it carries ink text at 6.15:1, which is more contrast than the
+        body copy around it, not less.
+   ========================================================================= */
+
+@theme {
+  /* ---- palette: generates bg-ink, text-gold, border-taupe, ... ---- */
+  --color-ink: #2b211a;
+  --color-cream: #f3efe6;
+  --color-gold: #c89b3c;
+  --color-gold-deep: #8a6a2a;
+  --color-taupe: #a69377;
+
+  /* ---- type families: wired to next/font CSS variables ---- */
+  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+
+  /* ---- fluid type scale ---- */
+  /* Capped at 6rem, not 8rem: at 8rem "the only currency left." measures wider
+     than a 1440px viewport and wraps mid-phrase. */
+  --text-display-xl: clamp(2.5rem, 6.5vw, 6rem);
+  --text-display-xl--line-height: 0.94;
+  --text-display-xl--letter-spacing: -0.03em;
+
+  /* Reserved for SHORT lines -- it is 8rem at the top of its clamp and anything
+     past ~14 characters will wrap. Only CtaBand's "Your move." uses it. */
+  --text-display-2xl: clamp(3.25rem, 9vw, 8rem);
+  --text-display-2xl--line-height: 0.88;
+  --text-display-2xl--letter-spacing: -0.04em;
+
+  --text-display-l: clamp(2.5rem, 5.5vw, 4.5rem);
+  --text-display-l--line-height: 0.98;
+  --text-display-l--letter-spacing: -0.025em;
+
+  --text-display-m: clamp(1.75rem, 3vw, 2.75rem);
+  --text-display-m--line-height: 1.08;
+  --text-display-m--letter-spacing: -0.02em;
+
+  --text-heading: clamp(1.25rem, 1.8vw, 1.75rem);
+  --text-heading--line-height: 1.2;
+  --text-heading--letter-spacing: -0.01em;
+
+  --text-body-l: 1.125rem;
+  --text-body-l--line-height: 1.65;
+
+  --text-body: 1rem;
+  --text-body--line-height: 1.7;
+
+  --text-small: 0.875rem;
+  --text-small--line-height: 1.55;
+
+  --text-eyebrow: 0.75rem;
+  --text-eyebrow--line-height: 1.4;
+  --text-eyebrow--letter-spacing: 0.16em;
+
+  /* ---- easing / motion tokens ---- */
+  --ease-expo-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Overshoot. Used on stickers and chips, never on anything that carries
+     reading text -- a word that lands past its resting place is a word the eye
+     has to chase. */
+  --ease-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ============================================================================
+   Base
+   ========================================================================= */
+
+@layer base {
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    scroll-behavior: smooth;
+    /* offset for the fixed nav when jumping to an anchor */
+    scroll-padding-top: 6rem;
+  }
+
+  body {
+    background-color: var(--color-ink);
+    color: var(--color-cream);
+    font-family: var(--font-sans);
+  }
+
+  ::selection {
+    background-color: var(--color-gold);
+    color: var(--color-ink);
+  }
+
+  /* One focus ring for both surfaces: gold passes AA on ink (6.15:1) and is a
+     non-text indicator on cream, where the 3:1 UI-component threshold applies. */
+  :focus-visible {
+    outline: 2px solid var(--color-gold);
+    outline-offset: 3px;
+    border-radius: 2px;
+  }
+
+  /* Optical sizing plus a touch of SOFT on the display face. WONK is applied
+     per-element where the eccentricity is wanted. */
+  .font-display {
+    font-variation-settings: "SOFT" 20, "WONK" 0, "opsz" 100;
+  }
+
+  .wonk {
+    font-variation-settings: "SOFT" 40, "WONK" 1, "opsz" 100;
+  }
+
+  /* The loudest setting. Reserved for a handful of display moments; at SOFT 85
+     the terminals curl enough to look broken at body sizes. */
+  .wonk-hard {
+    font-variation-settings: "SOFT" 85, "WONK" 1, "opsz" 100;
+  }
+}
+
+/* ============================================================================
+   Layout primitives
+   ========================================================================= */
+
+.container-x {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: clamp(1.25rem, 4vw, 4rem);
+}
+
+.section-y {
+  padding-block: clamp(5rem, 10vw, 9rem);
+}
+
+/* The page alternates ink and cream. Each flip is a structural decision. */
+.surface-ink {
+  background-color: var(--color-ink);
+  color: var(--color-cream);
+}
+
+.surface-cream {
+  background-color: var(--color-cream);
+  color: var(--color-ink);
+}
+
+/* Fine paper grain. Pure CSS/SVG -- there is no photography in this build. */
+.grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='140' height='140'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/></filter><rect width='140' height='140' filter='url(%23n)' opacity='0.55'/></svg>");
+}
+
+/* Horizontal rails scroll natively (better for trackpad + keyboard than a
+   JS drag handler) but the scrollbar is noise. */
+.no-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Bleed a display glyph off the edge of its section without causing
+   horizontal document overflow. */
+.bleed-glyph {
+  position: absolute;
+  font-family: var(--font-display);
+  line-height: 1;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* Tickers and marquees fade at both ends instead of shearing off mid-glyph.
+   The mask lives on the viewport-width wrapper, never on the moving track --
+   the track is wider than the screen, so its own edges are off-canvas. */
+.fade-x {
+  mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 7%,
+    black 93%,
+    transparent
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent,
+    black 7%,
+    black 93%,
+    transparent
+  );
+}
+
+/* ============================================================================
+   The highlighter
+   ----------------------------------------------------------------------------
+   Gold as a FILL behind ink text. This is the one way gold is allowed to be
+   more than a stroke or a label: ink-on-gold is 6.15:1, so the phrase inside
+   the block has more contrast than the body copy around it, not less. It works
+   on ink AND on cream, which is what makes a single .highlight class viable on
+   both surfaces.
+
+   Note the padding has to be generous enough that the block clears the
+   cap-height of a 6rem display face without the descenders falling out of it.
+
+   box-decoration-break: clone makes the block redraw on every line when the
+   phrase wraps, rather than stretching one padding box across the break.
+   ========================================================================= */
+
+.highlight {
+  background-color: var(--color-gold);
+  color: var(--color-ink);
+  padding: 0.02em 0.16em 0.06em;
+  margin-inline: -0.05em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+/* The same fill, but tilted -- reads as a sticker rather than a highlighter
+   stroke. Inline-block so the rotation survives a line break. */
+.highlight-tilt {
+  display: inline-block;
+  background-color: var(--color-gold);
+  color: var(--color-ink);
+  padding: 0.02em 0.2em 0.08em;
+  transform: rotate(-1.6deg);
+}
+
+/* ============================================================================
+   Scanlines
+   ----------------------------------------------------------------------------
+   A fixed broadcast-texture layer over the whole document. Kept at 6% ink so it
+   is a texture and not a veil: recomputed, cream-on-ink inside the overlay is
+   still 12.25:1, and ink-on-cream only gains contrast. No blend mode -- a
+   blended full-viewport layer forces the page into a compositing group and
+   costs real frames on scroll.
+   ========================================================================= */
+
+.scanlines {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    rgba(43, 33, 26, 0.06) 0px,
+    rgba(43, 33, 26, 0.06) 1px,
+    transparent 1px,
+    transparent 3px
+  );
+}
+
+/* ============================================================================
+   Marquee (CSS-only)
+   ----------------------------------------------------------------------------
+   Used where the speed is fixed and no scroll reactivity is wanted -- the footer
+   phrase band. The JS Ticker handles the one that reacts to scroll velocity.
+
+   The track holds the list TWICE and translates -50%, which lands exactly on the
+   start of copy two. The gap lives inside each item rather than on the flex
+   container: with a container gap the track measures sum(items) + (2N-1)*gap,
+   so -50% misses by half a gap and the loop stutters once per cycle.
+   ========================================================================= */
+
+@keyframes marquee-x {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+.marquee-track {
+  display: flex;
+  width: max-content;
+  animation: marquee-x var(--marquee-duration, 40s) linear infinite;
+}
+
+/* ============================================================================
+   Hero entrance
+   ----------------------------------------------------------------------------
+   CSS rather than Motion, on purpose. The hero headline is almost certainly the
+   LCP element, and a CSS animation begins at first paint while a Motion variant
+   has to wait for hydration. Everything below the fold uses Motion.
+
+   The headline reveals word by word, the way burned-in captions land -- each
+   word is its own animated span with a hand-set delay.
+   ========================================================================= */
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.5em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* The highlighted word lands harder and slightly out of true. */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.55em) rotate(-6deg) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotate(-1.6deg) scale(1);
+  }
+}
+
+/* .rise carries the animation; .rise-line adds block display for headline
+   lines. Kept separate so the same entrance can be put on a flex row (the CTA
+   cluster) without clobbering its display. */
+.rise {
+  opacity: 0;
+  animation: rise-in 0.9s var(--ease-expo-out) forwards;
+}
+
+.rise-line {
+  display: block;
+}
+
+.rise-word {
+  display: inline-block;
+  opacity: 0;
+  animation: rise-in 0.72s var(--ease-expo-out) forwards;
+}
+
+.pop-word {
+  display: inline-block;
+  opacity: 0;
+  animation: pop-in 0.7s var(--ease-back) forwards;
+  transform: rotate(-1.6deg);
+}
+
+/* Entrance, not emphasis -- never leave the text hidden. */
+@media (prefers-reduced-motion: reduce) {
+  .rise,
+  .rise-line,
+  .rise-word,
+  .pop-word {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}
+
+/* ============================================================================
+   Reduced motion
+   ----------------------------------------------------------------------------
+   Motion's useReducedMotion() gates the JS-driven transforms; this catches
+   everything CSS-driven (transitions, marquee keyframes, smooth scroll).
+   ========================================================================= */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
