@@ -16,7 +16,7 @@
       ]
     },
     "api": {
-      "root": "Phistream Backend",
+      "root": "phistream-backend",
       "framework": "fastify",
       "entrypoint": "src/server.ts",
       "buildCommand": "npm run typecheck"

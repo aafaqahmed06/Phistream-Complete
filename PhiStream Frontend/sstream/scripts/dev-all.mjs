@@ -13,7 +13,8 @@
  * Environment (all optional):
  *   PORT          public port for the site            default 3000
  *   BACKEND_PORT  internal backend port               default 4000
- *   BACKEND_DIR   path to the backend checkout        default ../../Phistream Backend
+ *   BACKEND_DIR   path to the backend checkout        default ../../phistream-backend
+ *                 or ../../Phistream Backend, whichever exists
  */
 
 import { spawn, spawnSync } from "node:child_process";
@@ -23,10 +24,15 @@ import { fileURLToPath } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const siteDir = resolve(here, "..");
-const backendDir = resolve(
-  siteDir,
-  process.env.BACKEND_DIR ?? "../../Phistream Backend",
-);
+// The Phistream-Complete repo names the folder "phistream-backend" (Vercel
+// function names cannot contain spaces); standalone checkouts use
+// "Phistream Backend". Take whichever exists.
+const backendDir = process.env.BACKEND_DIR
+  ? resolve(siteDir, process.env.BACKEND_DIR)
+  : ["../../phistream-backend", "../../Phistream Backend"]
+      .map((dir) => resolve(siteDir, dir))
+      .find((dir) => existsSync(resolve(dir, "package.json"))) ??
+    resolve(siteDir, "../../phistream-backend");
 const port = process.env.PORT ?? "3000";
 const backendPort = process.env.BACKEND_PORT ?? "4000";
 const backendUrl = `http://127.0.0.1:${backendPort}`;

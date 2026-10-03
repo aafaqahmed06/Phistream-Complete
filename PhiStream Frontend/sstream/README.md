@@ -27,8 +27,9 @@ Everything is served from **one port**:
 site's `next dev` on 3000, with prefixed `[api]` / `[web]` output. Ctrl+C stops
 both. `next.config.ts` rewrites `/api/*`, `/health*` and `/docs*` to
 `BACKEND_URL`, so the browser only ever sees one origin and CORS never comes
-into play. Override `PORT`, `BACKEND_PORT` or `BACKEND_DIR` (default
-`../../Phistream Backend`) if needed.
+into play. Override `PORT`, `BACKEND_PORT` or `BACKEND_DIR` if needed;
+`BACKEND_DIR` defaults to `../../phistream-backend` (the folder's name in the
+Phistream-Complete repo) or `../../Phistream Backend`, whichever exists.
 
 To run the two separately instead: start the backend with its `PORT=4000`,
 then `npm run dev` here.
