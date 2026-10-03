@@ -196,6 +196,14 @@ docker compose up --build                                # db -> migrate -> api 
 
 The image is a multi-stage `node:24-alpine` build. It contains only production dependencies, runs as the non-root `node` user, and includes a `HEALTHCHECK` against `/health`.
 
+## Vercel
+
+In the `Phistream-Complete` monorepo this backend deploys as the `api` service of one Vercel project (the root `vercel.json`), alongside the website. `/api/*` and `/health*` on the site's domain route here; the API has no other public URL.
+
+- Vercel runs `npm run build` and serves the compiled `dist/`. The build writes `dist/package.json` (`{"type":"module"}`) because the function bundle does not include this folder's `package.json`, and without it Node loads the ES-module output as CommonJS and fails on the first `import`.
+- Set in the Vercel project (Production and Preview): `DATABASE_URL` (sensitive), `DATABASE_SSL=require`, `DATABASE_POOL_MAX=3` (serverless instances each hold a pool), `EMAIL_PROVIDER=log` (or Resend settings), `CORS_ALLOWED_ORIGINS=<site origin>` (required in production), `TRUST_PROXY=1` (Vercel overwrites `X-Forwarded-For` with the client IP, so rate limits key on real visitors), `NOTIFICATIONS_WORKER_ENABLED=false` (in-process timers do not run reliably between serverless invocations).
+- Rate-limit counters are in memory per function instance, so limits are approximate on serverless until a shared store is added.
+
 ## CI
 
 `.github/workflows/ci.yml` runs on pushes to `main` and on pull requests:
