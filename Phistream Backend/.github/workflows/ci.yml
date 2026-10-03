@@ -1,0 +1,143 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Typecheck, lint, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: phistream
+          POSTGRES_PASSWORD: phistream_ci_only
+          POSTGRES_DB: phistream_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U phistream -d phistream_test"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    env:
+      # Throwaway CI database; not a secret.
+      DATABASE_URL: postgres://phistream:phistream_ci_only@localhost:5432/phistream_test
+      TEST_DATABASE_URL: postgres://phistream:phistream_ci_only@localhost:5432/phistream_test
+      DATABASE_SSL: disable
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm run lint
+      - run: npm run format:check
+
+      - name: Validate migration history
+        run: npm run db:check
+
+      - name: Fail if the schema changed without a committed migration
+        run: |
+          npx drizzle-kit generate
+          if [ -n "$(git status --porcelain -- src/db/migrations)" ]; then
+            echo "::error::src/db/schema changed without a migration. Run 'npm run db:generate' and commit the result."
+            git status --porcelain -- src/db/migrations
+            exit 1
+          fi
+
+      - name: Migrate and seed a clean database (CLI scripts)
+        run: |
+          npm run db:migrate
+          npm run db:seed
+          npm run db:seed   # idempotent re-run
+
+      - name: Tests (including database tests)
+        run: npm test
+
+      - run: npm run build
+      - run: npm audit --omit=dev --audit-level=high
+
+  docker:
+    name: Docker image build + smoke test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: verify
+
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: phistream
+          POSTGRES_PASSWORD: phistream_ci_only
+          POSTGRES_DB: phistream
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U phistream -d phistream"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: docker/setup-buildx-action@v4
+
+      - name: Build image
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: false
+          load: true
+          tags: phistream-backend:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run migrations from the production image
+        run: |
+          docker run --rm --network host \
+            -e DATABASE_URL=postgres://phistream:phistream_ci_only@127.0.0.1:5432/phistream \
+            -e DATABASE_SSL=disable \
+            phistream-backend:ci node dist/db/scripts/migrate.js
+
+      - name: Smoke test container
+        run: |
+          docker run -d --name api --network host \
+            -e CORS_ALLOWED_ORIGINS=https://example.com \
+            -e EMAIL_PROVIDER=log \
+            -e DATABASE_URL=postgres://phistream:phistream_ci_only@127.0.0.1:5432/phistream \
+            -e DATABASE_SSL=disable \
+            phistream-backend:ci
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/health; then echo; break; fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:3000/api/v1/health
+          echo
+          curl -fsS http://127.0.0.1:3000/health/ready
+          echo
+          docker stop --time 15 api
+          test "$(docker inspect -f '{{.State.ExitCode}}' api)" = "0"
+
+      - name: Container logs
+        if: always()
+        run: docker logs api || true

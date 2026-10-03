@@ -1,0 +1,62 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1790598362252,
+      "tag": "0000_initial_schema",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1790598396453,
+      "tag": "0001_revoke_supabase_api_roles",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1790604986988,
+      "tag": "0002_contact_submissions_and_notification_outbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1790607922648,
+      "tag": "0003_application_forms_and_status_access",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1790613607636,
+      "tag": "0004_scheduling_access_and_webhooks",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1790614902656,
+      "tag": "0005_notification_dispatch",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1790616357228,
+      "tag": "0006_application_attribution",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1790618045339,
+      "tag": "0007_revoke_supabase_api_function_access",
+      "breakpoints": true
+    }
+  ]
+}

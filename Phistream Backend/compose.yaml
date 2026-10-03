@@ -1,0 +1,60 @@
+# Local development services.
+#
+#   npm run db:up                 start PostgreSQL only (for `npm run dev`)
+#   docker compose up --build     run the production image: db -> migrate -> api
+#
+# Local credentials below are for a throwaway container only. Never reuse them.
+services:
+  db:
+    # Supabase currently runs PostgreSQL 17.
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: phistream
+      POSTGRES_PASSWORD: phistream_local_only
+      POSTGRES_DB: phistream
+    ports:
+      # 54329 avoids clashing with any other Postgres on 5432.
+      - '54329:5432'
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./docker/postgres/init-test-db.sql:/docker-entrypoint-initdb.d/init-test-db.sql:ro
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U phistream -d phistream']
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+  # One-off release step: apply migrations, then exit.
+  migrate:
+    build: .
+    image: phistream-backend:local
+    command: ['node', 'dist/db/scripts/migrate.js']
+    environment: &api-db-env
+      NODE_ENV: production
+      DATABASE_URL: postgres://phistream:phistream_local_only@db:5432/phistream
+      # The local container has no TLS. Never disable SSL for a hosted database.
+      DATABASE_SSL: disable
+    depends_on:
+      db:
+        condition: service_healthy
+
+  api:
+    image: phistream-backend:local
+    environment:
+      <<: *api-db-env
+      LOG_PRETTY: 'false'
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+      # Production mode requires an explicit email choice. Locally nothing is
+      # sent (log provider); set RESEND_API_KEY + EMAIL_FROM to send for real.
+      EMAIL_PROVIDER: ${EMAIL_PROVIDER:-log}
+      RESEND_API_KEY: ${RESEND_API_KEY:-}
+      EMAIL_FROM: ${EMAIL_FROM:-}
+    ports:
+      - '${PORT:-3000}:3000'
+    stop_grace_period: 15s
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  db-data:

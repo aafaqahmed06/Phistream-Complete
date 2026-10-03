@@ -1,0 +1,19 @@
+# Keep the build context small and never ship secrets into images.
+node_modules
+dist
+coverage
+.git
+.github
+.env
+.env.*
+*.log
+*.pem
+*.key
+tests
+docs
+*.md
+Dockerfile
+compose.yaml
+.dockerignore
+docker
+drizzle.config.ts
