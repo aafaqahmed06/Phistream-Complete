@@ -66,6 +66,27 @@ export function buildPoolConfig(
   };
 }
 
+/**
+ * Keeps a dropped connection from crashing the process.
+ *
+ * node-postgres emits 'error' on a client whose connection ends unexpectedly
+ * (pooler restart, network blip, server-side idle kill). The pool listens only
+ * while a client is IDLE and removes that listener on checkout, so a drop
+ * during a transaction (`pool.connect()`, as Drizzle transactions use) was an
+ * unhandled 'error' event: an uncaught exception that took the server down.
+ *
+ * A permanent listener on every client turns that into a log line. The
+ * in-flight query still rejects (its request fails cleanly), and the pool
+ * discards the dead client on release because it is no longer queryable.
+ */
+export function guardClientErrors(pool: Pick<pg.Pool, 'on'>, logger: DatabaseLogger): void {
+  pool.on('connect', (client) => {
+    client.on('error', (error) => {
+      logger.error({ err: error }, 'database connection lost');
+    });
+  });
+}
+
 export function createDatabase(
   config: DatabaseConfig & { url: string },
   logger: DatabaseLogger,
@@ -76,6 +97,8 @@ export function createDatabase(
   pool.on('error', (error) => {
     logger.error({ err: error }, 'idle database client error');
   });
+  // ...and on a checked-out one, which the pool does not cover.
+  guardClientErrors(pool, logger);
 
   const db = drizzle({ client: pool, schema });
   let closed = false;

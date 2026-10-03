@@ -520,6 +520,27 @@ describe.skipIf(!TEST_DATABASE_URL)('admin API (PostgreSQL)', () => {
       expect(response.body).toContain('"applicationCount"');
     });
 
+    it('counts the applications and contact messages of each lead', async () => {
+      await app.inject({
+        method: 'POST',
+        url: '/api/v1/contact',
+        payload: { name: 'Ana Growth', email: 'ana@example.com', message: 'Following up' },
+      });
+      const response = await get('/api/v1/admin/leads');
+      const counts = Object.fromEntries(
+        response
+          .json<{
+            data: { email: string; applicationCount: number; contactSubmissionCount: number }[];
+          }>()
+          .data.map((lead) => [lead.email, [lead.applicationCount, lead.contactSubmissionCount]]),
+      );
+      expect(counts).toEqual({
+        'ana@example.com': [1, 1],
+        'bo@example.com': [1, 0],
+        'cy_under@example.com': [0, 1],
+      });
+    });
+
     it.each([
       ['status=CONTACTED', ['bo@example.com']],
       ['source=INSTAGRAM', ['ana@example.com', 'cy_under@example.com']],
@@ -533,6 +554,63 @@ describe.skipIf(!TEST_DATABASE_URL)('admin API (PostgreSQL)', () => {
       const response = await get(`/api/v1/admin/leads?${query}`);
       expect(response.statusCode).toBe(200);
       expect(emails(response.body)).toEqual(expected);
+    });
+
+    interface ContactPage {
+      data: {
+        fullName: string;
+        message: string;
+        source: string | null;
+        lead: { id: string; email: string; status: string };
+      }[];
+      pagination: { total: number };
+    }
+
+    it('lists contact messages newest first, with the lead they were filed under', async () => {
+      await app.inject({
+        method: 'POST',
+        url: '/api/v1/contact',
+        payload: { name: 'Ana Again', email: 'ana@example.com', message: 'Second note' },
+      });
+
+      const response = await get('/api/v1/admin/contact-submissions', 'reviewer');
+      expect(response.statusCode).toBe(200);
+      const body = response.json<ContactPage>();
+      expect(body.pagination.total).toBe(2);
+      expect(body.data.map((m) => m.message)).toEqual(['Second note', 'Hello']);
+      // Filed under Ana's existing lead from her application, not a new one.
+      const [ana] = await rows<{ id: string }>(
+        "select id from leads where email = 'ana@example.com'",
+      );
+      expect(body.data[0]).toMatchObject({
+        fullName: 'Ana Again',
+        lead: { id: ana!.id, email: 'ana@example.com', status: 'NEW' },
+      });
+      expect(body.data[1]).toMatchObject({ fullName: 'Cy Contact', source: 'instagram' });
+      // Private bookkeeping never leaves the database.
+      expect(response.body).not.toContain('fingerprint');
+    });
+
+    it.each([
+      ['search=hello', ['cy_under@example.com']],
+      ['search=CY_UNDER', ['cy_under@example.com']],
+      ['search=%25', []],
+    ])('filters contact messages by %s', async (query, expected) => {
+      const response = await get(`/api/v1/admin/contact-submissions?${query}`);
+      expect(response.statusCode).toBe(200);
+      expect(emails(response.body)).toEqual(expected);
+    });
+
+    it("filters contact messages to one lead's", async () => {
+      const [cy] = await rows<{ id: string }>(
+        "select id from leads where email = 'cy_under@example.com'",
+      );
+      const mine = await get(`/api/v1/admin/contact-submissions?leadId=${cy!.id}`);
+      expect(emails(mine.body)).toEqual(['cy_under@example.com']);
+      const none = await get(
+        '/api/v1/admin/contact-submissions?leadId=00000000-0000-4000-8000-000000000999',
+      );
+      expect(none.json<ContactPage>().pagination.total).toBe(0);
     });
 
     it('filters leads by creation date range', async () => {

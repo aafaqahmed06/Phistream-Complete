@@ -425,6 +425,12 @@ Filters: `status` (lead status), `source`, `campaign` (case-insensitive exact ma
 
 Items: `id, email, fullName, phone, companyName, source, campaign, landingPath, status, applicationCount, contactSubmissionCount, createdAt, updatedAt`.
 
+## GET /admin/contact-submissions
+
+Contact-form messages, newest first. Roles: ADMIN, REVIEWER. Filters: `leadId` (UUID; one lead's messages), `createdFrom`, `createdTo`, `search` (2–100 chars, case-insensitive substring of the lead's email, the sender's name, company or the message; `%` and `_` are matched literally).
+
+Items: `id, fullName, phone, companyName, message, source, campaign, createdAt, lead { id, email, status }`. Name, phone and company are as submitted with that message (a known lead's own details are never overwritten by the public form). Messages screened out as spam are not stored.
+
 ## DELETE /admin/leads/:id
 
 ADMIN only. **Irreversible** erasure of a lead and everything linked to it (contact messages, applications, answers, notes, events, tokens, scheduling sessions, meetings, related notification records); anonymous analytics rows are unlinked. Audited (`lead.erased`, counts only). `200 { "data": { "id", "erased": true, "removed": { "applications", "contactSubmissions", "notificationEvents" } } }`, `404` if unknown. Provider-held copies (Cal.com, Resend, Supabase Auth) must be erased there.
@@ -442,7 +448,7 @@ Private. Returns:
 - `application`: `status, reference, formVersion, submittedAt, reviewedAt, acceptedAt, rejectionReason, reviewer { id, displayName } | null, createdAt, updatedAt`
 - `lead`: full lead record
 - `serviceTier`
-- `answers`: `[{ questionKey, label, type, answer }]`, labelled with the **form version the applicant answered**
+- `answers`: `[{ questionKey, label, type, answer, options? }]`, labelled with the **form version the applicant answered**; choice questions also carry that version's `options` (`value` → `label`) so readers see the label, not the stored value
 - `events`: lifecycle events, oldest first, `{ eventType, actorType, actorId, actor { id, displayName } | null, metadata, createdAt }`
 - `notes`: `[{ id, body, author { id, displayName }, createdAt }]`
 - `scheduling`: `{ session: { provider, providerReference, expiresAt, usedAt, createdAt } | null, meetings: [...] }` (token hashes are never returned)

@@ -69,6 +69,22 @@ export const applicationListQuerySchema = z
   })
   .superRefine(rangeCheck('submittedFrom', 'submittedTo'));
 
+export const contactSubmissionListQuerySchema = z
+  .strictObject({
+    ...paginationQuerySchema.shape,
+    leadId: z.uuid().optional().describe("Only this lead's messages"),
+    createdFrom: isoInstant.optional(),
+    createdTo: isoInstant.optional(),
+    search: z
+      .string()
+      .trim()
+      .min(2)
+      .max(100)
+      .optional()
+      .describe("Case-insensitive substring of the lead's email, sender name, company, or message"),
+  })
+  .superRefine(rangeCheck('createdFrom', 'createdTo'));
+
 export const auditLogListQuerySchema = z
   .strictObject({
     ...paginationQuerySchema.shape,
@@ -141,6 +157,25 @@ export const leadListResponseSchema = z.object({
   pagination: paginationSchema,
 });
 
+export const contactSubmissionListResponseSchema = z.object({
+  data: z.array(
+    z
+      .object({
+        id: z.uuid(),
+        fullName: z.string().describe('As submitted with this message'),
+        phone: z.string().nullable(),
+        companyName: z.string().nullable(),
+        message: z.string(),
+        source: z.string().nullable(),
+        campaign: z.string().nullable(),
+        createdAt: z.date(),
+        lead: z.object({ id: z.uuid(), email: z.string(), status: z.enum(LEAD_STATUSES) }),
+      })
+      .meta({ id: 'AdminContactSubmission' }),
+  ),
+  pagination: paginationSchema,
+});
+
 export const applicationListResponseSchema = z.object({
   data: z.array(
     z
@@ -190,6 +225,10 @@ export const applicationDetailResponseSchema = z.object({
           label: z.string().nullable(),
           type: z.string().nullable(),
           answer: z.unknown(),
+          options: z
+            .array(z.object({ value: z.string(), label: z.string() }))
+            .optional()
+            .describe('Choice questions only: value → label, from the answered form version'),
         }),
       ),
       events: z.array(

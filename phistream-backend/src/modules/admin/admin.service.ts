@@ -6,10 +6,12 @@ import type {
   AdminApplicationDetailRow,
   AdminApplicationRow,
   AdminAuditLogRow,
+  AdminContactSubmissionRow,
   AdminLeadRow,
   AdminRepository,
   ApplicationFilters,
   AuditLogFilters,
+  ContactSubmissionFilters,
   LeadFilters,
 } from './admin.repository.js';
 import type { Db } from '../../db/client.js';
@@ -37,6 +39,11 @@ export interface AdminAnswer {
   readonly label: string | null;
   readonly type: FormQuestion['type'] | null;
   readonly answer: unknown;
+  /**
+   * Choice questions only: the options of the form version the applicant
+   * answered, so a reader sees "TikTok" rather than the stored value "tiktok".
+   */
+  readonly options?: { value: string; label: string }[];
 }
 
 export type AdminApplicationDetail = Omit<
@@ -59,6 +66,9 @@ export interface AdminService {
   listLeads(filters: LeadFilters): Promise<Paged<AdminLeadRow>>;
   listApplications(filters: ApplicationFilters): Promise<Paged<AdminApplicationRow>>;
   getApplication(id: string, viewerRole: StaffRole): Promise<AdminApplicationDetail>;
+  listContactSubmissions(
+    filters: ContactSubmissionFilters,
+  ): Promise<Paged<AdminContactSubmissionRow>>;
   listAuditLogs(filters: AuditLogFilters): Promise<Paged<AdminAuditLogRow>>;
 }
 
@@ -79,6 +89,9 @@ export function labelAnswers(
       label: question.label,
       type: question.type,
       answer: byKey.get(question.key),
+      ...('options' in question
+        ? { options: question.options.map(({ value, label }) => ({ value, label })) }
+        : {}),
     });
     byKey.delete(question.key);
   }
@@ -141,6 +154,9 @@ export function createAdminService(deps: {
         answers: labelAnswers(formDefinition, answers),
         availableActions: availableActions(row.application.status, viewerRole),
       };
+    },
+    async listContactSubmissions(filters) {
+      return paged(await repository.listContactSubmissions(filters), filters);
     },
     async listAuditLogs(filters) {
       return paged(await repository.listAuditLogs(filters), filters);

@@ -24,6 +24,8 @@ import {
   applicationListResponseSchema,
   auditLogListQuerySchema,
   auditLogListResponseSchema,
+  contactSubmissionListQuerySchema,
+  contactSubmissionListResponseSchema,
   leadErasedResponseSchema,
   leadIdParamsSchema,
   leadListQuerySchema,
@@ -96,6 +98,25 @@ export const adminRoutes: FastifyPluginAsyncZod<AdminRoutesOptions> = async (app
       },
     },
     async (request) => adminService.listLeads(request.query),
+  );
+
+  app.get(
+    '/contact-submissions',
+    {
+      preHandler: requirePermission('leads:read'),
+      schema: {
+        tags,
+        security,
+        operationId: 'adminListContactSubmissions',
+        summary: 'List contact-form messages (newest first)',
+        description: describe(
+          'Roles: ADMIN, REVIEWER. Every accepted message, with the details sent alongside it and the lead it was filed under. Messages screened out as spam are never stored, so they do not appear.',
+        ),
+        querystring: contactSubmissionListQuerySchema,
+        response: { 200: contactSubmissionListResponseSchema, ...errorResponses },
+      },
+    },
+    async (request) => adminService.listContactSubmissions(request.query),
   );
 
   const { eraseLead } = adminService;

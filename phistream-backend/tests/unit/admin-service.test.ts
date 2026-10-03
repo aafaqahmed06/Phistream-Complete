@@ -69,6 +69,25 @@ describe('labelAnswers', () => {
     ]);
   });
 
+  it('includes the options of the answered form for choice questions only', () => {
+    // Returned in the form's question order: about, platform, goals.
+    const [about, platform, goals] = labelAnswers(TEST_FORM, [
+      { questionKey: 'about', answer: 'Hi' },
+      { questionKey: 'goals', answer: ['brand'] },
+      { questionKey: 'platform', answer: 'tiktok' },
+    ]);
+    expect(platform).toMatchObject({
+      questionKey: 'platform',
+      answer: 'tiktok',
+      options: [
+        { value: 'instagram', label: 'Instagram' },
+        { value: 'tiktok', label: 'TikTok' },
+      ],
+    });
+    expect(goals?.options?.map((o) => o.label)).toEqual(['Growth', 'Brand', 'Sales']);
+    expect(about).not.toHaveProperty('options');
+  });
+
   it('still returns every answer when the stored definition is a legacy placeholder', () => {
     expect(
       labelAnswers({ legacyPlaceholder: true, questions: [] }, [{ questionKey: 'q', answer: 1 }]),

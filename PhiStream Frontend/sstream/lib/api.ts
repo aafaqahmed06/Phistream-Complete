@@ -45,7 +45,14 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+/**
+ * The whole response body, for callers that need more than `data` (the admin
+ * lists read `pagination` too). Throws ApiError on any non-2xx.
+ */
+export async function requestBody<B>(
+  path: string,
+  init: RequestInit = {},
+): Promise<B> {
   let res: Response;
   try {
     res = await fetch(`${API_BASE_URL}${path}`, {
@@ -74,7 +81,11 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
     );
   }
 
-  return (body as { data: T }).data;
+  return body as B;
+}
+
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+  return (await requestBody<{ data: T }>(path, init)).data;
 }
 
 function postJson<T>(path: string, payload: unknown): Promise<T> {

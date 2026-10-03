@@ -1,6 +1,8 @@
+import { EventEmitter } from 'node:events';
+
 import { describe, expect, it } from 'vitest';
 
-import { buildPoolConfig } from '../../src/db/client.js';
+import { buildPoolConfig, guardClientErrors } from '../../src/db/client.js';
 
 const base = {
   ssl: 'disable' as const,
@@ -51,5 +53,23 @@ describe('buildPoolConfig', () => {
   it('omits statement_timeout when set to 0', () => {
     const config = buildPoolConfig('postgres://h/db', { ...base, statementTimeoutMs: 0 });
     expect(config).not.toHaveProperty('statement_timeout');
+  });
+});
+
+describe('guardClientErrors', () => {
+  it('turns a dropped connection on a checked-out client into a log line, not a crash', () => {
+    const pool = new EventEmitter();
+    const logged: string[] = [];
+    guardClientErrors(pool as never, { error: (_object, message) => logged.push(message) });
+
+    // A new client, then checked out: the pool's own idle listener is gone.
+    const client = new EventEmitter();
+    pool.emit('connect', client);
+
+    // An 'error' event with no listener would throw (an uncaught exception).
+    expect(() =>
+      client.emit('error', new Error('Connection terminated unexpectedly')),
+    ).not.toThrow();
+    expect(logged).toEqual(['database connection lost']);
   });
 });

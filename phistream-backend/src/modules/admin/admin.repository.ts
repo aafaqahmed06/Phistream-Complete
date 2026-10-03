@@ -158,6 +158,27 @@ export interface AdminApplicationDetailRow {
   }[];
 }
 
+export interface ContactSubmissionFilters extends Page {
+  readonly leadId?: string | undefined;
+  readonly createdFrom?: Date | undefined;
+  readonly createdTo?: Date | undefined;
+  /** Case-insensitive substring of the lead's email, the sender's name, company, or message. */
+  readonly search?: string | undefined;
+}
+
+export interface AdminContactSubmissionRow {
+  id: string;
+  /** Contact details as submitted with this message (the lead keeps its own). */
+  fullName: string;
+  phone: string | null;
+  companyName: string | null;
+  message: string;
+  source: string | null;
+  campaign: string | null;
+  createdAt: Date;
+  lead: { id: string; email: string; status: LeadStatus };
+}
+
 export interface AuditLogFilters extends Page {
   readonly action?: string | undefined;
   readonly entityType?: string | undefined;
@@ -181,6 +202,9 @@ export interface AdminRepository {
   listLeads(filters: LeadFilters): Promise<PageResult<AdminLeadRow>>;
   listApplications(filters: ApplicationFilters): Promise<PageResult<AdminApplicationRow>>;
   getApplicationDetail(id: string): Promise<AdminApplicationDetailRow | undefined>;
+  listContactSubmissions(
+    filters: ContactSubmissionFilters,
+  ): Promise<PageResult<AdminContactSubmissionRow>>;
   listAuditLogs(filters: AuditLogFilters): Promise<PageResult<AdminAuditLogRow>>;
 }
 
@@ -236,8 +260,11 @@ export function createAdminRepository(db: Db): AdminRepository {
             campaign: leads.campaign,
             landingPath: leads.landingPath,
             status: leads.status,
-            applicationCount: sql<number>`(select count(*)::int from ${applications} where ${applications.leadId} = ${leads.id})`,
-            contactSubmissionCount: sql<number>`(select count(*)::int from ${contactSubmissions} where ${contactSubmissions.leadId} = ${leads.id})`,
+            // The outer lead is named explicitly: inside a select, Drizzle renders
+            // ${leads.id} as a bare "id", which the subquery would resolve to its
+            // own table's id, so every count came back 0.
+            applicationCount: sql<number>`(select count(*)::int from ${applications} where ${applications.leadId} = "leads"."id")`,
+            contactSubmissionCount: sql<number>`(select count(*)::int from ${contactSubmissions} where ${contactSubmissions.leadId} = "leads"."id")`,
             createdAt: leads.createdAt,
             updatedAt: leads.updatedAt,
           })
@@ -466,6 +493,56 @@ export function createAdminRepository(db: Db): AdminRepository {
         })),
         scheduling: { session: sessions[0] ?? null, meetings: meetingRows },
         otherApplications: others,
+      };
+    },
+
+    async listContactSubmissions(filters) {
+      const where = all([
+        filters.leadId !== undefined ? eq(contactSubmissions.leadId, filters.leadId) : undefined,
+        filters.createdFrom && gte(contactSubmissions.createdAt, filters.createdFrom),
+        filters.createdTo && lt(contactSubmissions.createdAt, filters.createdTo),
+        filters.search !== undefined
+          ? or(
+              ilike(leads.email, likeContains(filters.search)),
+              ilike(contactSubmissions.fullName, likeContains(filters.search)),
+              ilike(contactSubmissions.companyName, likeContains(filters.search)),
+              ilike(contactSubmissions.message, likeContains(filters.search)),
+            )
+          : undefined,
+      ]);
+      const page = await withTotal(
+        db
+          .select({
+            id: contactSubmissions.id,
+            fullName: contactSubmissions.fullName,
+            phone: contactSubmissions.phone,
+            companyName: contactSubmissions.companyName,
+            message: contactSubmissions.message,
+            source: contactSubmissions.source,
+            campaign: contactSubmissions.campaign,
+            createdAt: contactSubmissions.createdAt,
+            leadId: leads.id,
+            leadEmail: leads.email,
+            leadStatus: leads.status,
+          })
+          .from(contactSubmissions)
+          .innerJoin(leads, eq(leads.id, contactSubmissions.leadId))
+          .where(where)
+          .orderBy(desc(contactSubmissions.createdAt), desc(contactSubmissions.id))
+          .limit(filters.limit)
+          .offset(filters.offset),
+        db
+          .select({ total: count() })
+          .from(contactSubmissions)
+          .innerJoin(leads, eq(leads.id, contactSubmissions.leadId))
+          .where(where),
+      );
+      return {
+        total: page.total,
+        items: page.items.map(({ leadId, leadEmail, leadStatus, ...row }) => ({
+          ...row,
+          lead: { id: leadId, email: leadEmail, status: leadStatus },
+        })),
       };
     },
 

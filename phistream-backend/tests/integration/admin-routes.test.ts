@@ -40,12 +40,14 @@ const stubAdminService: AdminService = {
   listLeads: () => Promise.resolve({ data: [], pagination: page }),
   listApplications: () => Promise.resolve({ data: [], pagination: page }),
   getApplication: () => Promise.reject(new Error('not used')),
+  listContactSubmissions: () => Promise.resolve({ data: [], pagination: page }),
   listAuditLogs: () => Promise.resolve({ data: [], pagination: page }),
 };
 
 /** Every admin route, with a valid request body where one is needed. */
 const ROUTES = [
   { method: 'GET', url: '/api/v1/admin/leads' },
+  { method: 'GET', url: '/api/v1/admin/contact-submissions' },
   { method: 'GET', url: '/api/v1/admin/applications' },
   { method: 'GET', url: `/api/v1/admin/applications/${APP_ID}` },
   { method: 'POST', url: `/api/v1/admin/applications/${APP_ID}/review` },
@@ -501,6 +503,7 @@ describe('admin routes', () => {
         'adminGetApplication',
         'adminListApplications',
         'adminListAuditLogs',
+        'adminListContactSubmissions',
         'adminListLeads',
         'adminRejectApplication',
         'adminStartReview',
