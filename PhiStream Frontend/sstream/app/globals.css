@@ -50,6 +50,9 @@
   --color-gold: #c89b3c;
   --color-gold-deep: #8a6a2a;
   --color-taupe: #a69377;
+  /* Form errors only, cream surfaces only: 6.8:1 on cream. Not a brand
+     colour -- it exists because "this field is wrong" cannot be gold. */
+  --color-alert: #9b2c1f;
 
   /* ---- type families: wired to next/font CSS variables ---- */
   --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;

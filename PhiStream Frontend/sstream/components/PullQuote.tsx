@@ -1,7 +1,21 @@
-import { quote } from "@/lib/content";
+import type { PublicTestimonial } from "@/lib/api";
+import { quote as staticQuote } from "@/lib/content";
 import { Reveal } from "./motion/Reveal";
 
-export function PullQuote() {
+/** The first live testimonial when the backend has one, else the static quote. */
+export function PullQuote({
+  testimonial,
+}: {
+  testimonial?: PublicTestimonial;
+}) {
+  const quote = testimonial
+    ? {
+        text: testimonial.quote,
+        attribution: testimonial.name,
+        org: [testimonial.role, testimonial.company].filter(Boolean).join(", "),
+      }
+    : staticQuote;
+
   return (
     <section className="surface-cream section-y">
       <div className="container-x">
@@ -24,7 +38,9 @@ export function PullQuote() {
                   4.38:1, which is the palette's cream-safe accent. */}
               <div className="border-t-4 border-gold-deep pt-5 text-small">
                 <div className="text-ink">{quote.attribution}</div>
-                <div className="mt-1 text-ink/70">{quote.org}</div>
+                {quote.org ? (
+                  <div className="mt-1 text-ink/70">{quote.org}</div>
+                ) : null}
               </div>
             </figcaption>
           </figure>

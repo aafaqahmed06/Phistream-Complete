@@ -4,7 +4,16 @@ import { Reveal } from "./motion/Reveal";
 import { Eyebrow } from "./ui/Eyebrow";
 import { GlyphWatermark, Wordmark } from "./ui/Wordmark";
 
-export function Footer() {
+/** `socialLinks` from GET /content/home replace the placeholder socials. */
+export function Footer({
+  socialLinks,
+}: {
+  socialLinks?: { label: string; url: string }[];
+}) {
+  const socials = socialLinks?.length
+    ? socialLinks.map((s) => ({ label: s.label, href: s.url, external: true }))
+    : footer.socials.map((s) => ({ ...s, external: false }));
+
   // Two identical copies, and the track translates -50%: that lands exactly on
   // the start of copy two. The gap lives inside each item rather than on the
   // flex container, or the loop misses by half a gap and stutters every cycle.
@@ -56,11 +65,14 @@ export function Footer() {
               <p className="mt-6 max-w-[28ch] text-small text-cream/80">
                 {footer.quip}
               </p>
-              <ul className="mt-7 flex gap-6">
-                {footer.socials.map((social) => (
+              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2">
+                {socials.map((social) => (
                   <li key={social.label}>
                     <a
                       href={social.href}
+                      {...(social.external
+                        ? { target: "_blank", rel: "noopener noreferrer" }
+                        : {})}
                       className="text-small text-cream/80 transition-colors hover:text-gold"
                     >
                       {social.label}

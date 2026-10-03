@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
 import { nav as navContent } from "@/lib/content";
 import { ScrollProgress } from "./ScrollProgress";
@@ -48,12 +49,12 @@ export function Nav() {
         className="container-x flex h-20 items-center justify-between gap-6"
       >
         <div className="flex items-center">
-          <a
-            href="#top"
+          <Link
+            href="/#top"
             className="text-xl text-cream transition-colors hover:text-gold"
           >
             <Wordmark />
-          </a>
+          </Link>
 
           {/* The status lamp. Gold on an ink bar, 6.15:1. */}
           <span className="ml-4 hidden items-center gap-2 font-mono text-eyebrow uppercase text-taupe sm:inline-flex">

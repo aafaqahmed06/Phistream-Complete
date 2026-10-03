@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { ReactNode } from "react";
 
 type Variant = "gold" | "ghost-dark" | "ghost-light";
@@ -50,8 +51,12 @@ export function Button({
   className = "",
   arrow = false,
 }: ButtonProps) {
+  // In-site paths ("/apply", "/#contact") navigate client-side; mailto:,
+  // bare "#" anchors and external URLs stay plain links.
+  const Anchor = href.startsWith("/") ? Link : "a";
+
   return (
-    <a
+    <Anchor
       href={href}
       className={`group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-small font-medium transition-[background-color,color,border-color,box-shadow,transform,translate] duration-200 ease-expo-out ${variants[variant]} ${className}`}
     >
@@ -70,6 +75,6 @@ export function Button({
           <path d="M2 8h11M9 4l4 4-4 4" />
         </svg>
       ) : null}
-    </a>
+    </Anchor>
   );
 }

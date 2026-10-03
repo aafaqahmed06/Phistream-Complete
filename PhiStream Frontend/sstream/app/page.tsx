@@ -10,6 +10,10 @@ import { StudioRail } from "@/components/StudioRail";
 import { Thinking } from "@/components/Thinking";
 import { TickerBand } from "@/components/TickerBand";
 import { Work } from "@/components/Work";
+import { getHomeContent } from "@/lib/api";
+
+/** Matches the backend's Cache-Control max-age on public content. */
+export const revalidate = 60;
 
 /**
  * Section order is the conversion argument:
@@ -19,8 +23,14 @@ import { Work } from "@/components/Work";
  * The ink/cream alternation is structural, not decorative:
  *   ink   cream   ink    cream      ink    cream      ink     cream   ink       cream   ink
  *   hero  ticker  stats  services   work   approach   studio  quote   thinking  CTA     footer
+ *
+ * Services, the pull quote, the contact email and the socials come from the
+ * backend (GET /api/v1/content/home). `home` is null when the API is down,
+ * and every section then falls back to its copy in lib/content.ts.
  */
-export default function Home() {
+export default async function Home() {
+  const home = await getHomeContent();
+
   return (
     <>
       <Nav />
@@ -28,15 +38,15 @@ export default function Home() {
         <Hero />
         <TickerBand />
         <StatsBand />
-        <Services />
+        <Services tiers={home?.services} />
         <Work />
         <Approach />
         <StudioRail />
-        <PullQuote />
+        <PullQuote testimonial={home?.testimonials[0]} />
         <Thinking />
-        <CtaBand />
+        <CtaBand email={home?.contact.email} />
       </main>
-      <Footer />
+      <Footer socialLinks={home?.socialLinks} />
     </>
   );
 }

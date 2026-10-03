@@ -15,12 +15,12 @@ export const nav = {
   /** Pairs with the pulsing dot. The studio's whole pitch in two words. */
   status: "On air",
   links: [
-    { label: "Work", href: "#work" },
-    { label: "Services", href: "#services" },
-    { label: "Studio", href: "#studio" },
-    { label: "Thinking", href: "#thinking" },
+    { label: "Work", href: "/#work" },
+    { label: "Services", href: "/#services" },
+    { label: "Studio", href: "/#studio" },
+    { label: "Thinking", href: "/#thinking" },
   ],
-  cta: { label: "Start a project", href: "#contact" },
+  cta: { label: "Apply to work with us", href: "/apply" },
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -55,8 +55,8 @@ export const hero = {
   eyebrow: "A studio for creators — London / New York",
   headline: { lines: heroLines },
   lead: "Strategy, formats, partnerships and the team that makes them. Østreams turns channels into companies — and keeps the upside on your side of the table.",
-  primaryCta: { label: "Book a strategy call", href: "#contact" },
-  secondaryCta: { label: "See the work", href: "#work" },
+  primaryCta: { label: "Book a strategy call", href: "/#contact" },
+  secondaryCta: { label: "See the work", href: "/#work" },
   scrollCue: "Scroll",
   est: "Est. 2015",
 } as const;
@@ -131,6 +131,15 @@ export const services = {
   eyebrow: "01 — What we do",
   heading: "Six things, done properly.",
   lead: "We are not a full-service agency and we do not want to be. Six disciplines, staffed by people who have done nothing else for a decade.",
+  /**
+   * Used instead of heading/lead when the list comes from the backend's
+   * service tiers (GET /content/home), whose count and wording are data.
+   */
+  live: {
+    heading: "Ways to work with us.",
+    lead: "Every engagement is staffed by people who have done nothing else for a decade. Pick the shape that fits, or tell us and we will suggest one.",
+    priceOnRequest: "Price on request",
+  },
   items: [
     {
       id: "01",
@@ -337,9 +346,61 @@ export const cta = {
   /** Short on purpose -- this is the one line on the page set at display-2xl. */
   heading: "Your move.",
   body: "Tell us what you are building and what is in the way. We will tell you honestly whether we are the right studio for it.",
-  button: { label: "Book a strategy call", href: "mailto:hello@ostreams.com" },
+  /** Live contact email from the backend replaces `email` when available. */
+  button: { label: "Apply to work with us", href: "/apply" },
   email: "hello@ostreams.com",
   sticker: "Replies in 24h",
+} as const;
+
+/** The form inside the closing CTA. Posts to POST /api/v1/contact. */
+export const contactForm = {
+  submit: "Send it over",
+  successTitle: "Thanks — it is with us.",
+  successBody: "Someone from the studio will be in touch within a day.",
+  sendAnother: "Send another message",
+} as const;
+
+/* -------------------------------------------------------------------------- */
+/* Apply                                                                      */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * /apply. The questions themselves are NOT here: they are versioned business
+ * data served by GET /api/v1/applications/form.
+ */
+export const apply = {
+  eyebrow: "Applications",
+  heading: "Tell us about the channel.",
+  lead: "A few questions so we can tell you honestly whether we are the right studio. A real person reads every one.",
+  tierLabel: "Which way of working interests you?",
+  tierNone: "Not sure yet",
+  submit: "Submit application",
+  closed: {
+    title: "Applications are closed right now.",
+    body: "We are not taking new applications at the moment. You can still send us a note from the homepage.",
+    link: { label: "Get in touch", href: "/#contact" },
+  },
+  outdated:
+    "The questions changed while you were filling them in. We have loaded the new version — your contact details are kept.",
+  duplicate:
+    "We already have this exact application from you. No need to send it twice.",
+  received: {
+    eyebrow: "Received",
+    heading: "Application in.",
+    body: "Keep your reference. We review every application and will email you with the outcome.",
+    referenceLabel: "Reference",
+    checkStatus: "Check status",
+    startOver: "Start a new application",
+  },
+  status: {
+    UNDER_REVIEW: "Under review",
+    ACCEPTED: "Accepted",
+    NOT_ACCEPTED: "Not accepted",
+    MEETING_SCHEDULED: "Meeting scheduled",
+    WITHDRAWN: "Withdrawn",
+    CLOSED: "Closed",
+  },
+  faqHeading: "Before you apply",
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -358,20 +419,20 @@ export const footer = {
     {
       title: "Studio",
       links: [
-        { label: "About", href: "#studio" },
+        { label: "About", href: "/#studio" },
         { label: "Careers", href: "#" },
-        { label: "Contact", href: "#contact" },
+        { label: "Contact", href: "/#contact" },
       ],
     },
     {
       title: "Services",
       links: [
-        { label: "Brand & Positioning", href: "#services" },
-        { label: "Audience Strategy", href: "#services" },
-        { label: "Partnerships", href: "#services" },
-        { label: "Content Studio", href: "#services" },
-        { label: "Commerce", href: "#services" },
-        { label: "Channel Ops", href: "#services" },
+        { label: "Brand & Positioning", href: "/#services" },
+        { label: "Audience Strategy", href: "/#services" },
+        { label: "Partnerships", href: "/#services" },
+        { label: "Content Studio", href: "/#services" },
+        { label: "Commerce", href: "/#services" },
+        { label: "Channel Ops", href: "/#services" },
       ],
     },
   ],
