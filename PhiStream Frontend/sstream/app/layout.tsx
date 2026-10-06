@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces, JetBrains_Mono } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { Scanlines } from "@/components/ui/Scanlines";
 import "./globals.css";
 
@@ -89,6 +90,7 @@ export default function RootLayout({
         {children}
         {/* Fixed CRT raster over the whole document, below the nav. */}
         <Scanlines />
+        <Analytics />
       </body>
     </html>
   );
