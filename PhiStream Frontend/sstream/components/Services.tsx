@@ -1,36 +1,11 @@
-import { formatPrice, type PublicServiceTier } from "@/lib/api";
 import { services } from "@/lib/content";
 import { Reveal } from "./motion/Reveal";
 import { Eyebrow } from "./ui/Eyebrow";
 
-type ServiceRow = {
-  id: string;
-  title: string;
-  body: string;
-  /** Live tiers only: published price (or "on request") and feature list. */
-  price?: string;
-  features?: readonly string[];
-};
-
 /**
- * Rows come from the backend's active service tiers when the API answered
- * with at least one, otherwise from the static copy -- so the section never
- * renders empty because the API is down.
- */
-function toRows(tiers: PublicServiceTier[] | undefined): ServiceRow[] | null {
-  if (!tiers?.length) return null;
-  return tiers.map((tier, i) => ({
-    id: String(i + 1).padStart(2, "0"),
-    title: tier.name,
-    body: tier.description,
-    price: tier.price
-      ? [formatPrice(tier.price), tier.billingPeriod].filter(Boolean).join(" / ")
-      : services.live.priceOnRequest,
-    features: tier.features,
-  }));
-}
-
-/**
+ * The six disciplines -- always the static copy. Priced service tiers from the
+ * backend belong to /apply and a future Services page, not this teaser.
+ *
  * A list, not a grid of cards.
  *
  * Each row inverts to ink on hover. That inversion is doing two jobs at once:
@@ -47,12 +22,7 @@ function toRows(tiers: PublicServiceTier[] | undefined): ServiceRow[] | null {
  * Nothing is hidden behind the hover -- the description is always present, so
  * touch and keyboard users lose nothing.
  */
-export function Services({ tiers }: { tiers?: PublicServiceTier[] }) {
-  const liveRows = toRows(tiers);
-  const rows: readonly ServiceRow[] = liveRows ?? services.items;
-  const heading = liveRows ? services.live.heading : services.heading;
-  const lead = liveRows ? services.live.lead : services.lead;
-
+export function Services() {
   return (
     <section id="services" className="surface-cream section-y">
       <div className="container-x">
@@ -65,19 +35,19 @@ export function Services({ tiers }: { tiers?: PublicServiceTier[] }) {
               </Reveal>
               <Reveal delay={0.08}>
                 <h2 className="mt-6 font-display text-display-l text-ink">
-                  {heading}
+                  {services.heading}
                 </h2>
               </Reveal>
               <Reveal delay={0.14}>
                 <p className="mt-6 max-w-[38ch] text-body text-ink/70">
-                  {lead}
+                  {services.lead}
                 </p>
               </Reveal>
             </div>
           </div>
 
           <ul className="col-span-12 mt-14 md:col-span-8 md:mt-0">
-            {rows.map((service, i) => (
+            {services.items.map((service, i) => (
               // Reveal goes INSIDE the li: a div between ul and li is invalid.
               <li
                 key={service.id}
@@ -93,24 +63,9 @@ export function Services({ tiers }: { tiers?: PublicServiceTier[] }) {
                       {service.title}
                     </h3>
 
-                    <div className="col-span-12 text-small text-ink/70 transition-colors duration-300 group-hover:text-taupe md:col-span-5">
-                      <p>{service.body}</p>
-                      {service.features?.length ? (
-                        <ul className="mt-3 space-y-1">
-                          {service.features.map((feature) => (
-                            <li key={feature} className="flex gap-2">
-                              <span aria-hidden="true">—</span>
-                              {feature}
-                            </li>
-                          ))}
-                        </ul>
-                      ) : null}
-                      {service.price ? (
-                        <p className="mt-4 font-mono text-eyebrow uppercase text-ink transition-colors duration-300 group-hover:text-gold">
-                          {service.price}
-                        </p>
-                      ) : null}
-                    </div>
+                    <p className="col-span-12 text-small text-ink/70 transition-colors duration-300 group-hover:text-taupe md:col-span-5">
+                      {service.body}
+                    </p>
                   </div>
                 </Reveal>
               </li>

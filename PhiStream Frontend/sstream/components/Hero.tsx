@@ -1,6 +1,6 @@
+import Link from "next/link";
 import { Fragment } from "react";
 import { hero } from "@/lib/content";
-import { Button } from "./ui/Button";
 import { Eyebrow } from "./ui/Eyebrow";
 import { GlyphWatermark } from "./ui/Wordmark";
 
@@ -35,7 +35,7 @@ export function Hero() {
       className="surface-ink grain relative isolate overflow-hidden"
     >
       {/*
-        The Ø bleeds off the right edge. Rotation is what stops it reading as a
+        The φ bleeds off the right edge. Rotation is what stops it reading as a
         logo pasted into the corner -- it is a texture, not a mark.
       */}
       <GlyphWatermark className="-right-[10vw] top-1/2 -translate-y-1/2 rotate-12 text-[50vw] text-gold opacity-[0.06]" />
@@ -45,7 +45,7 @@ export function Hero() {
           feel like a plate rather than a landing page. */}
       <div className="absolute right-[clamp(1.25rem,4vw,4rem)] top-1/2 hidden -translate-y-1/2 xl:block">
         <span className="font-mono text-eyebrow uppercase text-taupe [writing-mode:vertical-rl]">
-          412M views · 68 creators · 11 years
+          {hero.rail}
         </span>
       </div>
 
@@ -90,17 +90,44 @@ export function Hero() {
             {hero.lead}
           </p>
 
-          <div
-            className="rise mt-10 flex flex-wrap items-center gap-4"
+          {/* Two doors into the same studio. Each card is one link, so the
+              whole card is the click target. */}
+          <ul
+            className="rise mt-12 grid max-w-5xl gap-4 md:grid-cols-2"
             style={{ animationDelay: "0.68s" }}
           >
-            <Button href={hero.primaryCta.href} arrow>
-              {hero.primaryCta.label}
-            </Button>
-            <Button href={hero.secondaryCta.href} variant="ghost-dark">
-              {hero.secondaryCta.label}
-            </Button>
-          </div>
+            {hero.paths.map((path) => (
+              <li key={path.label}>
+                <Link
+                  href={path.cta.href}
+                  className="group flex h-full flex-col rounded-2xl border border-taupe/40 bg-ink/60 p-6 transition-colors duration-300 hover:border-gold md:p-7"
+                >
+                  <Eyebrow tone="gold-on-ink">{path.label}</Eyebrow>
+                  <span className="mt-4 block font-display text-heading text-cream">
+                    {path.headline}
+                  </span>
+                  <span className="mt-3 block text-small text-cream/80">
+                    {path.body}
+                  </span>
+                  <span className="mt-6 inline-flex items-center gap-2 text-small font-medium text-gold">
+                    {path.cta.label}
+                    <svg
+                      aria-hidden="true"
+                      viewBox="0 0 16 16"
+                      className="h-3.5 w-3.5 transition-transform duration-300 ease-expo-out group-hover:translate-x-1"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <path d="M2 8h11M9 4l4 4-4 4" />
+                    </svg>
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         </div>
       </div>
 

@@ -10,7 +10,7 @@ import { AdminGate } from "@/components/admin/AdminShell";
  * into a cached page.
  */
 export const metadata: Metadata = {
-  title: { default: "Control room — Østreams", template: "%s — Control room" },
+  title: { default: "Control room — Phistreams", template: "%s — Control room" },
   robots: { index: false, follow: false, nocache: true },
 };
 

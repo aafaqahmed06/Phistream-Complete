@@ -36,21 +36,21 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Østreams — The studio for creators",
+  title: "Phistreams — A studio for creators and founders",
   description:
-    "Østreams turns channels into companies. Strategy, formats, brand partnerships and the team that makes them. London and New York.",
+    "Phistreams builds the business behind the audience, and the audience behind the business. Funnels, operations, identity and scaling. Islamabad.",
   keywords: [
     "creator studio",
+    "founder-led content",
     "creator economy",
-    "brand strategy for creators",
-    "audience strategy",
-    "brand partnerships",
-    "creator commerce",
+    "audience and funnel strategy",
+    "creator monetization",
+    "founder personal brand",
   ],
   openGraph: {
-    title: "Østreams — The studio for creators",
+    title: "Phistreams — A studio for creators and founders",
     description:
-      "You built the audience. Now build the business. Østreams turns channels into companies.",
+      "Creators become founders. Founders become creators. Phistreams turns attention into equity.",
     type: "website",
   },
 };

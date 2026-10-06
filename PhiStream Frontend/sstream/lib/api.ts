@@ -183,16 +183,6 @@ export async function getHomeContent(): Promise<HomeContent | null> {
   }
 }
 
-/** Formats a tier price from minor units, using the currency's own decimals. */
-export function formatPrice(price: NonNullable<PublicServiceTier["price"]>) {
-  const fmt = new Intl.NumberFormat("en-GB", {
-    style: "currency",
-    currency: price.currency,
-  });
-  const digits = fmt.resolvedOptions().maximumFractionDigits ?? 2;
-  return fmt.format(price.amountMinor / 10 ** digits);
-}
-
 /* -------------------------------------------------------------------------- */
 /* Contact                                                                    */
 /* -------------------------------------------------------------------------- */

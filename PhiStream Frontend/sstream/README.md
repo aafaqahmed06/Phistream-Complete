@@ -1,4 +1,4 @@
-# Østreams — homepage
+# Phistreams — homepage
 
 A single-page marketing site for a brand studio that works for **content
 creators**. Built with Next.js (App Router), TypeScript, Tailwind CSS v4 and

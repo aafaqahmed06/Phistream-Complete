@@ -1,3 +1,5 @@
+import { inArray } from 'drizzle-orm';
+
 import type { Db } from '../client.js';
 import {
   applicationAnswers,
@@ -17,6 +19,7 @@ import {
   demoApplicationForms,
   demoApplications,
   demoFaqs,
+  demoId,
   demoLeads,
   demoServiceTiers,
   demoSiteConfig,
@@ -78,4 +81,38 @@ export async function seedDemoData(db: Db): Promise<SeedResult> {
 
     return { inserted };
   });
+}
+
+export interface UnseedResult {
+  /** Rows deleted per table. */
+  readonly deleted: Readonly<Record<string, number>>;
+}
+
+/**
+ * Removes the demo rows that the public site renders: testimonials, FAQs, and
+ * the contact email, phone and social links. Deletes by the fixed demo ids
+ * only, so real content can never be hit, and real replacements can then be
+ * entered without the placeholders shadowing them.
+ *
+ * Service tiers, the application form, applications and staff are left alone:
+ * applications reference them, and /apply needs a published form.
+ */
+export async function unseedDemoContent(db: Db): Promise<UnseedResult> {
+  // Matches the fixed ids in demo-data.ts. site_config: contact.email (403),
+  // contact.phone (405), social.links (406).
+  const testimonialIds = [301, 302, 303].map(demoId);
+  const faqIds = [201, 202, 203].map(demoId);
+  const configIds = [403, 405, 406].map(demoId);
+
+  return db.transaction(async (tx) => ({
+    deleted: {
+      testimonials: (
+        await tx.delete(testimonials).where(inArray(testimonials.id, testimonialIds)).returning()
+      ).length,
+      faqs: (await tx.delete(faqs).where(inArray(faqs.id, faqIds)).returning()).length,
+      site_config: (
+        await tx.delete(siteConfig).where(inArray(siteConfig.id, configIds)).returning()
+      ).length,
+    },
+  }));
 }

@@ -46,7 +46,7 @@ export function Footer({
                   {phrase}
                 </span>
                 <span className="font-display text-xl leading-none text-cream opacity-30 md:text-2xl">
-                  Ø
+                  φ
                 </span>
               </span>
             ))}
@@ -65,21 +65,23 @@ export function Footer({
               <p className="mt-6 max-w-[28ch] text-small text-cream/80">
                 {footer.quip}
               </p>
-              <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2">
-                {socials.map((social) => (
-                  <li key={social.label}>
-                    <a
-                      href={social.href}
-                      {...(social.external
-                        ? { target: "_blank", rel: "noopener noreferrer" }
-                        : {})}
-                      className="text-small text-cream/80 transition-colors hover:text-gold"
-                    >
-                      {social.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
+              {socials.length ? (
+                <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2">
+                  {socials.map((social) => (
+                    <li key={social.label}>
+                      <a
+                        href={social.href}
+                        {...(social.external
+                          ? { target: "_blank", rel: "noopener noreferrer" }
+                          : {})}
+                        className="text-small text-cream/80 transition-colors hover:text-gold"
+                      >
+                        {social.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
             </div>
 
             {/* Link columns */}
@@ -105,19 +107,10 @@ export function Footer({
               </nav>
             ))}
 
-            {/* Offices + capture */}
+            {/* Office + capture */}
             <div className="col-span-12 md:col-span-6 lg:col-span-4">
-              <Eyebrow tone="on-ink">Offices</Eyebrow>
-              <ul className="mt-5 space-y-5">
-                {footer.offices.map((office) => (
-                  <li key={office.city}>
-                    <div className="text-small text-cream">{office.city}</div>
-                    <div className="mt-0.5 text-small text-taupe">
-                      {office.address}
-                    </div>
-                  </li>
-                ))}
-              </ul>
+              <Eyebrow tone="on-ink">Office</Eyebrow>
+              <p className="mt-5 text-small text-cream">{footer.office.city}</p>
 
               {/*
                 Presentational for now -- posts to "#" until there is an
@@ -154,18 +147,7 @@ export function Footer({
 
           {/* Legal rail */}
           <div className="mt-20 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t border-taupe/25 pt-7">
-            <ul className="flex flex-wrap gap-x-7 gap-y-2">
-              {footer.legal.map((item) => (
-                <li key={item.label}>
-                  <a
-                    href={item.href}
-                    className="text-small text-taupe transition-colors hover:text-gold"
-                  >
-                    {item.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <p className="text-small text-taupe">{footer.copyright}</p>
             <Reveal y={0}>
               <Eyebrow tone="on-ink">Own the audience</Eyebrow>
             </Reveal>

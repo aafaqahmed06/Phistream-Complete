@@ -31,15 +31,5 @@ export const SPRING_GLOW: Transition = {
 export const REVEAL_VIEWPORT = { once: true, amount: 0.15 } as const;
 export const REVEAL_VIEWPORT_EARLY = { once: true, amount: 0.3 } as const;
 
-/**
- * The velocity ticker's baseline travel in pixels per second, the scroll speed
- * at which its multiplier tops out, and the ceiling itself. Scroll faster than
- * VELOCITY_MAX and the crawl stops accelerating -- without a clamp, a flick
- * turns the type into an unreadable smear.
- */
-export const TICKER_BASE_SPEED = 46;
-export const TICKER_VELOCITY_MAX = 1400;
-export const TICKER_SPEED_CEILING = 5.5;
-
 /** Split-flap stagger, in seconds per character. */
 export const FLAP_STAGGER = 0.045;

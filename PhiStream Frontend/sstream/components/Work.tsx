@@ -2,30 +2,25 @@ import { work } from "@/lib/content";
 import { CursorGlow } from "./CursorGlow";
 import { Lift } from "./motion/Lift";
 import { Reveal } from "./motion/Reveal";
-import { Button } from "./ui/Button";
 import { Eyebrow } from "./ui/Eyebrow";
 import { Sticker } from "./ui/Sticker";
 
 /**
- * Deliberately uneven -- 7/5 then 5/7, mirrored. A uniform 2x2 grid of equal
- * cards is the thing this section exists to not be.
+ * Deliberately uneven -- 7/5. Two equal cards is the thing this section exists
+ * to not be.
  *
- * Every case study is built as a THUMBNAIL: 16:9 plate, a duration chip and a
- * view count in the corners, and a big punchy headline burned across the
- * bottom. It is the format the visitor already reads for a living, so the
- * section lands as familiar before they have read a word of it.
+ * Every example is built as a THUMBNAIL: 16:9 plate, corner chips, and a big
+ * headline burned across the bottom. It is the format the visitor already
+ * reads for a living.
  *
  * With no photography in the build, each plate is generated: an ink ground, a
- * gold radial wash, a faint blueprint grid, and the client's initial ghosted
- * behind it. The wash layer is the thing that scales on hover, so the plate
- * zooms like a poster without the type moving at all.
+ * gold radial wash, a faint blueprint grid, and the track's initial ghosted
+ * behind it. The wash layer is the thing that scales on hover.
+ *
+ * The write-up lives in a native <details> panel rather than behind a link:
+ * these are illustrative examples, so there is no case-study page to go to.
  */
-const spacing = [
-  "md:col-span-7",
-  "md:col-span-5",
-  "md:col-span-5",
-  "md:col-span-7",
-] as const;
+const spacing = ["md:col-span-7", "md:col-span-5"] as const;
 
 const accents: Record<string, string> = {
   "top-left":
@@ -59,15 +54,17 @@ export function Work() {
                 {work.heading}
               </h2>
             </Reveal>
+            <Reveal delay={0.12}>
+              <p className="mt-5 max-w-[52ch] text-small text-taupe">
+                {work.disclaimer}
+              </p>
+            </Reveal>
           </div>
 
-          <Reveal delay={0.14} className="flex items-center gap-5">
+          <Reveal delay={0.14}>
             <Sticker tone="ink-outline" className="-rotate-3">
               {work.sticker}
             </Sticker>
-            <Button href="#contact" variant="ghost-dark" arrow>
-              See all work
-            </Button>
           </Reveal>
         </div>
 
@@ -76,12 +73,7 @@ export function Work() {
             <Reveal key={item.id} delay={i * 0.06} className={spacing[i] ?? ""}>
               <Lift className="h-full" scale={1.015}>
                 <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-taupe/20 bg-ink transition-colors duration-300 hover:border-gold/40">
-                  {/*
-                    The plate is the link. The meta below stays plain text, so
-                    selecting the case-study copy still works -- a stretched link
-                    over the whole card would kill text selection to buy a
-                    bigger click target that is not worth it.
-                  */}
+                  {/* Decorative plate; the text below carries the content. */}
                   <div className="relative aspect-video shrink-0 overflow-hidden">
                     <span
                       aria-hidden="true"
@@ -95,9 +87,9 @@ export function Work() {
 
                     <span
                       aria-hidden="true"
-                      className="bleed-glyph wonk left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[9rem] text-gold opacity-[0.10] transition-opacity duration-500 group-hover:opacity-0"
+                      className="bleed-glyph wonk left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[9rem] text-gold opacity-[0.10]"
                     >
-                      {item.creator.charAt(0)}
+                      {item.track.charAt(0)}
                     </span>
 
                     {/* Scrim. Thumbnail type sits on top of generated art, so it
@@ -107,73 +99,62 @@ export function Work() {
                       className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-ink via-ink/85 to-transparent"
                     />
 
-                    <span className="absolute left-3 top-3 rounded-md bg-ink/85 px-2 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-cream">
-                      {item.chipLeft}
-                    </span>
-                    <span className="absolute right-3 top-3 rounded-md bg-ink/85 px-2 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-cream">
-                      {item.chipRight}
-                    </span>
-
-                    <span className="absolute inset-x-0 bottom-0 p-4 font-display text-xl font-semibold leading-[0.98] text-cream md:p-5 md:text-2xl">
-                      {item.thumbTitle}
-                    </span>
-
-                    {/* Poster -> affordance. The arrow only exists on hover,
-                        which is what makes the first hover feel like the plate
-                        woke up. */}
+                    {/* The plate repeats the title and track below, so it is
+                        hidden from the a11y tree rather than read twice. */}
                     <span
                       aria-hidden="true"
-                      className="absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                      className="absolute left-3 top-3 rounded-md bg-ink/85 px-2 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-cream"
                     >
-                      <span className="flex h-14 w-14 items-center justify-center rounded-full bg-gold text-ink shadow-[3px_3px_0_0_var(--color-ink)]">
+                      {item.track}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="absolute right-3 top-3 rounded-md bg-ink/85 px-2 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-cream"
+                    >
+                      {work.chip}
+                    </span>
+
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-x-0 bottom-0 p-4 font-display text-xl font-semibold leading-[0.98] text-cream md:p-5 md:text-2xl"
+                    >
+                      {item.title}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-1 flex-col p-6">
+                    <Eyebrow tone="on-ink">
+                      {item.track} · {work.chip}
+                    </Eyebrow>
+
+                    <h3 className="mb-6 mt-4 font-display text-heading text-cream">
+                      {item.title}
+                    </h3>
+
+                    <details className="group/details mt-auto border-t border-taupe/25 pt-5">
+                      <summary className="flex cursor-pointer list-none items-center gap-2 text-small font-medium text-gold [&::-webkit-details-marker]:hidden">
+                        {work.open}
                         <svg
+                          aria-hidden="true"
                           viewBox="0 0 16 16"
-                          className="h-4 w-4"
+                          className="h-3.5 w-3.5 transition-transform duration-300 group-open/details:rotate-90"
                           fill="none"
                           stroke="currentColor"
-                          strokeWidth="1.8"
+                          strokeWidth="1.6"
                           strokeLinecap="round"
                           strokeLinejoin="round"
                         >
                           <path d="M2 8h11M9 4l4 4-4 4" />
                         </svg>
-                      </span>
-                    </span>
-
-                    {/*
-                      A link laid OVER the plate, rather than wrapping it. If the
-                      plate's contents were inside the <a>, the thumbnail text and
-                      both corner chips would all concatenate into the link's
-                      accessible name -- "Read the Maya Ellison case study 12:04
-                      1.9M views She Quit Sponsorships". As a sibling overlay, the
-                      link gets one clean name and the plate's text stays in the
-                      a11y tree as content.
-                    */}
-                    <a href="#" className="absolute inset-0">
-                      <span className="sr-only">
-                        Read the {item.creator} case study
-                      </span>
-                    </a>
-                  </div>
-
-                  <div className="flex flex-1 flex-col p-6">
-                    <Eyebrow tone="on-ink">{item.sector}</Eyebrow>
-
-                    <h3 className="mt-4 font-display text-heading text-cream">
-                      {item.creator}
-                    </h3>
-                    <p className="mt-3 max-w-[42ch] text-small text-cream/80">
-                      {item.result}
-                    </p>
-
-                    <div className="mt-auto flex items-baseline gap-3 border-t border-taupe/25 pt-5">
-                      <span className="font-display text-3xl text-gold">
-                        {item.metric}
-                      </span>
-                      <span className="text-small text-taupe">
-                        {item.metricLabel}
-                      </span>
-                    </div>
+                      </summary>
+                      <p className="mt-4 max-w-[48ch] text-small text-cream/80">
+                        {item.body}
+                      </p>
+                      <p className="mt-4 text-small text-taupe">
+                        {work.metricLabel}:{" "}
+                        <span className="text-gold">{item.metric}</span>
+                      </p>
+                    </details>
                   </div>
                 </article>
               </Lift>

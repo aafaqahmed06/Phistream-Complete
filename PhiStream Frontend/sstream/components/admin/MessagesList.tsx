@@ -83,7 +83,7 @@ function Letter({ message }: { message: AdminContactSubmission }) {
   const [open, setOpen] = useState(false);
   const long = message.message.length > PREVIEW_CHARS;
   const from = attribution(message.source, message.campaign);
-  const subject = encodeURIComponent("Re: your message to Østreams");
+  const subject = encodeURIComponent("Re: your message to Phistreams");
 
   return (
     <li className="grid grid-cols-1 gap-x-10 gap-y-4 py-8 lg:grid-cols-12">

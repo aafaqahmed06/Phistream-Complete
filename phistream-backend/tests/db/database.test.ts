@@ -13,7 +13,7 @@ import { buildApp } from '../../src/app.js';
 import type { Database } from '../../src/db/client.js';
 import { runMigrations } from '../../src/db/migrator.js';
 import { demoId } from '../../src/db/seed/demo-data.js';
-import { seedDemoData } from '../../src/db/seed/seed.js';
+import { seedDemoData, unseedDemoContent } from '../../src/db/seed/seed.js';
 import { testConfig } from '../helpers/test-app.js';
 import {
   connectAdmin,
@@ -361,6 +361,29 @@ describe.skipIf(!TEST_DATABASE_URL)('database (PostgreSQL)', () => {
         `select is_public from site_config where key = 'internal.demo_private_setting'`,
       );
       expect(config.rows[0]?.is_public).toBe(false);
+    });
+
+    it('unseeds demo content but keeps tiers and the application form', async () => {
+      const first = await unseedDemoContent(database.db);
+      expect(first.deleted).toEqual({ testimonials: 3, faqs: 3, site_config: 3 });
+
+      const shown = await admin.query<{ n: number }>(
+        `select (select count(*) from testimonials)::int
+              + (select count(*) from faqs)::int
+              + (select count(*) from site_config
+                 where key in ('contact.email', 'contact.phone', 'social.links'))::int as n`,
+      );
+      expect(shown.rows[0]?.n).toBe(0);
+
+      const kept = await admin.query<{ tiers: number; forms: number }>(
+        `select (select count(*) from service_tiers)::int as tiers,
+                (select count(*) from application_forms)::int as forms`,
+      );
+      expect(kept.rows[0]?.tiers).toBe(3);
+      expect(kept.rows[0]?.forms).toBeGreaterThan(0);
+
+      const second = await unseedDemoContent(database.db);
+      expect(Object.values(second.deleted).every((count) => count === 0)).toBe(true);
     });
   });
 

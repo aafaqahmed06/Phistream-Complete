@@ -1,15 +1,16 @@
 import type { ReactNode } from "react";
 
 /**
- * The Østreams wordmark: gold slashed-O leading lowercase "stream" in the
- * display serif, with a gold superscript "s" trailing.
+ * The φstreams wordmark: a gold phi leading lowercase "stream" in the display
+ * serif, with a gold superscript "s" trailing. Fraunces has no Greek, so the φ
+ * falls back to Georgia -- which is a decent phi, so it is left that way.
  *
  * Gold on ink is 6.15:1 -- AA at any size, and the warmest thing in the nav.
  * It only ever appears on ink (nav and footer), which is what keeps it legal:
  * the same gold on cream would be 2.23:1.
  *
  * The glyphs are aria-hidden and the accessible name is supplied once, so a
- * screen reader says "Østreams" rather than spelling out the styling spans.
+ * screen reader says "Phistreams" rather than spelling out the styling spans.
  */
 export function Wordmark({ className = "", mark = true }: { className?: string; mark?: boolean }) {
   return (
@@ -17,7 +18,7 @@ export function Wordmark({ className = "", mark = true }: { className?: string; 
       className={`inline-flex items-baseline font-display leading-none tracking-[-0.02em] ${className}`}
     >
       <span aria-hidden="true" className="text-gold">
-        Ø
+        φ
       </span>
       <span aria-hidden="true">stream</span>
       {mark ? (
@@ -28,15 +29,15 @@ export function Wordmark({ className = "", mark = true }: { className?: string; 
           s
         </span>
       ) : null}
-      <span className="sr-only">Østreams</span>
+      <span className="sr-only">Phistreams</span>
     </span>
   );
 }
 
-/** Large decorative Ø for section bleeds. Purely presentational. */
+/** Large decorative φ for section bleeds. Purely presentational. */
 export function GlyphWatermark({
   className = "",
-  children = "Ø",
+  children = "φ",
 }: {
   className?: string;
   children?: ReactNode;

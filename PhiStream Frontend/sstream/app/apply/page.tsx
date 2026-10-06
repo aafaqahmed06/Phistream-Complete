@@ -8,7 +8,7 @@ import { getApplicationForm, getHomeContent, getServiceTiers } from "@/lib/api";
 import { apply } from "@/lib/content";
 
 export const metadata: Metadata = {
-  title: "Apply — Østreams",
+  title: "Apply — Phistreams",
   description: apply.lead,
 };
 

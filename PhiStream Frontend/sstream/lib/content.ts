@@ -2,8 +2,8 @@
  * Every string on the page lives here. Sections import from this file so copy
  * can be revised without touching layout, and so the voice stays consistent.
  *
- * The voice: a studio that works for people who already have an audience. It
- * talks like the creator's own team, not like an agency pitching them. Short
+ * The voice: a studio for creators becoming founders and founders becoming
+ * creators. It talks like the client's own team, not an agency pitch. Short
  * sentences. Concrete nouns. No "solutions", no "leverage", no "at scale".
  */
 
@@ -42,49 +42,39 @@ export type HeroWord = {
 export type HeroLine = HeroWord[];
 
 const heroLines: HeroLine[] = [
-  [{ t: "You" }, { t: "built" }, { t: "the" }, { t: "audience." }],
+  [{ t: "Creators" }, { t: "become" }, { t: "founders." }],
   [
-    { t: "Now" },
-    { t: "build" },
-    { t: "the" },
-    { t: "business.", highlight: true, wonk: true },
+    { t: "Founders" },
+    { t: "become" },
+    { t: "creators.", highlight: true, wonk: true },
   ],
 ];
 
 export const hero = {
-  eyebrow: "A studio for creators — London / New York",
+  eyebrow: "A studio for creators and founders — Islamabad",
   headline: { lines: heroLines },
-  lead: "Strategy, formats, partnerships and the team that makes them. Østreams turns channels into companies — and keeps the upside on your side of the table.",
-  primaryCta: { label: "Book a strategy call", href: "/#contact" },
-  secondaryCta: { label: "See the work", href: "/#work" },
-  scrollCue: "Scroll",
-  est: "Est. 2015",
-} as const;
-
-/* -------------------------------------------------------------------------- */
-/* Ticker band                                                                */
-/* -------------------------------------------------------------------------- */
-
-/**
- * Replaces the old logo marquee. The names crawl past on a cream strip, and
- * the crawl reacts to how fast you are scrolling -- see Ticker.tsx.
- */
-export const ticker = {
-  label: "Currently on the roster",
-  names: [
-    "Maya Ellison",
-    "The Long Game",
-    "Corner Office",
-    "Halcyon Sounds",
-    "Northwind",
-    "Kestrel",
-    "Ardent",
-    "Lumen Group",
-    "Salt & Stone",
-    "Meridian",
-    "Beacon",
-    "Foundry Nine",
+  lead: "Phistreams builds the business behind the audience, and the audience behind the business. Funnels, operations, identity, and the scaling plan that turns attention into equity.",
+  /**
+   * Two entry points instead of a CTA pair. Both go to the strategy call until
+   * the dedicated creator / founder track pages exist.
+   */
+  paths: [
+    {
+      label: "I'm a creator",
+      headline: "Turn the audience into a company",
+      body: "You already have the attention. We build the funnel, the offer, and the operations underneath it — so revenue doesn't reset to zero every time you stop posting.",
+      cta: { label: "See the creator track", href: "/#contact" },
+    },
+    {
+      label: "I'm a founder",
+      headline: "Turn the company into an audience",
+      body: "You already have the business. We build the identity, the format, and the content system that gets you distribution you don't have to buy.",
+      cta: { label: "See the founder track", href: "/#contact" },
+    },
   ],
+  rail: "Creators · Founders · Islamabad",
+  scrollCue: "Scroll",
+  est: "Islamabad",
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -99,26 +89,28 @@ export const ticker = {
 export const stats = {
   eyebrow: "The receipts",
   heading: "Views are easy. These are the numbers we actually get judged on.",
+  // ponytail: placeholder figures from the copy doc -- replace every one with
+  // real numbers before launch.
   items: [
     {
-      display: "412M",
-      label: "Views across client channels",
-      note: "Last 12 months, all platforms",
+      display: "[XX]",
+      label: "Creators and founders advised",
+      note: "Placeholder",
     },
     {
-      display: "68",
-      label: "Creators on the roster",
-      note: "From 40k to 12M followers",
+      display: "[£XXk / $XXk]",
+      label: "Revenue moved through funnels we've built",
+      note: "Placeholder",
     },
     {
-      display: "£94M",
-      label: "Creator revenue influenced",
-      note: "Deals, product and memberships",
+      display: "[XX]",
+      label: "Engagements completed",
+      note: "Placeholder",
     },
     {
-      display: "11",
-      label: "Years in the feed",
-      note: "Since before this was an industry",
+      display: "[XX]",
+      label: "Months since founding",
+      note: "Placeholder",
     },
   ],
 } as const;
@@ -130,46 +122,37 @@ export const stats = {
 export const services = {
   eyebrow: "01 — What we do",
   heading: "Six things, done properly.",
-  lead: "We are not a full-service agency and we do not want to be. Six disciplines, staffed by people who have done nothing else for a decade.",
-  /**
-   * Used instead of heading/lead when the list comes from the backend's
-   * service tiers (GET /content/home), whose count and wording are data.
-   */
-  live: {
-    heading: "Ways to work with us.",
-    lead: "Every engagement is staffed by people who have done nothing else for a decade. Pick the shape that fits, or tell us and we will suggest one.",
-    priceOnRequest: "Price on request",
-  },
+  lead: "Six disciplines. Built to work in both directions — whether you're building the audience first or the business first.",
   items: [
     {
       id: "01",
-      title: "Brand & Positioning",
-      body: "Who you are when the camera is off. The one-sentence answer to 'so what do you actually do?' — built to survive outside your own feed.",
+      title: "Identity & Positioning",
+      body: "Who you are when the camera is off, or when the pitch deck is closed. The one-sentence answer to \"so what do you actually do\" — built to survive outside your own feed, or your own boardroom.",
     },
     {
       id: "02",
-      title: "Audience Strategy",
-      body: "Format, cadence and hook discipline. The difference between reach and a relationship, measured on the graph that shows both.",
+      title: "Audience & Funnel Strategy",
+      body: "The path from a stranger's attention to a paying customer, mapped and built — not assumed. Format, cadence, and the funnel underneath it.",
     },
     {
       id: "03",
-      title: "Brand Partnerships",
-      body: "Deals that do not cost you the audience that made you worth booking. We read the contract and the room.",
+      title: "Monetization & Commerce",
+      body: "The offer, the price, and the product — courses, memberships, retainers, or a storefront. Revenue that compounds instead of resetting every upload cycle.",
     },
     {
       id: "04",
-      title: "Content Studio",
-      body: "Editors, producers and shooters who already live in the format. The team behind the uploads, on your side of the table.",
+      title: "Content & Format Studio",
+      body: "For founders building an on-camera presence for the first time, and creators refining one they already have. The team behind the actual uploads.",
     },
     {
       id: "05",
-      title: "Product & Commerce",
-      body: "Merch, courses, memberships, apps. Revenue that does not reset to zero every time you post.",
+      title: "Operations & Systems",
+      body: "The unglamorous engine: contracts, pipeline, reporting, and someone who answers the email on a Tuesday. The part that makes the business survive past the first good month.",
     },
     {
       id: "06",
-      title: "Channel Ops",
-      body: "The unglamorous engine: pipeline, contracts, analytics, and someone who finally answers your email on a Tuesday.",
+      title: "Scaling & Growth Strategy",
+      body: "The plan to grow this into something that compounds — more revenue per view, per follower, per deal — not just something that posts more often.",
     },
   ],
 } as const;
@@ -180,67 +163,38 @@ export const services = {
 
 /**
  * Case studies are built as THUMBNAILS -- the format the visitor already reads
- * for a living. `thumbTitle` is the big text burned onto the plate, the way it
- * would be on a real thumbnail; `chipLeft` / `chipRight` are the corner stamps
- * (duration and view count, or their platform-native equivalents).
+ * for a living. `title` is the big text burned onto the plate; `track` and
+ * "Illustrative" are the corner stamps.
+ *
+ * These are ILLUSTRATIVE, not client results, and the page says so. Swap in
+ * real work once it exists.
  */
 export const work = {
   eyebrow: "02 — Selected work",
-  heading: "Four we can talk about.",
-  sticker: "Recently shipped",
+  heading: "Two ways it plays out.",
+  sticker: "Illustrative",
+  disclaimer:
+    "Representative examples of how an engagement runs — not real client results.",
+  chip: "Illustrative",
+  open: "Read the example",
+  metricLabel: "Illustrative metric",
   items: [
     {
-      id: "maya",
-      creator: "Maya Ellison",
-      sector: "Beauty · 2.4M subscribers",
-      thumbTitle: "She Quit Sponsorships",
-      chipLeft: "12:04",
-      chipRight: "1.9M views",
-      result:
-        "Moved a tutorial channel off ad revenue and into a skincare line that outsells it.",
-      metric: "38×",
-      metricLabel: "revenue per view",
+      id: "creator",
+      track: "Creator track",
+      title: "From Tutorials to a Product Line",
+      body: "A mid-size creator moves off sponsorship dependency by building a funnel from content into an owned product — identity, offer, and operations built in parallel with the content calendar, not after it.",
+      metric: "Revenue per view, not just view count",
       /** Drives the generated plate gradient -- see Work.tsx */
       accent: "top-left",
     },
     {
-      id: "longgame",
-      creator: "The Long Game",
-      sector: "Podcast · Business",
-      thumbTitle: "Six Weeks To A Rate Card",
-      chipLeft: "41:22",
-      chipRight: "2.1M plays",
-      result:
-        "Rebuilt a hobby interview show as a media brand, then sold the first ad tier before the season ended.",
-      metric: "9.4M",
-      metricLabel: "downloads in year one",
+      id: "founder",
+      track: "Founder track",
+      title: "The Founder Who Became the Best Marketing Channel",
+      body: "An operator-led company builds its founder's on-camera presence from zero, with a content system the team can run without the founder writing every post — audience becomes a real acquisition channel instead of a vanity project.",
+      metric: "Distribution cost that goes down instead of up",
       accent: "bottom-right",
-    },
-    {
-      id: "corneroffice",
-      creator: "Corner Office",
-      sector: "Newsletter · Careers",
-      thumbTitle: "41,000 People Pay To Read This",
-      chipLeft: "8 min read",
-      chipRight: "62% open rate",
-      result:
-        "Turned a free newsletter into a paid product without burning the list that built it.",
-      metric: "41k",
-      metricLabel: "paying subscribers",
-      accent: "top-right",
-    },
-    {
-      id: "halcyon",
-      creator: "Halcyon Sounds",
-      sector: "Music · Creator commerce",
-      thumbTitle: "The Label The Fans Already Owned",
-      chipLeft: "16:38",
-      chipRight: "770k views",
-      result:
-        "Launched an artist-owned label and a first drop to an audience that already trusted them.",
-      metric: "£3.1M",
-      metricLabel: "first-year merch revenue",
-      accent: "bottom-left",
     },
   ],
 } as const;
@@ -255,23 +209,23 @@ export const approach = {
   principles: [
     {
       id: "01",
-      title: "Audience before algorithm",
-      body: "You already know how to get watched. We plan for the platform after this one — the one where the audience belongs to you.",
+      title: "Direction before tactics",
+      body: "Know whether you are building a company or building an audience before you pick the channel. We won't start with a content calendar if the real gap is the funnel, or vice versa.",
     },
     {
       id: "02",
-      title: "Own the relationship",
-      body: "Followers are rented. We build the list, the product and the thing that leaves with you when the feed changes its mind.",
+      title: "Own the infrastructure",
+      body: "Platforms change their mind about what they'll show you. The funnel, the list, and the offer don't move when an algorithm does.",
     },
     {
       id: "03",
-      title: "One upload, properly made",
-      body: "One idea made well beats a calendar full of filler. Restraint is a strategy, not a budget line.",
+      title: "One system, properly built",
+      body: "One funnel that converts beats ten posts that don't. Restraint is a strategy, not a budget line.",
     },
     {
       id: "04",
       title: "Measure what pays",
-      body: "Views are a delivery metric. We agree the number that actually matters before we start, and we report against it honestly.",
+      body: "Views are a delivery metric. We agree the number that actually matters — revenue per follower, conversion rate, deal size — before we start, and report against it honestly.",
     },
   ],
 } as const;
@@ -282,57 +236,39 @@ export const approach = {
 
 export const studio = {
   eyebrow: "04 — The studio",
-  heading: "Twenty-nine people. No account layer.",
-  lead: "The people who pitch the work are the people who make it. Drag sideways to meet a few of them.",
+  heading: "Five people. Based in Islamabad.",
+  lead: "The people who pitch the work are the people who make it.",
   members: [
-    { name: "Ada Okonkwo", role: "Founding Partner, Strategy" },
-    { name: "Marcus Reid", role: "Partner, Creator Partnerships" },
-    { name: "Yuki Tanaka", role: "Creative Director" },
-    { name: "Priya Raman", role: "Head of Formats" },
-    { name: "Tomás Ferreira", role: "Editorial Director" },
-    { name: "Nadia Haddad", role: "Head of Commerce" },
-    { name: "Sam Whitfield", role: "Head of Studio" },
-    { name: "Ines Delacroix", role: "Strategy Director" },
+    { name: "M. Wasay Hayat", role: "CEO" },
+    { name: "Aafaq Ahmed", role: "CTO" },
+    { name: "Hannan Khalid", role: "COO" },
+    { name: "Ali Ghumman", role: "CFO" },
+    { name: "Durre Maya", role: "Creative Director" },
   ],
-} as const;
-
-/* -------------------------------------------------------------------------- */
-/* Pull quote                                                                 */
-/* -------------------------------------------------------------------------- */
-
-export const quote = {
-  text: "They told us to stop chasing the algorithm and start building the thing people would pay for. Then they stayed and built it with us.",
-  attribution: "Maya Ellison",
-  org: "2.4M subscribers",
 } as const;
 
 /* -------------------------------------------------------------------------- */
 /* Thinking                                                                   */
 /* -------------------------------------------------------------------------- */
 
+/** Titles only until the posts exist -- shown as "Coming soon", not links. */
 export const thinking = {
   eyebrow: "05 — Thinking",
   heading: "Things we have been saying out loud.",
+  soon: "Coming soon",
   items: [
     {
-      date: "2026-08-14",
-      dateLabel: "14 Aug 2026",
-      category: "Formats",
-      title: "Your retention graph is a confession. Read it properly.",
+      category: "Funnels",
+      title: "Your funnel is a confession. Read it properly.",
     },
     {
-      date: "2026-07-02",
-      dateLabel: "02 Jul 2026",
       category: "Strategy",
-      title:
-        "Nobody subscribes to a posting schedule. They subscribe to a point of view.",
+      title: "Nobody subscribes to a posting schedule. They subscribe to an offer.",
     },
     {
-      date: "2026-05-19",
-      dateLabel: "19 May 2026",
-      category: "Partnerships",
+      category: "Formats",
       title:
-        "The brand deal that costs you the audience was never a brand deal.",
+        "The founder who won't go on camera is leaving distribution on the table.",
     },
   ],
 } as const;
@@ -345,10 +281,10 @@ export const cta = {
   eyebrow: "New business",
   /** Short on purpose -- this is the one line on the page set at display-2xl. */
   heading: "Your move.",
-  body: "Tell us what you are building and what is in the way. We will tell you honestly whether we are the right studio for it.",
+  body: "Tell us what you're building and what's in the way — a following that doesn't pay yet, or a business nobody's heard of. We'll tell you honestly whether we're the right studio for it.",
   /** Live contact email from the backend replaces `email` when available. */
-  button: { label: "Apply to work with us", href: "/apply" },
-  email: "hello@ostreams.com",
+  button: { label: "Book a strategy call", href: "/apply" },
+  email: "hello@phistreams.co",
   sticker: "Replies in 24h",
 } as const;
 
@@ -420,40 +356,23 @@ export const footer = {
       title: "Studio",
       links: [
         { label: "About", href: "/#studio" },
-        { label: "Careers", href: "#" },
         { label: "Contact", href: "/#contact" },
       ],
     },
     {
       title: "Services",
-      links: [
-        { label: "Brand & Positioning", href: "/#services" },
-        { label: "Audience Strategy", href: "/#services" },
-        { label: "Partnerships", href: "/#services" },
-        { label: "Content Studio", href: "/#services" },
-        { label: "Commerce", href: "/#services" },
-        { label: "Channel Ops", href: "/#services" },
-      ],
+      links: services.items.map((s) => ({ label: s.title, href: "/#services" })),
     },
   ],
-  offices: [
-    { city: "London", address: "14 Beak Street, W1F 9RN" },
-    { city: "New York", address: "60 Wooster Street, NY 10012" },
-  ],
-  socials: [
-    { label: "YouTube", href: "#" },
-    { label: "Instagram", href: "#" },
-    { label: "LinkedIn", href: "#" },
-  ],
+  /** City only until a street address is confirmed. */
+  office: { city: "Islamabad" },
+  /** Empty until real handles exist; live socials from the backend win. */
+  socials: [] as { label: string; href: string }[],
   newsletter: {
-    label: "The Signal — one email a month. Formats, numbers, and what is working.",
+    label: "The Golden Hour — one email a month. Funnels, formats, and what's actually converting.",
     placeholder: "you@somewhere.com",
     submit: "Subscribe",
   },
-  legal: [
-    { label: "© 2026 Østreams Ltd.", href: "#" },
-    { label: "Privacy", href: "#" },
-    { label: "Terms", href: "#" },
-  ],
-  quip: "Made in London and New York. Mostly between uploads.",
+  copyright: "© 2026 Phistreams",
+  quip: "Made in Islamabad. Mostly between uploads.",
 } as const;
