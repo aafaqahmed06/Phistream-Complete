@@ -27,7 +27,7 @@ export function Services() {
   return (
     <section id="services" className="surface-cream section-y">
       <div className="container-x">
-        <div className="grid grid-cols-12 gap-x-8">
+        <div className="grid grid-cols-12 gap-x-4 md:gap-x-8">
           {/* Sticky rail. Holds position while the rows scroll past it. */}
           <div className="col-span-12 md:col-span-4">
             <div className="md:sticky md:top-32">

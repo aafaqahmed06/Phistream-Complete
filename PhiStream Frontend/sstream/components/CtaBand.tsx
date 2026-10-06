@@ -47,7 +47,7 @@ export function CtaBand({ email }: { email?: string | null }) {
           </h2>
         </Reveal>
 
-        <div className="mt-10 grid grid-cols-12 gap-x-8 gap-y-12">
+        <div className="mt-10 grid grid-cols-12 gap-x-4 md:gap-x-8 gap-y-12">
           <div className="col-span-12 lg:col-span-5">
             <Reveal delay={0.18}>
               <p className="max-w-[48ch] text-body-l text-ink/70">{cta.body}</p>

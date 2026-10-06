@@ -23,8 +23,8 @@ import { SPRING_GLOW } from "@/lib/motion";
  * The rect is cached and only re-measured on pointerenter, scroll and resize,
  * so the pointermove handler does no layout reads at all.
  *
- * Skipped entirely on coarse pointers and under reduced motion, where there is
- * no cursor to follow and nothing to gain.
+ * Inert on coarse pointers and under reduced motion: the lamp is still rendered
+ * (so hydration matches) but parked off-screen with no listeners.
  */
 export function CursorGlow({ className = "" }: { className?: string }) {
   const reduce = useReducedMotion();
@@ -65,8 +65,6 @@ export function CursorGlow({ className = "" }: { className?: string }) {
       window.removeEventListener("resize", measure);
     };
   }, [reduce, x, y]);
-
-  if (reduce) return null;
 
   return (
     <div

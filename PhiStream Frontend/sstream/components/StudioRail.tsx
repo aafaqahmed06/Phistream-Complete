@@ -80,7 +80,7 @@ export function StudioRail() {
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerUp}
-        className="no-scrollbar mt-14 flex snap-x snap-mandatory gap-6 overflow-x-auto px-[clamp(1.25rem,4vw,4rem)] pb-4 cursor-grab active:cursor-grabbing"
+        className="no-scrollbar mt-14 flex snap-x snap-mandatory scroll-px-[clamp(1.25rem,4vw,4rem)] gap-6 overflow-x-auto px-[clamp(1.25rem,4vw,4rem)] pb-4 cursor-grab active:cursor-grabbing"
       >
         {studio.members.map((member) => (
           <li

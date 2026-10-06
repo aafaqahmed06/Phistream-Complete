@@ -29,7 +29,7 @@ export function SignIn() {
     <main id="main" className="surface-ink grain relative isolate min-h-svh overflow-hidden">
       <GlyphWatermark className="-right-[12vw] top-1/2 -translate-y-1/2 rotate-12 text-[46vw] text-gold opacity-[0.06]" />
 
-      <div className="container-x relative z-10 grid min-h-svh grid-cols-12 items-center gap-x-8 gap-y-14 py-16">
+      <div className="container-x relative z-10 grid min-h-svh grid-cols-12 items-center gap-x-4 md:gap-x-8 gap-y-14 py-16">
         <div className="col-span-12 lg:col-span-6">
           <Link href="/" className="text-2xl text-cream transition-colors hover:text-gold">
             <Wordmark />

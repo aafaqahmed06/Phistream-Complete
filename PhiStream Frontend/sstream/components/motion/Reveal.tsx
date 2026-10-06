@@ -4,6 +4,8 @@ import { motion, useReducedMotion, type Variants } from "motion/react";
 import type { ReactNode } from "react";
 import { REVEAL_TRANSITION, REVEAL_VIEWPORT } from "@/lib/motion";
 
+const INSTANT = { duration: 0 };
+
 type RevealProps = {
   children: ReactNode;
   className?: string;
@@ -17,8 +19,9 @@ type RevealProps = {
  * Scroll reveal. Fires once, animates transform and opacity only -- never a
  * layout property -- so it cannot contribute to CLS or hurt INP.
  *
- * Under reduced motion it renders a plain div: no animation, no transform,
- * nothing left mid-state.
+ * Under reduced motion the content appears without animating. The markup is
+ * the same either way: the server cannot know the preference, so branching on
+ * it would fail hydration and rebuild the tree on the client.
  */
 export function Reveal({
   children,
@@ -28,17 +31,13 @@ export function Reveal({
 }: RevealProps) {
   const reduce = useReducedMotion();
 
-  if (reduce) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       className={className}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={REVEAL_VIEWPORT}
-      transition={{ ...REVEAL_TRANSITION, delay }}
+      transition={reduce ? INSTANT : { ...REVEAL_TRANSITION, delay }}
     >
       {children}
     </motion.div>
@@ -55,6 +54,11 @@ const childVariants: Variants = {
   visible: { opacity: 1, y: 0, transition: REVEAL_TRANSITION },
 };
 
+const instantChildVariants: Variants = {
+  hidden: childVariants.hidden,
+  visible: { opacity: 1, y: 0, transition: INSTANT },
+};
+
 /**
  * Staggered group. Parent and child must be a RevealGroup / RevealItem pair --
  * the child variants are meaningless without the parent orchestrating them.
@@ -68,14 +72,10 @@ export function RevealGroup({
 }) {
   const reduce = useReducedMotion();
 
-  if (reduce) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
     <motion.div
       className={className}
-      variants={parentVariants}
+      variants={reduce ? undefined : parentVariants}
       initial="hidden"
       whileInView="visible"
       viewport={REVEAL_VIEWPORT}
@@ -94,12 +94,11 @@ export function RevealItem({
 }) {
   const reduce = useReducedMotion();
 
-  if (reduce) {
-    return <div className={className}>{children}</div>;
-  }
-
   return (
-    <motion.div className={className} variants={childVariants}>
+    <motion.div
+      className={className}
+      variants={reduce ? instantChildVariants : childVariants}
+    >
       {children}
     </motion.div>
   );

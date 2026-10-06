@@ -51,7 +51,7 @@ export function Nav() {
         <div className="flex items-center">
           <Link
             href="/#top"
-            className="text-xl text-cream transition-colors hover:text-gold"
+            className="py-2 text-xl text-cream transition-colors hover:text-gold"
           >
             <Wordmark />
           </Link>

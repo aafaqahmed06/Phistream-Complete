@@ -47,7 +47,7 @@ export default async function ApplyPage() {
         </section>
 
         <section className="surface-cream section-y">
-          <div className="container-x grid grid-cols-12 gap-x-8 gap-y-16">
+          <div className="container-x grid grid-cols-12 gap-x-4 md:gap-x-8 gap-y-16">
             <div className="col-span-12 lg:col-span-7">
               {form ? (
                 <ApplicationForm initialForm={form} tiers={tiers} />

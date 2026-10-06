@@ -58,7 +58,7 @@ export function Footer({
         <GlyphWatermark className="-bottom-[20vw] left-1/2 -translate-x-1/2 text-[40vw] text-cream opacity-[0.03]" />
 
         <div className="container-x relative z-10">
-          <div className="grid grid-cols-12 gap-x-8 gap-y-14">
+          <div className="grid grid-cols-12 gap-x-4 md:gap-x-8 gap-y-14">
             {/* Identity */}
             <div className="col-span-12 lg:col-span-4">
               <Wordmark className="text-3xl text-cream" />
@@ -66,7 +66,7 @@ export function Footer({
                 {footer.quip}
               </p>
               {socials.length ? (
-                <ul className="mt-7 flex flex-wrap gap-x-6 gap-y-2">
+                <ul className="mt-5 flex flex-wrap gap-x-6">
                   {socials.map((social) => (
                     <li key={social.label}>
                       <a
@@ -74,7 +74,7 @@ export function Footer({
                         {...(social.external
                           ? { target: "_blank", rel: "noopener noreferrer" }
                           : {})}
-                        className="text-small text-cream/80 transition-colors hover:text-gold"
+                        className="inline-block py-2 text-small text-cream/80 transition-colors hover:text-gold"
                       >
                         {social.label}
                       </a>
@@ -92,12 +92,12 @@ export function Footer({
                 className="col-span-6 md:col-span-3 lg:col-span-2"
               >
                 <Eyebrow tone="on-ink">{column.title}</Eyebrow>
-                <ul className="mt-5 space-y-3">
+                <ul className="mt-3">
                   {column.links.map((link) => (
                     <li key={link.label}>
                       <a
                         href={link.href}
-                        className="text-small text-cream/80 transition-colors hover:text-gold"
+                        className="inline-block py-2 text-small text-cream/80 transition-colors hover:text-gold"
                       >
                         {link.label}
                       </a>
@@ -153,7 +153,7 @@ export function Footer({
                 <a
                   key={link.href}
                   href={link.href}
-                  className="text-small text-taupe transition-colors hover:text-gold"
+                  className="inline-block py-2 text-small text-taupe transition-colors hover:text-gold"
                 >
                   {link.label}
                 </a>

@@ -43,7 +43,7 @@ export async function DocPage({ page }: { page: Doc }) {
               <section
                 key={section.heading}
                 id={section.id}
-                className="grid scroll-mt-28 grid-cols-12 gap-x-8 gap-y-5 border-t border-taupe/40 py-12 last:border-b"
+                className="grid scroll-mt-28 grid-cols-12 gap-x-4 md:gap-x-8 gap-y-5 border-t border-taupe/40 py-12 last:border-b"
               >
                 <div className="col-span-12 md:col-span-5">
                   {section.eyebrow ? (

@@ -6,7 +6,7 @@ export function Approach() {
   return (
     <section id="approach" className="surface-cream section-y">
       <div className="container-x">
-        <div className="grid grid-cols-12 gap-x-8 gap-y-16">
+        <div className="grid grid-cols-12 gap-x-4 md:gap-x-8 gap-y-16">
           <div className="col-span-12 md:col-span-5">
             <div className="md:sticky md:top-32">
               <Reveal y={16}>
