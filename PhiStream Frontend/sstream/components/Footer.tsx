@@ -147,7 +147,18 @@ export function Footer({
 
           {/* Legal rail */}
           <div className="mt-20 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t border-taupe/25 pt-7">
-            <p className="text-small text-taupe">{footer.copyright}</p>
+            <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
+              <p className="text-small text-taupe">{footer.copyright}</p>
+              {footer.legal.map((link) => (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className="text-small text-taupe transition-colors hover:text-gold"
+                >
+                  {link.label}
+                </a>
+              ))}
+            </div>
             <Reveal y={0}>
               <Eyebrow tone="on-ink">Own the audience</Eyebrow>
             </Reveal>

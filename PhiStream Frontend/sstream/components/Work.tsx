@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { work } from "@/lib/content";
 import { CursorGlow } from "./CursorGlow";
 import { Lift } from "./motion/Lift";
@@ -17,8 +18,7 @@ import { Sticker } from "./ui/Sticker";
  * gold radial wash, a faint blueprint grid, and the track's initial ghosted
  * behind it. The wash layer is the thing that scales on hover.
  *
- * The write-up lives in a native <details> panel rather than behind a link:
- * these are illustrative examples, so there is no case-study page to go to.
+ * Each card links to its illustrative case study page at /work/<id>.
  */
 const spacing = ["md:col-span-7", "md:col-span-5"] as const;
 
@@ -127,34 +127,37 @@ export function Work() {
                       {item.track} · {work.chip}
                     </Eyebrow>
 
-                    <h3 className="mb-6 mt-4 font-display text-heading text-cream">
+                    <h3 className="mb-4 mt-4 font-display text-heading text-cream">
                       {item.title}
                     </h3>
 
-                    <details className="group/details mt-auto border-t border-taupe/25 pt-5">
-                      <summary className="flex cursor-pointer list-none items-center gap-2 text-small font-medium text-gold [&::-webkit-details-marker]:hidden">
-                        {work.open}
-                        <svg
-                          aria-hidden="true"
-                          viewBox="0 0 16 16"
-                          className="h-3.5 w-3.5 transition-transform duration-300 group-open/details:rotate-90"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="1.6"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        >
-                          <path d="M2 8h11M9 4l4 4-4 4" />
-                        </svg>
-                      </summary>
-                      <p className="mt-4 max-w-[48ch] text-small text-cream/80">
-                        {item.body}
-                      </p>
-                      <p className="mt-4 text-small text-taupe">
-                        {work.metricLabel}:{" "}
-                        <span className="text-gold">{item.metric}</span>
-                      </p>
-                    </details>
+                    <p className="max-w-[48ch] text-small text-cream/80">
+                      {item.body}
+                    </p>
+                    <p className="mb-6 mt-4 text-small text-taupe">
+                      {work.metricLabel}:{" "}
+                      <span className="text-gold">{item.metric}</span>
+                    </p>
+
+                    <Link
+                      href={`/work/${item.id}`}
+                      className="mt-auto flex items-center gap-2 border-t border-taupe/25 pt-5 text-small font-medium text-gold"
+                    >
+                      {work.open}
+                      <span className="sr-only">: {item.title}</span>
+                      <svg
+                        aria-hidden="true"
+                        viewBox="0 0 16 16"
+                        className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="1.6"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <path d="M2 8h11M9 4l4 4-4 4" />
+                      </svg>
+                    </Link>
                   </div>
                 </article>
               </Lift>

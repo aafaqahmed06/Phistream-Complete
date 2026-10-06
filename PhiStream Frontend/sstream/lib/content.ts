@@ -11,12 +11,16 @@
 /* Nav                                                                        */
 /* -------------------------------------------------------------------------- */
 
+/** Placeholder until the real contact address is confirmed (open item). */
+const studioEmail = "hello@phistreams.co";
+
 export const nav = {
   /** Pairs with the pulsing dot. The studio's whole pitch in two words. */
   status: "On air",
   links: [
     { label: "Work", href: "/#work" },
-    { label: "Services", href: "/#services" },
+    { label: "Services", href: "/services" },
+    { label: "How we work", href: "/how-we-work" },
     { label: "Studio", href: "/#studio" },
     { label: "Thinking", href: "/#thinking" },
   ],
@@ -55,21 +59,20 @@ export const hero = {
   headline: { lines: heroLines },
   lead: "Phistreams builds the business behind the audience, and the audience behind the business. Funnels, operations, identity, and the scaling plan that turns attention into equity.",
   /**
-   * Two entry points instead of a CTA pair. Both go to the strategy call until
-   * the dedicated creator / founder track pages exist.
+   * Two entry points instead of a CTA pair, each into its own track page.
    */
   paths: [
     {
       label: "I'm a creator",
       headline: "Turn the audience into a company",
       body: "You already have the attention. We build the funnel, the offer, and the operations underneath it — so revenue doesn't reset to zero every time you stop posting.",
-      cta: { label: "See the creator track", href: "/#contact" },
+      cta: { label: "See the creator track", href: "/creators" },
     },
     {
       label: "I'm a founder",
       headline: "Turn the company into an audience",
       body: "You already have the business. We build the identity, the format, and the content system that gets you distribution you don't have to buy.",
-      cta: { label: "See the founder track", href: "/#contact" },
+      cta: { label: "See the founder track", href: "/founders" },
     },
   ],
   rail: "Creators · Founders · Islamabad",
@@ -123,34 +126,41 @@ export const services = {
   eyebrow: "01 — What we do",
   heading: "Six things, done properly.",
   lead: "Six disciplines. Built to work in both directions — whether you're building the audience first or the business first.",
+  more: { label: "What each one involves", href: "/services" },
   items: [
     {
       id: "01",
+      slug: "identity",
       title: "Identity & Positioning",
       body: "Who you are when the camera is off, or when the pitch deck is closed. The one-sentence answer to \"so what do you actually do\" — built to survive outside your own feed, or your own boardroom.",
     },
     {
       id: "02",
+      slug: "funnel",
       title: "Audience & Funnel Strategy",
       body: "The path from a stranger's attention to a paying customer, mapped and built — not assumed. Format, cadence, and the funnel underneath it.",
     },
     {
       id: "03",
+      slug: "monetization",
       title: "Monetization & Commerce",
       body: "The offer, the price, and the product — courses, memberships, retainers, or a storefront. Revenue that compounds instead of resetting every upload cycle.",
     },
     {
       id: "04",
+      slug: "content",
       title: "Content & Format Studio",
       body: "For founders building an on-camera presence for the first time, and creators refining one they already have. The team behind the actual uploads.",
     },
     {
       id: "05",
+      slug: "operations",
       title: "Operations & Systems",
       body: "The unglamorous engine: contracts, pipeline, reporting, and someone who answers the email on a Tuesday. The part that makes the business survive past the first good month.",
     },
     {
       id: "06",
+      slug: "scaling",
       title: "Scaling & Growth Strategy",
       body: "The plan to grow this into something that compounds — more revenue per view, per follower, per deal — not just something that posts more often.",
     },
@@ -176,7 +186,7 @@ export const work = {
   disclaimer:
     "Representative examples of how an engagement runs — not real client results.",
   chip: "Illustrative",
-  open: "Read the example",
+  open: "Read the full example",
   metricLabel: "Illustrative metric",
   items: [
     {
@@ -284,7 +294,7 @@ export const cta = {
   body: "Tell us what you're building and what's in the way — a following that doesn't pay yet, or a business nobody's heard of. We'll tell you honestly whether we're the right studio for it.",
   /** Live contact email from the backend replaces `email` when available. */
   button: { label: "Book a strategy call", href: "/apply" },
-  email: "hello@phistreams.co",
+  email: studioEmail,
   sticker: "Replies in 24h",
 } as const;
 
@@ -356,12 +366,16 @@ export const footer = {
       title: "Studio",
       links: [
         { label: "About", href: "/#studio" },
+        { label: "Careers", href: "/careers" },
         { label: "Contact", href: "/#contact" },
       ],
     },
     {
       title: "Services",
-      links: services.items.map((s) => ({ label: s.title, href: "/#services" })),
+      links: services.items.map((s) => ({
+        label: s.title,
+        href: `/services#${s.slug}`,
+      })),
     },
   ],
   /** City only until a street address is confirmed. */
@@ -374,5 +388,441 @@ export const footer = {
     submit: "Subscribe",
   },
   copyright: "© 2026 Phistreams",
+  legal: [
+    { label: "Privacy", href: "/privacy" },
+    { label: "Terms", href: "/terms" },
+  ],
   quip: "Made in Islamabad. Mostly between uploads.",
 } as const;
+
+/* -------------------------------------------------------------------------- */
+/* Inner pages                                                                */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Every page past the homepage is the same shape -- an ink intro, then a run
+ * of sections -- rendered by components/DocPage.tsx. Section `id`s are anchor
+ * targets (/services#funnel).
+ */
+export type DocSection = {
+  id?: string;
+  eyebrow?: string;
+  heading: string;
+  body: readonly string[];
+  points?: readonly string[];
+  link?: { label: string; href: string };
+};
+
+export type Doc = {
+  /** Short name for the <title>. */
+  name: string;
+  eyebrow: string;
+  title: string;
+  lead: string;
+  sections: readonly DocSection[];
+  /** The "Your move." contact band before the footer. Off for legal pages. */
+  cta?: boolean;
+};
+
+const [creatorWork, founderWork] = work.items;
+
+const deliverables: Record<(typeof services.items)[number]["slug"], DocSection> = {
+  identity: {
+    heading: "Identity & Positioning",
+    body: [
+      "We start with interviews — you, your audience or customers, and the people who already sell you — and end with a positioning the whole team can repeat word for word.",
+    ],
+    points: [
+      "Positioning statement and the one-sentence answer",
+      "Audience or customer profile, written from real conversations",
+      "Name, voice and messaging guide",
+      "Visual identity direction, or a full system where one is needed",
+      "Bio, pitch and about-page copy that all say the same thing",
+    ],
+  },
+  funnel: {
+    heading: "Audience & Funnel Strategy",
+    body: [
+      "We map where attention arrives today, where it leaks, and what a paying customer's first step should be — then build the pages, the list and the sequence that connect them.",
+    ],
+    points: [
+      "Funnel map from first view to first purchase",
+      "Lead magnet and email list setup",
+      "Landing and sales pages",
+      "Format and cadence plan tied to the funnel, not the algorithm",
+      "Conversion tracking at every step",
+    ],
+  },
+  monetization: {
+    heading: "Monetization & Commerce",
+    body: [
+      "We test the offer before we build the product. Price, promise and format are checked with a small group first, so the launch is not the first time anyone sees it.",
+    ],
+    points: [
+      "Offer design and pricing",
+      "Product build: course, membership, retainer or storefront",
+      "Checkout, payments and delivery",
+      "Launch plan and pre-sale",
+      "Sponsorship and partnership rate card",
+    ],
+  },
+  content: {
+    heading: "Content & Format Studio",
+    body: [
+      "Founders get a format they can actually sustain on camera. Creators get a production team, so the format stops depending on them doing everything.",
+    ],
+    points: [
+      "Show format and episode structure",
+      "On-camera coaching for first-time presenters",
+      "Scripting, filming and editing",
+      "Repurposing across platforms",
+      "A content calendar the team can run without you writing every post",
+    ],
+  },
+  operations: {
+    heading: "Operations & Systems",
+    body: [
+      "We set the back office up once, write it down, and hand it to whoever runs it next — us, your team, or a hire we help you make.",
+    ],
+    points: [
+      "Contract and partner agreement templates",
+      "Sales pipeline and inbox handling",
+      "Monthly reporting against the agreed number",
+      "Tools, automations and handover docs",
+      "A hiring plan for the roles you will need next",
+    ],
+  },
+  scaling: {
+    heading: "Scaling & Growth Strategy",
+    body: [
+      "Once one system works, we decide what grows it — a second offer, a new channel, a team, a partnership — and what to stop doing to make room.",
+    ],
+    points: [
+      "A growth plan with one primary metric",
+      "Revenue per view, per follower and per deal benchmarks",
+      "New channel and offer expansion",
+      "Team structure and hiring",
+      "Quarterly review and re-plan",
+    ],
+  },
+};
+
+export const pages: Record<string, Doc> = {
+  services: {
+    name: "Services",
+    eyebrow: "Services",
+    title: "Six disciplines, in detail.",
+    lead: services.lead,
+    sections: services.items.map((s) => ({
+      ...deliverables[s.slug],
+      id: s.slug,
+      eyebrow: s.id,
+      body: [s.body, ...deliverables[s.slug].body],
+    })),
+  },
+
+  creators: {
+    name: "For creators",
+    eyebrow: "Creator track",
+    title: "Turn the audience into a company.",
+    lead: hero.paths[0].body,
+    sections: [
+      {
+        heading: "Where creators get stuck",
+        body: [
+          "Sponsorship income moves with the algorithm. Stop posting for a month and revenue goes to zero. The audience is real, but nothing underneath it is owned.",
+        ],
+      },
+      {
+        heading: "What we build",
+        body: [
+          "Usually in this order — but direction comes first, so the order is decided after we have seen what you already have.",
+        ],
+        points: [
+          "Audience & Funnel Strategy — the path from a viewer to a customer",
+          "Monetization & Commerce — an offer you own, priced properly",
+          "Operations & Systems — so the business runs when you are not on camera",
+          "Scaling & Growth Strategy — more revenue per view, not just more views",
+        ],
+        link: { label: "All six disciplines", href: "/services" },
+      },
+      {
+        eyebrow: `${creatorWork.track} · ${work.chip}`,
+        heading: creatorWork.title,
+        body: [creatorWork.body],
+        link: { label: work.open, href: `/work/${creatorWork.id}` },
+      },
+      {
+        heading: "What we measure",
+        body: [
+          "Revenue per view, not view count. We agree the number before we start and report against it every month.",
+        ],
+      },
+    ],
+  },
+
+  founders: {
+    name: "For founders",
+    eyebrow: "Founder track",
+    title: "Turn the company into an audience.",
+    lead: hero.paths[1].body,
+    sections: [
+      {
+        heading: "Where founders get stuck",
+        body: [
+          "Every customer is bought through ads or won one sales call at a time. The founder knows the business better than anyone, but nobody outside it has heard them talk about it.",
+        ],
+      },
+      {
+        heading: "What we build",
+        body: [
+          "Usually in this order — but direction comes first, so the order is decided after we have seen what you already have.",
+        ],
+        points: [
+          "Identity & Positioning — who you are when the pitch deck is closed",
+          "Content & Format Studio — an on-camera format you can sustain",
+          "Audience & Funnel Strategy — viewers routed into the pipeline you already have",
+          "Operations & Systems — a content system the team runs without you writing every post",
+        ],
+        link: { label: "All six disciplines", href: "/services" },
+      },
+      {
+        eyebrow: `${founderWork.track} · ${work.chip}`,
+        heading: founderWork.title,
+        body: [founderWork.body],
+        link: { label: work.open, href: `/work/${founderWork.id}` },
+      },
+      {
+        heading: "What we measure",
+        body: [
+          "Distribution cost that goes down instead of up — what a customer costs when they find you, against what they cost when you go out and buy them.",
+        ],
+      },
+    ],
+  },
+
+  "how-we-work": {
+    name: "How we work",
+    eyebrow: "How we work",
+    title: "What it costs, and how long it takes.",
+    lead: "Nothing should be a surprise on the first call. This is how an engagement is shaped, priced and paced.",
+    // ponytail: bracketed figures are placeholders -- replace before launch.
+    sections: [
+      {
+        heading: "Engagement size",
+        body: [
+          "Engagements start from [£X,XXX / $X,XXX] a month. The figure depends on which disciplines are in scope and how much of the build we run for you.",
+        ],
+      },
+      {
+        heading: "Engagement length",
+        body: [
+          "Most engagements run [X–X] months. The first 90 days are fixed; after that we agree the next quarter based on what the numbers say.",
+        ],
+      },
+      {
+        heading: "The first 90 days",
+        body: ["The same shape whichever track you come in on."],
+        points: [
+          "Days 1–15 · Diagnose — interviews, an audit of what exists, and the one number we will be judged on",
+          "Days 16–45 · Build — positioning, funnel and offer: the system the rest of the work depends on",
+          "Days 46–90 · Run and measure — the system goes live, we report against the agreed number, and decide what the next quarter is for",
+        ],
+      },
+      {
+        heading: "What we hold ourselves to",
+        body: [],
+        points: approach.principles.map((p) => `${p.title} — ${p.body}`),
+      },
+      {
+        heading: "Getting started",
+        body: [
+          "Apply with a few questions about what you are building. A real person reads every application, and we will tell you honestly whether we are the right studio for it.",
+        ],
+        link: { label: "Apply to work with us", href: "/apply" },
+      },
+    ],
+  },
+
+  careers: {
+    name: "Careers",
+    eyebrow: "Careers",
+    title: "Work at Phistreams.",
+    lead: "Five people in Islamabad, building the business behind the audience and the audience behind the business.",
+    sections: [
+      {
+        heading: "Open roles",
+        body: ["We are not advertising specific roles right now."],
+      },
+      {
+        heading: "Write to us anyway",
+        body: [
+          "If you are good at funnels, formats, operations or editing, and would rather build something that lasts than chase views, send a short note and a link to your work.",
+        ],
+        link: { label: studioEmail, href: `mailto:${studioEmail}` },
+      },
+    ],
+  },
+
+  privacy: {
+    name: "Privacy",
+    eyebrow: "Legal",
+    title: "Privacy",
+    lead: "What this site collects, why, and how to have it removed. Last updated 6 October 2026.",
+    cta: false,
+    sections: [
+      {
+        heading: "Who we are",
+        body: [
+          `Phistreams is a studio based in Islamabad. For anything about your data, email ${studioEmail}.`,
+        ],
+      },
+      {
+        heading: "What we collect",
+        body: [],
+        points: [
+          "Contact form — your name, email, channel or company, and your message.",
+          "Applications — your contact details and your answers to the application questions.",
+          "Calls — if we schedule one, the time and the details you give us for it.",
+          "Anonymous visit data — the page you are on, the site that sent you, any campaign tags in the link, and a random id for the visit. No IP address or device details are stored with it.",
+        ],
+      },
+      {
+        heading: "Why we use it",
+        body: [
+          "To reply to you, to review applications and run engagements, and to see which pages and campaigns bring people to the studio. We do not sell your data or use it for advertising.",
+        ],
+      },
+      {
+        heading: "Cookies and storage",
+        body: [
+          "We do not use advertising or tracking cookies. The visit id lives in your browser's session storage and is cleared when you close the tab.",
+        ],
+      },
+      {
+        heading: "Where it is kept",
+        body: [
+          "With our hosting and database providers, Vercel and Supabase. Only studio staff who sign in can read it.",
+        ],
+      },
+      {
+        heading: "How long, and your rights",
+        body: [
+          `We keep messages and applications only as long as we need them to reply or to work with you. To see, correct or delete what we hold about you, email ${studioEmail}.`,
+        ],
+      },
+      {
+        heading: "Changes",
+        body: ["If this changes, we will update this page and the date above."],
+      },
+    ],
+  },
+
+  terms: {
+    name: "Terms",
+    eyebrow: "Legal",
+    title: "Terms",
+    lead: "The rules for using this website. Last updated 6 October 2026.",
+    cta: false,
+    sections: [
+      {
+        heading: "Using this site",
+        body: [
+          "Browse, share and link to it freely. Please do not misuse it — for example by trying to break it, scraping it at volume, or submitting forms on someone else's behalf.",
+        ],
+      },
+      {
+        heading: "Our content",
+        body: [
+          "The text, the design and the φstreams mark belong to Phistreams. Work marked as illustrative is a representative example of how an engagement runs, not a real client result.",
+        ],
+      },
+      {
+        heading: "Not an offer",
+        body: [
+          "Nothing on this site is a binding offer or professional advice. Every engagement has its own written agreement, and that agreement takes precedence over anything here.",
+        ],
+      },
+      {
+        heading: "Liability",
+        body: [
+          "The site is provided as it is. We work to keep it accurate and available, but cannot promise it always will be, and are not liable for losses from relying on it.",
+        ],
+      },
+      {
+        heading: "Contact",
+        body: [`Questions about these terms: ${studioEmail}.`],
+      },
+    ],
+  },
+};
+
+/** Illustrative case study pages, at /work/<work item id>. */
+export const caseStudies: Record<string, Doc> = {
+  [creatorWork.id]: {
+    name: creatorWork.title,
+    eyebrow: `${creatorWork.track} · ${work.chip}`,
+    title: creatorWork.title,
+    lead: work.disclaimer,
+    sections: [
+      {
+        heading: "The starting point",
+        body: [
+          "A mid-size tutorial creator with a loyal audience and most of their income from sponsorships. Revenue rose and fell with the upload schedule; a quiet month meant a quiet bank account.",
+        ],
+      },
+      {
+        heading: "What we built",
+        body: [
+          "Identity, offer and operations, built in parallel with the content calendar — not after it.",
+        ],
+        points: [
+          "Positioning — the tutorials become the free first step of a paid path",
+          "Funnel — every video points to one lead magnet and one email list",
+          "Offer — a self-paced product line, priced and pre-sold to the list before it was built",
+          "Operations — checkout, delivery and support, set up so the creator answers none of it",
+        ],
+      },
+      {
+        heading: "What we measured",
+        body: [
+          `${creatorWork.metric}. The goal is income that holds up in a month with fewer uploads.`,
+        ],
+        link: { label: "See the creator track", href: "/creators" },
+      },
+    ],
+  },
+  [founderWork.id]: {
+    name: founderWork.title,
+    eyebrow: `${founderWork.track} · ${work.chip}`,
+    title: founderWork.title,
+    lead: work.disclaimer,
+    sections: [
+      {
+        heading: "The starting point",
+        body: [
+          "An operator-led company with a strong product and a founder nobody outside the industry had heard of. Every new customer came through paid ads or outbound sales.",
+        ],
+      },
+      {
+        heading: "What we built",
+        body: [
+          "The founder's on-camera presence, from zero, with a content system the team can run without the founder writing every post.",
+        ],
+        points: [
+          "Identity — the founder's point of view, written down and agreed before anything was filmed",
+          "Format — one recurring show the founder could sustain in a couple of hours a week",
+          "Content system — the team scripts, edits and repurposes; the founder shows up and talks",
+          "Funnel — viewers routed into the existing sales pipeline and tracked as a real channel",
+        ],
+      },
+      {
+        heading: "What we measured",
+        body: [
+          `${founderWork.metric}. The audience became an acquisition channel instead of a vanity project.`,
+        ],
+        link: { label: "See the founder track", href: "/founders" },
+      },
+    ],
+  },
+};

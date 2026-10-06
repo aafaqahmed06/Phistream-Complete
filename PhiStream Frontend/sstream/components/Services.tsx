@@ -1,10 +1,11 @@
 import { services } from "@/lib/content";
 import { Reveal } from "./motion/Reveal";
+import { Button } from "./ui/Button";
 import { Eyebrow } from "./ui/Eyebrow";
 
 /**
- * The six disciplines -- always the static copy. Priced service tiers from the
- * backend belong to /apply and a future Services page, not this teaser.
+ * The six disciplines -- a teaser for /services, which goes into deliverables
+ * and process per discipline.
  *
  * A list, not a grid of cards.
  *
@@ -42,6 +43,13 @@ export function Services() {
                 <p className="mt-6 max-w-[38ch] text-body text-ink/70">
                   {services.lead}
                 </p>
+              </Reveal>
+              <Reveal delay={0.18}>
+                <div className="mt-8">
+                  <Button href={services.more.href} variant="ghost-light" arrow>
+                    {services.more.label}
+                  </Button>
+                </div>
               </Reveal>
             </div>
           </div>
