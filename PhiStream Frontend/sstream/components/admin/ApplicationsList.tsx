@@ -61,7 +61,7 @@ export function ApplicationsList() {
             title={filter === "ALL" ? "No applications yet." : `Nothing ${applicationStatusLabel[filter].toLowerCase()} right now.`}
           >
             {filter === "ALL"
-              ? "They appear here as soon as someone submits the form on /apply."
+              ? "The application form is paused, so new ones won't arrive until it is back on /apply. New enquiries are under Messages."
               : "Pick another status, or All to see everything."}
           </EmptyState>
         ) : (

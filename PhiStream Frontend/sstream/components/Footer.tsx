@@ -1,5 +1,5 @@
 import type { CSSProperties } from "react";
-import { footer } from "@/lib/content";
+import { footer, showSection } from "@/lib/content";
 import { Reveal } from "./motion/Reveal";
 import { Eyebrow } from "./ui/Eyebrow";
 import { GlyphWatermark, Wordmark } from "./ui/Wordmark";
@@ -112,36 +112,41 @@ export function Footer({
               <Eyebrow tone="on-ink">Office</Eyebrow>
               <p className="mt-5 text-small text-cream">{footer.office.city}</p>
 
-              {/*
-                Presentational for now -- posts to "#" until there is an
-                endpoint. The input border is full taupe (5.29:1 on ink) because
-                a form control boundary is a UI component and needs 3:1; at /40
-                it would compute to 1.97:1.
-              */}
-              <form action="#" className="mt-9">
-                <label
-                  htmlFor="newsletter-email"
-                  className="block max-w-[34ch] text-small text-cream/80"
-                >
-                  {footer.newsletter.label}
-                </label>
-                <div className="mt-3 flex gap-2">
-                  <input
-                    id="newsletter-email"
-                    type="email"
-                    name="email"
-                    required
-                    placeholder={footer.newsletter.placeholder}
-                    className="min-w-0 flex-1 rounded-full border border-taupe bg-transparent px-4 py-3 text-small text-cream transition-colors placeholder:text-taupe focus:border-gold focus:outline-none"
-                  />
-                  <button
-                    type="submit"
-                    className="shrink-0 rounded-full bg-gold px-5 py-3 text-small font-medium text-ink transition-colors duration-200 hover:bg-cream"
+              {/* Hidden until there is a signup endpoint or an email tool
+                  (showSection.newsletter in lib/content.ts). A form that posts
+                  nowhere would tell people they are subscribed when they are not. */}
+              {showSection.newsletter ? (
+                /*
+                  Presentational for now -- posts to "#" until there is an
+                  endpoint. The input border is full taupe (5.29:1 on ink) because
+                  a form control boundary is a UI component and needs 3:1; at /40
+                  it would compute to 1.97:1.
+                */
+                <form action="#" className="mt-9">
+                  <label
+                    htmlFor="newsletter-email"
+                    className="block max-w-[34ch] text-small text-cream/80"
                   >
-                    {footer.newsletter.submit}
-                  </button>
-                </div>
-              </form>
+                    {footer.newsletter.label}
+                  </label>
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      id="newsletter-email"
+                      type="email"
+                      name="email"
+                      required
+                      placeholder={footer.newsletter.placeholder}
+                      className="min-w-0 flex-1 rounded-full border border-taupe bg-transparent px-4 py-3 text-small text-cream transition-colors placeholder:text-taupe focus:border-gold focus:outline-none"
+                    />
+                    <button
+                      type="submit"
+                      className="shrink-0 rounded-full bg-gold px-5 py-3 text-small font-medium text-ink transition-colors duration-200 hover:bg-cream"
+                    >
+                      {footer.newsletter.submit}
+                    </button>
+                  </div>
+                </form>
+              ) : null}
             </div>
           </div>
 

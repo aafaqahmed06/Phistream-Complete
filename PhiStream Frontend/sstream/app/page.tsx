@@ -9,6 +9,7 @@ import { StudioRail } from "@/components/StudioRail";
 import { Thinking } from "@/components/Thinking";
 import { Work } from "@/components/Work";
 import { getHomeContent } from "@/lib/api";
+import { showSection } from "@/lib/content";
 
 /** Matches the backend's Cache-Control max-age on public content. */
 export const revalidate = 60;
@@ -20,6 +21,9 @@ export const revalidate = 60;
  *
  *   ink   ink    cream     ink   cream     ink     ink       cream  ink
  *   hero  stats  services  work  approach  studio  thinking  CTA    footer
+ *
+ * The stats band and Thinking are hidden until their real content exists --
+ * see `showSection` in lib/content.ts.
  *
  * Only the contact email and the socials come from the backend
  * (GET /api/v1/content/home). `home` is null when the API is down, and both
@@ -33,12 +37,12 @@ export default async function Home() {
       <Nav />
       <main id="main">
         <Hero />
-        <StatsBand />
+        {showSection.stats ? <StatsBand /> : null}
         <Services />
         <Work />
         <Approach />
         <StudioRail />
-        <Thinking />
+        {showSection.thinking ? <Thinking /> : null}
         <CtaBand email={home?.contact.email} />
       </main>
       <Footer socialLinks={home?.socialLinks} />

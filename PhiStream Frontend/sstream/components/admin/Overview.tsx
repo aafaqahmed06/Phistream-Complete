@@ -115,7 +115,8 @@ export function Overview() {
               </ul>
             ) : (
               <EmptyState title="No applications yet.">
-                They appear here as soon as someone submits the form on /apply.
+                The application form is paused, so new ones won&apos;t arrive until
+                it is back on /apply. New enquiries are under Messages.
               </EmptyState>
             )}
           </section>

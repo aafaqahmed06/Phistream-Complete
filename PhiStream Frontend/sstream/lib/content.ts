@@ -11,20 +11,37 @@
 /* Nav                                                                        */
 /* -------------------------------------------------------------------------- */
 
-/** Placeholder until the real contact address is confirmed (open item). */
-const studioEmail = "hello@phistreams.co";
+/**
+ * Sections that are built but hidden until their real content exists (see
+ * "Phistreams — Demo & Placeholder Inventory", section B). Flip a flag to
+ * `true` the day the content is ready -- nothing else needs to change.
+ *
+ *   stats       the numbers band: needs 4 real figures and the currency
+ *   thinking    the articles list: needs real posts or links
+ *   newsletter  the footer sign-up: needs a signup endpoint or an email tool
+ */
+export const showSection: { stats: boolean; thinking: boolean; newsletter: boolean } = {
+  stats: false,
+  thinking: false,
+  newsletter: false,
+};
+
+const studioEmail = "contact@phistream.studio";
+
+const navLinks: { label: string; href: string }[] = [
+  { label: "Work", href: "/#work" },
+  { label: "Services", href: "/services" },
+  { label: "How we work", href: "/how-we-work" },
+  { label: "Studio", href: "/#studio" },
+];
+// The Thinking section is hidden until real posts exist (see showSection).
+if (showSection.thinking) navLinks.push({ label: "Thinking", href: "/#thinking" });
 
 export const nav = {
   /** Pairs with the pulsing dot. The studio's whole pitch in two words. */
   status: "On air",
-  links: [
-    { label: "Work", href: "/#work" },
-    { label: "Services", href: "/services" },
-    { label: "How we work", href: "/how-we-work" },
-    { label: "Studio", href: "/#studio" },
-    { label: "Thinking", href: "/#thinking" },
-  ],
-  cta: { label: "Apply to work with us", href: "/apply" },
+  links: navLinks,
+  cta: { label: "Get in touch", href: "/#contact" },
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -292,10 +309,8 @@ export const cta = {
   /** Short on purpose -- this is the one line on the page set at display-2xl. */
   heading: "Your move.",
   body: "Tell us what you're building and what's in the way — a following that doesn't pay yet, or a business nobody's heard of. We'll tell you honestly whether we're the right studio for it.",
-  /** Live contact email from the backend replaces `email` when available. */
-  button: { label: "Book a strategy call", href: "/apply" },
   email: studioEmail,
-  sticker: "Replies in 24h",
+  sticker: "Replies under 1hr",
 } as const;
 
 /** The form inside the closing CTA. Posts to POST /api/v1/contact. */
@@ -307,25 +322,20 @@ export const contactForm = {
 } as const;
 
 /* -------------------------------------------------------------------------- */
-/* Apply                                                                      */
+/* Application form                                                           */
 /* -------------------------------------------------------------------------- */
 
 /**
- * /apply. The questions themselves are NOT here: they are versioned business
- * data served by GET /api/v1/applications/form.
+ * The questions themselves are NOT here: they are versioned business data
+ * served by GET /api/v1/applications/form.
  */
 export const apply = {
   eyebrow: "Applications",
-  heading: "Tell us about the channel.",
+  heading: "Tell us what you're building.",
   lead: "A few questions so we can tell you honestly whether we are the right studio. A real person reads every one.",
   tierLabel: "Which way of working interests you?",
   tierNone: "Not sure yet",
   submit: "Submit application",
-  closed: {
-    title: "Applications are closed right now.",
-    body: "We are not taking new applications at the moment. You can still send us a note from the homepage.",
-    link: { label: "Get in touch", href: "/#contact" },
-  },
   outdated:
     "The questions changed while you were filling them in. We have loaded the new version — your contact details are kept.",
   duplicate:
@@ -606,18 +616,39 @@ export const pages: Record<string, Doc> = {
     eyebrow: "How we work",
     title: "What it costs, and how long it takes.",
     lead: "Nothing should be a surprise on the first call. This is how an engagement is shaped, priced and paced.",
-    // ponytail: bracketed figures are placeholders -- replace before launch.
     sections: [
       {
-        heading: "Engagement size",
+        heading: "What it costs",
         body: [
-          "Engagements start from [£X,XXX / $X,XXX] a month. The figure depends on which disciplines are in scope and how much of the build we run for you.",
+          "Every engagement starts with a discovery call, and nothing is priced until we have had one. These are starting points, not quotes: what you pay is scoped to what you need.",
+          "Clients outside Pakistan are billed in USD; clients in Pakistan are billed in PKR.",
+        ],
+      },
+      {
+        eyebrow: "Founders",
+        heading: "Branding, content and social presence",
+        body: [],
+        points: [
+          "Starter · Positioning Consult & 6-Month Roadmap — from $3,500 / PKR 150,000. A positioning and market audit, two strategy sessions and a written six-month plan. The plan, not the build.",
+          "Build · Full Brand Identity + Website — from $15,000 / PKR 700,000. Logo, palette, typography and guidelines, plus a 5–8 page website, built and launched.",
+          "Scale · Identity, Website, Content Plan & Revenue Consulting — from $35,000 / PKR 1,800,000. Everything in Build, a content system for your own presence, and consulting to open new income sources. Extension retainer from $5,000 / PKR 250,000 a month.",
+        ],
+      },
+      {
+        eyebrow: "Creators",
+        heading: "Growth, monetization and representation",
+        body: [],
+        points: [
+          "Starter · Growth Consultation — from $2,500 / PKR 120,000. A channel and content audit, one to two strategy sessions and a written growth plan.",
+          "Operator · Growth Operator Service — from $8,000 / PKR 400,000 a month. Content strategy, scripting and packaging direction, thumbnail and title guidance, cadence management and monthly reporting.",
+          "Represented · Growth + PR, Sponsorships & Events — from $12,000 / PKR 700,000 a month, plus 15–20% commission on the deals we secure. Everything in Operator, and we source and negotiate income on your behalf.",
         ],
       },
       {
         heading: "Engagement length",
         body: [
-          "Most engagements run [X–X] months. The first 90 days are fixed; after that we agree the next quarter based on what the numbers say.",
+          "Starter engagements are a fixed piece of work: an audit, sessions and a written plan. Build is a project, run until the identity and site are launched.",
+          "Scale is scoped as a three-month engagement and can extend on a monthly retainer. Operator and Represented are retainers with a minimum term of three months. The first 90 days are fixed; after that we agree the next quarter based on what the numbers say.",
         ],
       },
       {
@@ -637,9 +668,9 @@ export const pages: Record<string, Doc> = {
       {
         heading: "Getting started",
         body: [
-          "Apply with a few questions about what you are building. A real person reads every application, and we will tell you honestly whether we are the right studio for it.",
+          "Get in touch and tell us what you are building. A real person reads every message, and we will tell you honestly whether we are the right studio for it.",
         ],
-        link: { label: "Apply to work with us", href: "/apply" },
+        link: { label: "Get in touch", href: "/#contact" },
       },
     ],
   },
@@ -668,7 +699,7 @@ export const pages: Record<string, Doc> = {
     name: "Privacy",
     eyebrow: "Legal",
     title: "Privacy",
-    lead: "What this site collects, why, and how to have it removed. Last updated 6 October 2026.",
+    lead: "What this site collects, why, and how to have it removed. Last updated 7 October 2026.",
     cta: false,
     sections: [
       {
@@ -702,13 +733,13 @@ export const pages: Record<string, Doc> = {
       {
         heading: "Where it is kept",
         body: [
-          "With our hosting and database providers, Vercel and Supabase. Only studio staff who sign in can read it.",
+          "With the providers that run the site for us: Vercel (hosting) and Supabase (database), Resend (the emails we send you) and Cal.com (booking calls). Only studio staff who sign in can read your messages and applications. We do not sell your data.",
         ],
       },
       {
         heading: "How long, and your rights",
         body: [
-          `We keep messages and applications only as long as we need them to reply or to work with you. To see, correct or delete what we hold about you, email ${studioEmail}.`,
+          `We keep your messages and applications until you ask us to delete them, so we can pick up the conversation later; there is no automatic expiry. Anonymous visit data is deleted after about 13 months, and records of the emails we send are deleted after 12 months. To see, correct or delete what we hold about you, email ${studioEmail}; deletion also removes your messages, applications and answers from our database, and we will ask Resend and Cal.com to remove their copies.`,
         ],
       },
       {
