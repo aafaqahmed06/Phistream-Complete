@@ -119,6 +119,50 @@ export type AdminApplicationDetail = {
     status: ApplicationStatus;
     submittedAt: string;
   }[];
+  /** What this staff member may do now (the backend's state machine + role). */
+  availableActions: ("review" | "accept" | "reject" | "schedule" | "note")[];
+};
+
+export type SchedulingAccess = {
+  token: string;
+  expiresAt: string;
+  /** SCHEDULING_PAGE_URL#token=…; null when the backend has no page URL set. */
+  link: string | null;
+};
+
+export type NotificationEventStatus = "PENDING" | "PROCESSED" | "FAILED";
+
+export type AdminNotification = {
+  id: string;
+  eventType: string;
+  subjectType: string;
+  subjectId: string;
+  status: NotificationEventStatus;
+  attempts: number;
+  lastError: string | null;
+  nextAttemptAt: string;
+  processedAt: string | null;
+  createdAt: string;
+  deliveries: {
+    id: string;
+    template: string;
+    recipient: string;
+    provider: string;
+    status: "PENDING" | "SENT" | "FAILED";
+    attempts: number;
+    lastError: string | null;
+    sentAt: string | null;
+  }[];
+};
+
+export type AdminAuditEntry = {
+  id: string;
+  action: string;
+  entityType: string;
+  entityId: string | null;
+  actor: { id: string; displayName: string; email: string; role: string } | null;
+  metadata: Record<string, unknown> | null;
+  createdAt: string;
 };
 
 export type AdminContactSubmission = {
@@ -162,6 +206,19 @@ export function query(params: Record<string, string | number | undefined>) {
 export function adminGet<B>(path: string, token: string): Promise<B> {
   return requestBody<B>(`/admin${path}`, {
     headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
+  });
+}
+
+/** State-changing admin calls. Every one is audited by the backend. */
+export function adminPost<B>(path: string, token: string, body?: unknown): Promise<B> {
+  return requestBody<B>(`/admin${path}`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      ...(body === undefined ? {} : { "Content-Type": "application/json" }),
+    },
+    body: body === undefined ? undefined : JSON.stringify(body),
     cache: "no-store",
   });
 }

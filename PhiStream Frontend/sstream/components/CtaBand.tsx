@@ -55,9 +55,15 @@ export function CtaBand({ email }: { email?: string | null }) {
 
             <Reveal delay={0.26}>
               <div className="mt-12 flex flex-wrap items-center gap-x-8 gap-y-5">
-                <Button href={`mailto:${contactEmail}`}>
-                  {contactEmail}
+                <Button href={cta.button.href} arrow>
+                  {cta.button.label}
                 </Button>
+                <a
+                  href={`mailto:${contactEmail}`}
+                  className="text-small text-ink underline decoration-ink/40 decoration-1 underline-offset-4 transition-colors hover:decoration-ink"
+                >
+                  {contactEmail}
+                </a>
               </div>
             </Reveal>
           </div>

@@ -183,6 +183,27 @@ export async function getHomeContent(): Promise<HomeContent | null> {
   }
 }
 
+export type OnboardingContent = {
+  headline: string | null;
+  vsl: { url: string | null };
+  steps: { title: string; description: string | null }[];
+};
+
+/** For /onboarding. null when the backend is down; the page uses static copy. */
+export async function getOnboardingContent(): Promise<OnboardingContent | null> {
+  try {
+    return await request<OnboardingContent>("/content/onboarding", {
+      next: { revalidate: 60 },
+      signal: AbortSignal.timeout(4000),
+    });
+  } catch (error) {
+    console.warn(
+      `[api] /content/onboarding unavailable, using static copy: ${(error as Error).message}`,
+    );
+    return null;
+  }
+}
+
 /* -------------------------------------------------------------------------- */
 /* Contact                                                                    */
 /* -------------------------------------------------------------------------- */
@@ -290,6 +311,21 @@ export async function getServiceTiers(): Promise<PublicServiceTier[]> {
 
 export function submitApplication(payload: ApplicationPayload) {
   return postJson<ApplicationReceipt>("/applications", payload);
+}
+
+/* -------------------------------------------------------------------------- */
+/* Scheduling                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Exchanges the token from an acceptance email (/schedule#token=…) for the
+ * applicant's booking page. 404 = unknown/expired/used; 503 = not set up.
+ */
+export function getSchedulingSession(token: string) {
+  return request<{ eligible: true; schedulingUrl: string; expiresAt: string }>(
+    "/scheduling/session",
+    { headers: { Authorization: `Bearer ${token}` }, cache: "no-store" },
+  );
 }
 
 export function getApplicationStatus(id: string, token: string) {

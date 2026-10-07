@@ -1,4 +1,4 @@
-import type { ApplicationStatus, LeadStatus } from "./api";
+import type { ApplicationStatus, LeadStatus, NotificationEventStatus } from "./api";
 
 /**
  * Words staff read, not the enum values the database stores. Statuses are
@@ -79,6 +79,52 @@ const eventLabels: Record<string, string> = {
 
 export function eventLabel(eventType: string) {
   return eventLabels[eventType] ?? eventType.toLowerCase().replaceAll("_", " ");
+}
+
+const notificationLabels: Record<string, string> = {
+  CONTACT_RECEIVED: "Contact message",
+  APPLICATION_SUBMITTED: "New application",
+  APPLICATION_ACCEPTED: "Acceptance",
+  APPLICATION_REJECTED: "Decline",
+  MEETING_BOOKED: "Call booked",
+  MEETING_RESCHEDULED: "Call moved",
+  MEETING_CANCELLED: "Call cancelled",
+  SCHEDULING_BOOKING_NEEDS_ATTENTION: "Booking needs a look",
+};
+
+export function notificationLabel(eventType: string) {
+  return notificationLabels[eventType] ?? eventType.toLowerCase().replaceAll("_", " ");
+}
+
+export const notificationStatusLabel: Record<NotificationEventStatus, string> = {
+  PENDING: "Sending",
+  PROCESSED: "Sent",
+  FAILED: "Failed",
+};
+
+export const notificationStatusTone: Record<NotificationEventStatus, StatusTone> = {
+  FAILED: "attention",
+  PENDING: "active",
+  PROCESSED: "settled",
+};
+
+const auditLabels: Record<string, string> = {
+  "application.review_started": "Started a review",
+  "application.accepted": "Accepted an application",
+  "application.rejected": "Declined an application",
+  "application.note_added": "Added a note",
+  "application.scheduling_access_issued": "Created a booking link",
+  "notification.requeued": "Retried an email",
+  "lead.erased": "Erased a lead",
+  "retention.applied": "Deleted old records",
+  "staff.added": "Added a staff member",
+  "staff.activated": "Reactivated a staff member",
+  "staff.deactivated": "Deactivated a staff member",
+  "staff.role_changed": "Changed a staff role",
+};
+
+export function auditLabel(action: string) {
+  return auditLabels[action] ?? action.replaceAll(/[._]/g, " ");
 }
 
 const actorLabels = {

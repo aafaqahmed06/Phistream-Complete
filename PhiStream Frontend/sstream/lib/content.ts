@@ -41,7 +41,7 @@ export const nav = {
   /** Pairs with the pulsing dot. The studio's whole pitch in two words. */
   status: "On air",
   links: navLinks,
-  cta: { label: "Get in touch", href: "/#contact" },
+  cta: { label: "Apply to work with us", href: "/apply" },
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -309,6 +309,8 @@ export const cta = {
   /** Short on purpose -- this is the one line on the page set at display-2xl. */
   heading: "Your move.",
   body: "Tell us what you're building and what's in the way — a following that doesn't pay yet, or a business nobody's heard of. We'll tell you honestly whether we're the right studio for it.",
+  button: { label: "Apply to work with us", href: "/apply" },
+  /** Live contact email from the backend replaces `email` when available. */
   email: studioEmail,
   sticker: "Replies under 1hr",
 } as const;
@@ -336,6 +338,11 @@ export const apply = {
   tierLabel: "Which way of working interests you?",
   tierNone: "Not sure yet",
   submit: "Submit application",
+  closed: {
+    title: "Applications are closed right now.",
+    body: "We are not taking new applications at the moment. You can still send us a note from the homepage.",
+    link: { label: "Get in touch", href: "/#contact" },
+  },
   outdated:
     "The questions changed while you were filling them in. We have loaded the new version — your contact details are kept.",
   duplicate:
@@ -357,6 +364,78 @@ export const apply = {
     CLOSED: "Closed",
   },
   faqHeading: "Before you apply",
+} as const;
+
+/* -------------------------------------------------------------------------- */
+/* Onboarding                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * /onboarding -- where social-bio links land. The headline, video and steps
+ * come from GET /api/v1/content/onboarding; these are the fallbacks when the
+ * backend has nothing real yet (or only [DEMO] seed data).
+ */
+export const onboarding = {
+  eyebrow: "Start here",
+  headline: "Creators become founders. Founders become creators.",
+  lead: hero.lead,
+  videoLabel: "Play the video",
+  stepsHeading: "How it works",
+  steps: [
+    {
+      title: "Watch the video",
+      description: "How we work, and who we work with, in one short video.",
+    },
+    {
+      title: "Apply",
+      description: "A few questions about what you are building. A real person reads every application.",
+    },
+    {
+      title: "We review it",
+      description: "We tell you honestly whether we are the right studio. If we are, you get a link to book a call.",
+    },
+    {
+      title: "Book a call",
+      description: "A first conversation with the people who would do the work.",
+    },
+  ],
+  cta: { label: "Apply to work with us", href: "/apply" },
+} as const;
+
+/* -------------------------------------------------------------------------- */
+/* Scheduling                                                                 */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * /schedule -- the page the acceptance email links to (/schedule#token=…).
+ * The backend's SCHEDULING_PAGE_URL must point here.
+ */
+export const schedule = {
+  eyebrow: "Accepted",
+  heading: "Book your first call.",
+  lead: "Pick a time that suits you. The call is with the people who would do the work.",
+  checking: "Checking your booking link…",
+  ready: {
+    title: "Your link is ready.",
+    body: "Choose a time on the booking page. You will get a calendar invite as soon as it is booked.",
+    button: "Choose a time",
+    expires: "This link works until",
+  },
+  missing: {
+    title: "This page needs the link from your email.",
+    body: "Open the booking link in the acceptance email we sent you. If you cannot find it, write to us and we will send a new one.",
+  },
+  expired: {
+    title: "This link has expired or has already been used.",
+    body: "Booking links last a few days. Write to us and we will send a fresh one.",
+  },
+  unavailable: {
+    title: "Booking is not open yet.",
+    body: "We are still setting up the calendar. Write to us and we will find a time by email.",
+  },
+  failed: "We could not check your link just now.",
+  retry: "Try again",
+  contact: { label: "Email the studio", href: `mailto:${studioEmail}` },
 } as const;
 
 /* -------------------------------------------------------------------------- */
@@ -668,9 +747,9 @@ export const pages: Record<string, Doc> = {
       {
         heading: "Getting started",
         body: [
-          "Get in touch and tell us what you are building. A real person reads every message, and we will tell you honestly whether we are the right studio for it.",
+          "Apply with a few questions about what you are building. A real person reads every application, and we will tell you honestly whether we are the right studio for it.",
         ],
-        link: { label: "Get in touch", href: "/#contact" },
+        link: { label: "Apply to work with us", href: "/apply" },
       },
     ],
   },

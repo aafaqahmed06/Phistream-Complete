@@ -12,6 +12,7 @@ import {
   formatDateTime,
   leadStatusLabel,
 } from "@/lib/admin/format";
+import { ApplicationActions } from "./ApplicationActions";
 import { useAdminData } from "./AdminSession";
 import { Workspace } from "./AdminShell";
 import { ErrorNotice, Facts, LoadingRows, SectionHeading, StatusMark } from "./ui";
@@ -21,7 +22,7 @@ import { ErrorNotice, Facts, LoadingRows, SectionHeading, StatusMark } from "./u
  * the left at reading width, the facts you look things up by on the right.
  */
 export function ApplicationDetail({ id }: { id: string }) {
-  const { data, error, loading, reload } = useAdminData<{ data: AdminApplicationDetail }>(
+  const { data, error, reload } = useAdminData<{ data: AdminApplicationDetail }>(
     `/applications/${encodeURIComponent(id)}`,
   );
 
@@ -40,17 +41,25 @@ export function ApplicationDetail({ id }: { id: string }) {
       <div className="mt-8">
         {error ? (
           <ErrorNotice error={error} onRetry={reload} />
-        ) : loading || !data ? (
+        ) : !data || data.data.application.id !== id ? (
           <LoadingRows rows={5} />
         ) : (
-          <CaseFile detail={data.data} />
+          // Kept on screen while an action reloads it, so the actions panel
+          // (and a just-issued booking link) is not thrown away.
+          <CaseFile detail={data.data} onChanged={reload} />
         )}
       </div>
     </Workspace>
   );
 }
 
-function CaseFile({ detail }: { detail: AdminApplicationDetail }) {
+function CaseFile({
+  detail,
+  onChanged,
+}: {
+  detail: AdminApplicationDetail;
+  onChanged: () => void;
+}) {
   const { application: app, lead } = detail;
 
   return (
@@ -151,6 +160,8 @@ function CaseFile({ detail }: { detail: AdminApplicationDetail }) {
         </div>
 
         <aside className="space-y-12 xl:col-span-4">
+          <ApplicationActions detail={detail} onChanged={onChanged} />
+
           <section aria-labelledby="applicant">
             <SectionHeading>
               <span id="applicant">Contact</span>

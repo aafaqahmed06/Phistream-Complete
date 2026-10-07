@@ -11,12 +11,6 @@ const backendUrl = (process.env.BACKEND_URL ?? "http://127.0.0.1:4000").replace(
 );
 
 const nextConfig: NextConfig = {
-  async redirects() {
-    // Applications are paused: /apply sends people to the contact form. The
-    // form itself (components/ApplicationForm.tsx, `apply` in lib/content.ts)
-    // is kept so it can come back with an app/apply/page.tsx and no redirect.
-    return [{ source: "/apply", destination: "/#contact", permanent: false }];
-  },
   async rewrites() {
     return [
       // The API itself.
