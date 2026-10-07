@@ -85,6 +85,19 @@ node dist/db/scripts/publish-application-form.js 2026-01 f.json   # production i
 
 This validates the file, retires the current ACTIVE version, and makes the new version ACTIVE, all in one transaction. A version name can't be reused. The local seed publishes a `[DEMO]` form (`demo-v1`) for frontend development. It is not a real question set.
 
+### Going live with real content (replacing the demo data)
+
+The real eligibility form is `forms/eligibility-2026-10.json` (see `forms/README.md` for what each question is for). The real service tiers are in `src/db/content/service-tiers.ts`. Run these against production **in this order**:
+
+```bash
+npm run forms:publish -- 2026-10 forms/eligibility-2026-10.json   # retires demo-v1
+npm run content:tiers                                              # real tiers live, demo tiers hidden
+npm run db:unseed-content                                          # demo FAQs, testimonials, email, phone, socials
+npm run db:unseed-content -- --admin                               # demo applications, leads, staff (last)
+```
+
+`--admin` refuses to run until a non-demo form is ACTIVE and a non-demo tier is active. It only touches the fixed demo ids, keeps a demo lead if anything else hangs off it, and deactivates (rather than deletes) a demo staff user that audit entries or notes still reference. The demo form and demo tiers stay in the database, retired and inactive, because real applicants may already have applied against them.
+
 Clients that loaded the previous version get `409 FORM_VERSION_OUTDATED` on submit and should reload the form. (The form endpoint is cacheable for `CONTENT_CACHE_MAX_AGE_SECONDS`.)
 
 ## Submission

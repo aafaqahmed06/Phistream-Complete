@@ -1,0 +1,507 @@
+{
+  "title": "Apply to work with us",
+  "description": "About ten minutes. A real person reads every answer and we will tell you honestly whether we are the right studio. Answer the track-specific questions that apply to you and skip the rest.",
+  "questions": [
+    {
+      "key": "track",
+      "type": "single_choice",
+      "required": true,
+      "label": "Which of these describes you best?",
+      "description": "Same studio, different starting point. Pick the one that is closest; you can tell us more below.",
+      "options": [
+        {
+          "value": "creator",
+          "label": "Creator: I have an audience and want to build a business under it"
+        },
+        {
+          "value": "founder",
+          "label": "Founder: I have a business and want to build an audience for it"
+        },
+        {
+          "value": "both",
+          "label": "Both: I am doing each side already"
+        }
+      ]
+    },
+    {
+      "key": "main_link",
+      "type": "url",
+      "required": true,
+      "label": "Link to your main channel, website or company page",
+      "description": "The one place we should look first."
+    },
+    {
+      "key": "market",
+      "type": "single_choice",
+      "required": true,
+      "label": "Where will your engagement be billed?",
+      "description": "Clients outside Pakistan are billed in USD; clients in Pakistan are billed in PKR.",
+      "options": [
+        {
+          "value": "pakistan",
+          "label": "Pakistan (PKR)"
+        },
+        {
+          "value": "international",
+          "label": "Outside Pakistan (USD)"
+        }
+      ]
+    },
+    {
+      "key": "building",
+      "type": "text",
+      "required": true,
+      "multiline": true,
+      "maxLength": 1500,
+      "label": "What are you building, and what is in the way?",
+      "description": "A following that does not pay yet, or a business nobody has heard of: tell us which, in a few honest sentences."
+    },
+    {
+      "key": "monthly_revenue",
+      "type": "number",
+      "required": true,
+      "integer": true,
+      "min": 0,
+      "label": "Average monthly revenue over the last six months",
+      "description": "Your channel's or your company's, in the currency you chose above (USD or PKR). Enter 0 if you are pre-revenue."
+    },
+    {
+      "key": "time_in_market",
+      "type": "single_choice",
+      "required": true,
+      "label": "How long have you been publishing consistently, or trading?",
+      "options": [
+        {
+          "value": "under_6_months",
+          "label": "Under 6 months"
+        },
+        {
+          "value": "6_to_12_months",
+          "label": "6 to 12 months"
+        },
+        {
+          "value": "1_to_3_years",
+          "label": "1 to 3 years"
+        },
+        {
+          "value": "over_3_years",
+          "label": "Over 3 years"
+        }
+      ]
+    },
+    {
+      "key": "revenue_sources",
+      "type": "multiple_choice",
+      "required": true,
+      "label": "Where does your revenue come from today?",
+      "description": "Select all that apply.",
+      "options": [
+        {
+          "value": "sponsorships",
+          "label": "Sponsorships and brand deals"
+        },
+        {
+          "value": "platform_ads",
+          "label": "Platform ad revenue"
+        },
+        {
+          "value": "affiliate",
+          "label": "Affiliate income"
+        },
+        {
+          "value": "digital_products",
+          "label": "Courses, memberships or digital products"
+        },
+        {
+          "value": "services",
+          "label": "Client services or consulting"
+        },
+        {
+          "value": "company_sales",
+          "label": "Sales of my company's product or service"
+        },
+        {
+          "value": "none",
+          "label": "Nothing yet"
+        }
+      ]
+    },
+    {
+      "key": "owned_assets",
+      "type": "multiple_choice",
+      "required": true,
+      "label": "What do you already own that is not a platform account?",
+      "description": "Platforms change their mind about what they will show you. Select all that apply.",
+      "options": [
+        {
+          "value": "email_list",
+          "label": "An email list"
+        },
+        {
+          "value": "website",
+          "label": "A website or landing page"
+        },
+        {
+          "value": "offer",
+          "label": "A product or paid offer"
+        },
+        {
+          "value": "pipeline",
+          "label": "A sales pipeline or CRM"
+        },
+        {
+          "value": "brand",
+          "label": "A brand identity: logo, voice, guidelines"
+        },
+        {
+          "value": "team",
+          "label": "A team or editor who handles content"
+        },
+        {
+          "value": "none",
+          "label": "None of these yet"
+        }
+      ]
+    },
+    {
+      "key": "creator_platform",
+      "type": "single_choice",
+      "required": false,
+      "label": "Creators: your main platform",
+      "options": [
+        {
+          "value": "youtube",
+          "label": "YouTube"
+        },
+        {
+          "value": "instagram",
+          "label": "Instagram"
+        },
+        {
+          "value": "tiktok",
+          "label": "TikTok"
+        },
+        {
+          "value": "linkedin",
+          "label": "LinkedIn"
+        },
+        {
+          "value": "podcast",
+          "label": "Podcast"
+        },
+        {
+          "value": "x",
+          "label": "X"
+        },
+        {
+          "value": "other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "creator_audience_size",
+      "type": "number",
+      "required": false,
+      "integer": true,
+      "min": 0,
+      "label": "Creators: followers or subscribers on that platform"
+    },
+    {
+      "key": "creator_deal_mandate",
+      "type": "single_choice",
+      "required": false,
+      "label": "Creators: are you open to us sourcing and negotiating brand deals for you?",
+      "description": "Our Represented engagement is a monthly retainer plus a commission on the deals we secure.",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes, that is what I am looking for"
+        },
+        {
+          "value": "open",
+          "label": "Open to it; tell me more"
+        },
+        {
+          "value": "no",
+          "label": "No, I will handle deals myself"
+        },
+        {
+          "value": "not_applicable",
+          "label": "I am not looking for sponsorships"
+        }
+      ]
+    },
+    {
+      "key": "founder_acquisition",
+      "type": "multiple_choice",
+      "required": false,
+      "label": "Founders: how do customers find you today?",
+      "description": "Select all that apply.",
+      "options": [
+        {
+          "value": "paid_ads",
+          "label": "Paid ads"
+        },
+        {
+          "value": "outbound",
+          "label": "Outbound sales"
+        },
+        {
+          "value": "referrals",
+          "label": "Referrals"
+        },
+        {
+          "value": "partnerships",
+          "label": "Partnerships"
+        },
+        {
+          "value": "content",
+          "label": "Content or an existing audience"
+        },
+        {
+          "value": "marketplaces",
+          "label": "Marketplaces"
+        },
+        {
+          "value": "other",
+          "label": "Other"
+        }
+      ]
+    },
+    {
+      "key": "founder_team_size",
+      "type": "single_choice",
+      "required": false,
+      "label": "Founders: how many people work in your company?",
+      "options": [
+        {
+          "value": "just_me",
+          "label": "Just me"
+        },
+        {
+          "value": "2_to_5",
+          "label": "2 to 5"
+        },
+        {
+          "value": "6_to_20",
+          "label": "6 to 20"
+        },
+        {
+          "value": "21_to_100",
+          "label": "21 to 100"
+        },
+        {
+          "value": "over_100",
+          "label": "Over 100"
+        }
+      ]
+    },
+    {
+      "key": "founder_on_camera",
+      "type": "single_choice",
+      "required": false,
+      "label": "Founders: how do you feel about being on camera?",
+      "options": [
+        {
+          "value": "already",
+          "label": "I am already on camera regularly"
+        },
+        {
+          "value": "willing",
+          "label": "I am willing, with coaching"
+        },
+        {
+          "value": "hesitant",
+          "label": "Hesitant, but open to it"
+        },
+        {
+          "value": "unwilling",
+          "label": "I will not be on camera"
+        }
+      ]
+    },
+    {
+      "key": "needs",
+      "type": "multiple_choice",
+      "required": true,
+      "maxSelections": 3,
+      "label": "Which of our six disciplines do you need most?",
+      "description": "Pick up to three. One system built properly beats six built badly.",
+      "options": [
+        {
+          "value": "identity",
+          "label": "Identity & Positioning"
+        },
+        {
+          "value": "funnel",
+          "label": "Audience & Funnel Strategy"
+        },
+        {
+          "value": "monetization",
+          "label": "Monetization & Commerce"
+        },
+        {
+          "value": "content",
+          "label": "Content & Format Studio"
+        },
+        {
+          "value": "operations",
+          "label": "Operations & Systems"
+        },
+        {
+          "value": "scaling",
+          "label": "Scaling & Growth Strategy"
+        },
+        {
+          "value": "unsure",
+          "label": "Not sure; help me decide"
+        }
+      ]
+    },
+    {
+      "key": "success_metric",
+      "type": "text",
+      "required": true,
+      "multiline": true,
+      "maxLength": 800,
+      "label": "What number would tell you this worked?",
+      "description": "We agree one number before we start: revenue per follower, conversion rate, deal size, cost of winning a customer. Give us yours, with a rough target and timeframe."
+    },
+    {
+      "key": "past_help",
+      "type": "text",
+      "required": false,
+      "multiline": true,
+      "maxLength": 1000,
+      "label": "Have you worked with an agency, manager or consultant before? What happened?"
+    },
+    {
+      "key": "weekly_time",
+      "type": "single_choice",
+      "required": true,
+      "label": "How many hours a week can you, or the person we will work with, give to this?",
+      "description": "Shoots, approvals, calls and decisions. We build the system so it does not need you every day, but it does need you.",
+      "options": [
+        {
+          "value": "under_1",
+          "label": "Under an hour"
+        },
+        {
+          "value": "1_to_2",
+          "label": "1 to 2 hours"
+        },
+        {
+          "value": "3_to_5",
+          "label": "3 to 5 hours"
+        },
+        {
+          "value": "over_5",
+          "label": "More than 5 hours"
+        }
+      ]
+    },
+    {
+      "key": "decision_maker",
+      "type": "single_choice",
+      "required": true,
+      "label": "Are you the person who makes the final call on this?",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "shared",
+          "label": "I decide with partners or a board"
+        },
+        {
+          "value": "no",
+          "label": "No, I am researching for someone else"
+        }
+      ]
+    },
+    {
+      "key": "budget_fit",
+      "type": "single_choice",
+      "required": true,
+      "label": "Where does your budget sit against our starting prices?",
+      "description": "Consultations start from $2,500 / PKR 120,000. Monthly retainers start from $8,000 / PKR 400,000 a month. Full builds start from $15,000 / PKR 700,000. Every price is scoped and confirmed after a discovery call.",
+      "options": [
+        {
+          "value": "retainer_or_build",
+          "label": "I can invest at the retainer or full-build level"
+        },
+        {
+          "value": "consultation",
+          "label": "I can invest at the consultation level"
+        },
+        {
+          "value": "below_range",
+          "label": "My budget is below these starting prices"
+        },
+        {
+          "value": "unsure",
+          "label": "I am not sure yet"
+        }
+      ]
+    },
+    {
+      "key": "term_commitment",
+      "type": "single_choice",
+      "required": true,
+      "label": "Ongoing work runs for at least three months. Can you commit to that?",
+      "options": [
+        {
+          "value": "yes",
+          "label": "Yes"
+        },
+        {
+          "value": "one_off_only",
+          "label": "I only want a one-off consultation or project"
+        },
+        {
+          "value": "not_sure",
+          "label": "Not sure"
+        }
+      ]
+    },
+    {
+      "key": "start_timeline",
+      "type": "single_choice",
+      "required": true,
+      "label": "When do you want to start?",
+      "options": [
+        {
+          "value": "within_month",
+          "label": "Within a month"
+        },
+        {
+          "value": "one_to_three_months",
+          "label": "In one to three months"
+        },
+        {
+          "value": "later",
+          "label": "Later than that"
+        },
+        {
+          "value": "exploring",
+          "label": "I am just exploring"
+        }
+      ]
+    },
+    {
+      "key": "discovery_call_ack",
+      "type": "boolean",
+      "required": true,
+      "label": "I understand every engagement starts with a discovery call, and nothing is priced or confirmed until we have had one."
+    },
+    {
+      "key": "contact_consent",
+      "type": "boolean",
+      "required": true,
+      "label": "I agree to Phistreams contacting me about this application.",
+      "description": "We keep your answers only to review your application and work with you. See the Privacy page."
+    }
+  ]
+}

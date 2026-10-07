@@ -13,7 +13,14 @@ import { buildApp } from '../../src/app.js';
 import type { Database } from '../../src/db/client.js';
 import { runMigrations } from '../../src/db/migrator.js';
 import { demoId } from '../../src/db/seed/demo-data.js';
-import { seedDemoData, unseedDemoContent } from '../../src/db/seed/seed.js';
+import { publishServiceTiers, realServiceTiers } from '../../src/db/content/service-tiers.js';
+import {
+  seedDemoData,
+  UnseedAdminError,
+  unseedDemoAdminData,
+  unseedDemoContent,
+} from '../../src/db/seed/seed.js';
+import { publishApplicationForm } from '../../src/modules/applications/application-forms.repository.js';
 import { testConfig } from '../helpers/test-app.js';
 import {
   connectAdmin,
@@ -384,6 +391,59 @@ describe.skipIf(!TEST_DATABASE_URL)('database (PostgreSQL)', () => {
 
       const second = await unseedDemoContent(database.db);
       expect(Object.values(second.deleted).every((count) => count === 0)).toBe(true);
+    });
+  });
+
+  describe('real content cut-over', () => {
+    const realForm = {
+      title: 'Apply',
+      questions: [{ key: 'about', type: 'text', label: 'About you' }],
+    };
+
+    it('refuses to remove demo admin data before the real form and tiers are live', async () => {
+      await expect(unseedDemoAdminData(database.db)).rejects.toBeInstanceOf(UnseedAdminError);
+
+      const apps = await admin.query<{ n: number }>(
+        `select count(*)::int as n from applications where reference like 'DEMO-%'`,
+      );
+      expect(apps.rows[0]?.n).toBe(2);
+    });
+
+    it('publishes the real tiers, hides the demo ones, and is idempotent', async () => {
+      const first = await publishServiceTiers(database.db);
+      expect(first).toEqual({ upserted: realServiceTiers.length, demoDeactivated: 2 });
+
+      const active = await admin.query<{ slug: string; price_amount: number; currency: string }>(
+        `select slug, price_amount, currency from service_tiers
+          where is_active order by display_order`,
+      );
+      expect(active.rows.map((row) => row.slug)).toEqual(realServiceTiers.map((t) => t.slug));
+      expect(active.rows.every((row) => row.currency === 'USD')).toBe(true);
+
+      const second = await publishServiceTiers(database.db);
+      expect(second).toEqual({ upserted: realServiceTiers.length, demoDeactivated: 0 });
+    });
+
+    it('still refuses while only the demo form is active', async () => {
+      await expect(unseedDemoAdminData(database.db)).rejects.toBeInstanceOf(UnseedAdminError);
+    });
+
+    it('removes demo applications, leads and staff once the real form is live', async () => {
+      await publishApplicationForm(database.db, { version: 'test-real-v1', definition: realForm });
+
+      const result = await unseedDemoAdminData(database.db);
+      expect(result.deleted).toEqual({ applications: 2, leads: 2, staff_users: 2 });
+      expect(result.staffDeactivatedInstead).toBe(0);
+
+      const left = await admin.query<{ n: number }>(
+        `select (select count(*) from applications where reference like 'DEMO-%')::int
+              + (select count(*) from leads where source = 'demo')::int
+              + (select count(*) from staff_users where email like 'demo.%@example.com')::int as n`,
+      );
+      expect(left.rows[0]?.n).toBe(0);
+
+      const again = await unseedDemoAdminData(database.db);
+      expect(again.deleted).toEqual({ applications: 0, leads: 0, staff_users: 0 });
     });
   });
 

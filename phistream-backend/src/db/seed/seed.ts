@@ -1,4 +1,4 @@
-import { inArray } from 'drizzle-orm';
+import { and, eq, inArray, ne, sql } from 'drizzle-orm';
 
 import type { Db } from '../client.js';
 import {
@@ -14,6 +14,7 @@ import {
   testimonials,
 } from '../schema/index.js';
 import {
+  DEMO_FORM_VERSION,
   demoApplicationAnswers,
   demoApplicationEvents,
   demoApplicationForms,
@@ -115,4 +116,107 @@ export async function unseedDemoContent(db: Db): Promise<UnseedResult> {
       ).length,
     },
   }));
+}
+
+export class UnseedAdminError extends Error {}
+
+export interface UnseedAdminResult {
+  readonly deleted: Readonly<Record<string, number>>;
+  /** Demo staff kept because audit entries, notes or reviews still point at them. */
+  readonly staffDeactivatedInstead: number;
+}
+
+/**
+ * Removes the demo rows that show in the /admin dashboard: demo applications
+ * (DEMO-0001, DEMO-0002), the two demo leads, and the two demo staff users.
+ *
+ * Must run AFTER the real form and real tiers are live, so it refuses to run
+ * until an ACTIVE non-demo form and at least one active non-demo tier exist.
+ *
+ * Everything is matched by the fixed demo ids, and deletes are guarded:
+ * - a demo lead is only deleted when nothing but the demo applications hangs
+ *   off it (deleting a lead cascades to all its applications);
+ * - a demo staff user is only deleted when no review, note or audit entry
+ *   references it (those foreign keys are RESTRICT); otherwise it is
+ *   deactivated so it can never sign in.
+ *
+ * The demo form and demo tiers are left in place: real applicants may already
+ * have applied against them while they were live, and they are hidden from the
+ * public site (retired / inactive).
+ */
+export async function unseedDemoAdminData(db: Db): Promise<UnseedAdminResult> {
+  const applicationIds = [701, 702].map(demoId);
+  const leadIds = [601, 602].map(demoId);
+  const staffIds = [501, 502].map(demoId);
+  const demoTierIds = [101, 102, 103].map(demoId);
+
+  return db.transaction(async (tx) => {
+    const [realForm] = await tx
+      .select({ version: applicationForms.version })
+      .from(applicationForms)
+      .where(
+        and(eq(applicationForms.status, 'ACTIVE'), ne(applicationForms.version, DEMO_FORM_VERSION)),
+      )
+      .limit(1);
+    if (!realForm) {
+      throw new UnseedAdminError(
+        'Refusing to remove demo admin data: no real application form is ACTIVE yet. ' +
+          'Publish it first (npm run forms:publish).',
+      );
+    }
+    const realTiers = await tx
+      .select({ id: serviceTiers.id })
+      .from(serviceTiers)
+      .where(eq(serviceTiers.isActive, true));
+    if (!realTiers.some((tier) => !demoTierIds.includes(tier.id))) {
+      throw new UnseedAdminError(
+        'Refusing to remove demo admin data: no real service tier is active yet. ' +
+          'Publish them first (npm run content:tiers).',
+      );
+    }
+
+    // Cascades to answers, notes, events, access tokens, sessions and meetings.
+    const deletedApplications = await tx
+      .delete(applications)
+      .where(inArray(applications.id, applicationIds))
+      .returning({ id: applications.id });
+
+    const deletedLeads = await tx
+      .delete(leads)
+      .where(
+        and(
+          inArray(leads.id, leadIds),
+          sql`not exists (select 1 from applications where applications.lead_id = ${leads.id})`,
+          sql`not exists (select 1 from contact_submissions where contact_submissions.lead_id = ${leads.id})`,
+        ),
+      )
+      .returning({ id: leads.id });
+
+    const deletedStaff = await tx
+      .delete(staffUsers)
+      .where(
+        and(
+          inArray(staffUsers.id, staffIds),
+          sql`not exists (select 1 from applications where applications.reviewed_by = ${staffUsers.id})`,
+          sql`not exists (select 1 from application_notes where application_notes.author_id = ${staffUsers.id})`,
+          sql`not exists (select 1 from audit_logs where audit_logs.actor_id = ${staffUsers.id})`,
+        ),
+      )
+      .returning({ id: staffUsers.id });
+
+    const deactivated = await tx
+      .update(staffUsers)
+      .set({ isActive: false })
+      .where(and(inArray(staffUsers.id, staffIds), eq(staffUsers.isActive, true)))
+      .returning({ id: staffUsers.id });
+
+    return {
+      deleted: {
+        applications: deletedApplications.length,
+        leads: deletedLeads.length,
+        staff_users: deletedStaff.length,
+      },
+      staffDeactivatedInstead: deactivated.length,
+    };
+  });
 }

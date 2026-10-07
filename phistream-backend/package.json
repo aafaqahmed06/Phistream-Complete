@@ -36,6 +36,8 @@
     "db:seed": "tsx --env-file-if-exists=.env src/db/scripts/seed.ts",
     "db:unseed-content": "tsx --env-file-if-exists=.env src/db/scripts/unseed-content.ts",
     "db:studio": "drizzle-kit studio",
+    "content:tiers": "tsx --env-file-if-exists=.env src/db/scripts/publish-service-tiers.ts",
+    "content:tiers:prod": "node dist/db/scripts/publish-service-tiers.js",
     "forms:publish": "tsx --env-file-if-exists=.env src/db/scripts/publish-application-form.ts",
     "forms:publish:prod": "node dist/db/scripts/publish-application-form.js",
     "staff": "tsx --env-file-if-exists=.env src/db/scripts/staff.ts",
