@@ -62,6 +62,13 @@ export function NotificationsList() {
           </EmptyState>
         ) : (
           <>
+            {list.items.some((n) => n.deliveries.some((d) => d.provider === "log")) ? (
+              <p role="status" className="mb-8 rounded-2xl bg-gold/15 px-5 py-4 text-small text-ink">
+                Some of these were only recorded, not delivered: the server has no email
+                service set up (Resend), so it logs each email instead of sending it. Add
+                RESEND_API_KEY and EMAIL_FROM to the backend to deliver them.
+              </p>
+            ) : null}
             <ul className="divide-y divide-taupe/40 border-y border-taupe/40">
               {list.items.map((n) => (
                 <Notification key={n.id} notification={n} />
@@ -124,7 +131,13 @@ function Notification({ notification }: { notification: AdminNotification }) {
               <li key={d.id} className="flex flex-wrap items-baseline gap-x-3">
                 <span className="break-all text-ink">{d.recipient}</span>
                 <span className="text-ink/70">
-                  {d.status === "SENT" ? "sent" : d.status === "FAILED" ? "failed" : "waiting"}
+                  {d.provider === "log" && d.status === "SENT"
+                    ? "recorded only, not delivered"
+                    : d.status === "SENT"
+                      ? "sent"
+                      : d.status === "FAILED"
+                        ? "failed"
+                        : "waiting"}
                   {d.lastError ? ` · ${d.lastError}` : ""}
                 </span>
               </li>
