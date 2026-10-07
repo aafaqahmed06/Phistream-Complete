@@ -39,6 +39,7 @@ async function main(): Promise<void> {
     config,
     database,
     runNotificationWorker: config.notifications.workerEnabled,
+    dispatchNotificationsAfterResponse: config.notifications.dispatchAfterResponse,
   });
   logTarget.app = app;
 

@@ -383,7 +383,7 @@ describe.skipIf(!TEST_DATABASE_URL)('database (PostgreSQL)', () => {
       expect(shown.rows[0]?.n).toBe(0);
 
       const kept = await admin.query<{ tiers: number; forms: number }>(
-        `select (select count(*) from service_tiers)::int as tiers,
+        `select (select count(*) from service_tiers where slug like 'demo-tier-%')::int as tiers,
                 (select count(*) from application_forms)::int as forms`,
       );
       expect(kept.rows[0]?.tiers).toBe(3);

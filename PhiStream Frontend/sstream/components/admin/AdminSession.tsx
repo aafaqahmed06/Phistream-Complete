@@ -64,6 +64,9 @@ function explain(error: unknown): string {
       return "Staff sign-in isn't switched on in the backend yet (SUPABASE_URL is not set).";
     }
     if (error.code === "NETWORK_ERROR") return error.message;
+    if (error.status >= 500) {
+      return "The studio's server answered with an error, even after a few tries. Try again in a moment.";
+    }
   }
   return "Couldn't reach the studio's server. Try again in a moment.";
 }

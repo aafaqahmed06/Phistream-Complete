@@ -450,4 +450,83 @@ describe.skipIf(!TEST_DATABASE_URL)('notifications (PostgreSQL)', () => {
     expect(await dispatcher.runOnce()).toMatchObject({ processed: 1 });
     expect(provider.sent).toEqual([]);
   });
+  describe('serverless delivery (after-response trigger and scheduled sweep)', () => {
+    const CRON_SECRET = 'cron-secret-for-tests-0123456789';
+    let serverless: App;
+    let provider: ReturnType<typeof createFakeEmailProvider>;
+
+    beforeAll(async () => {
+      provider = createFakeEmailProvider();
+      serverless = await buildApp({
+        config: testConfig({
+          CONTACT_RATE_LIMIT_MAX: '1000',
+          RATE_LIMIT_MAX: '10000',
+          STAFF_NOTIFICATION_EMAILS: 'team@example.com',
+          CRON_SECRET,
+        }),
+        database: createTestDatabase(2),
+        emailProvider: provider,
+        dispatchNotificationsAfterResponse: true,
+      });
+    });
+
+    afterAll(async () => {
+      await serverless.close();
+    });
+
+    it('sends the email right after the request that queued it', async () => {
+      const response = await serverless.inject({
+        method: 'POST',
+        url: '/api/v1/contact',
+        payload: { name: 'Fast Lane', email: 'fast@example.com', message: 'No polling here' },
+      });
+      expect(response.statusCode).toBeLessThan(400);
+
+      await expect
+        .poll(async () => rows<{ status: string }>(`select status from notification_events`))
+        .toEqual([{ status: 'PROCESSED' }]);
+      expect(provider.sent.map((m) => m.to)).toContainEqual(['team@example.com']);
+    });
+
+    it('does not dispatch after requests that cannot queue an email', async () => {
+      await app.inject({
+        method: 'POST',
+        url: '/api/v1/contact',
+        payload: { name: 'Queued', email: 'queued@example.com', message: 'Waiting' },
+      });
+      const before = provider.sent.length;
+      await serverless.inject({ method: 'GET', url: '/api/v1/content/home' });
+      await new Promise((resolve) => setTimeout(resolve, 200));
+      expect(provider.sent).toHaveLength(before);
+      expect(await rows(`select 1 from notification_events where status = 'PENDING'`)).toHaveLength(
+        1,
+      );
+    });
+
+    it('hides the scheduled sweep without the cron secret, and runs it with', async () => {
+      await app.inject({
+        method: 'POST',
+        url: '/api/v1/contact',
+        payload: { name: 'Swept', email: 'swept@example.com', message: 'Found by the sweep' },
+      });
+      const url = '/api/v1/internal/notifications/dispatch';
+
+      expect((await serverless.inject({ method: 'GET', url })).statusCode).toBe(404);
+      const wrong = await serverless.inject({
+        method: 'GET',
+        url,
+        headers: { authorization: 'Bearer not-the-secret-at-all-000' },
+      });
+      expect(wrong.statusCode).toBe(404);
+
+      const ok = await serverless.inject({
+        method: 'GET',
+        url,
+        headers: { authorization: `Bearer ${CRON_SECRET}` },
+      });
+      expect(ok.statusCode).toBe(200);
+      expect(ok.json()).toMatchObject({ data: { claimed: 1, processed: 1 } });
+      expect(ok.headers['cache-control']).toBe('no-store');
+    });
+  });
 });

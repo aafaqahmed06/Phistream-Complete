@@ -1,3 +1,4 @@
+import { waitUntil } from '@vercel/functions';
 import Fastify, { LogController, type FastifyServerOptions } from 'fastify';
 import {
   serializerCompiler,
@@ -44,6 +45,11 @@ import {
   createSchedulingService,
   type SchedulingService,
 } from './modules/scheduling/scheduling.service.js';
+import {
+  createDispatchTrigger,
+  type DispatchTrigger,
+} from './modules/notifications/dispatch-trigger.js';
+import { dispatchRoutes } from './modules/notifications/dispatch.routes.js';
 import { createNotificationDispatcher } from './modules/notifications/dispatcher.js';
 import { createNotificationContext } from './modules/notifications/notification-context.js';
 import { createNotificationsRepository } from './modules/notifications/notifications.repository.js';
@@ -83,6 +89,20 @@ function requireDb(database: Database | undefined): Database {
   return database;
 }
 
+/**
+ * POST routes (by suffix of the registered path) that can queue an email:
+ * contact and application submissions, accept/reject, provider booking
+ * webhooks, and an admin retry. Other writes (e.g. analytics) never do.
+ */
+const ROUTES_THAT_QUEUE_EMAIL = [
+  '/contact',
+  '/applications',
+  '/applications/:id/accept',
+  '/applications/:id/reject',
+  '/webhooks/scheduling/:provider',
+  '/notifications/:id/retry',
+];
+
 const HEALTH_PATHS = new Set(
   ['/health', '/health/ready'].flatMap((path) => [path, `${API_V1_PREFIX}${path}`]),
 );
@@ -121,6 +141,12 @@ export interface BuildAppOptions {
    */
   readonly runNotificationWorker?: boolean;
   /**
+   * Process the outbox in the background right after a request that may have
+   * queued an email (serverless hosting, where the worker cannot run between
+   * requests). server.ts enables it from config.
+   */
+  readonly dispatchNotificationsAfterResponse?: boolean;
+  /**
    * Human-verification (CAPTCHA) adapter for public forms. None is wired until
    * the business chooses a provider; the other spam checks always run.
    */
@@ -147,6 +173,7 @@ export async function buildApp({
   schedulingProvider,
   emailProvider,
   runNotificationWorker = false,
+  dispatchNotificationsAfterResponse = false,
   logStream,
 }: BuildAppOptions) {
   const app = Fastify({
@@ -255,6 +282,7 @@ export async function buildApp({
 
   // Notifications: outbox → email through the configured provider.
   const notificationsRepository = database ? createNotificationsRepository(database.db) : undefined;
+  let dispatchTrigger: DispatchTrigger | undefined;
   if (database && notificationsRepository) {
     const notificationsLogger = app.log.child({ module: 'notifications' });
     const mailer = emailProvider ?? createEmailProvider(config.email, notificationsLogger);
@@ -280,6 +308,24 @@ export async function buildApp({
       },
       logger: notificationsLogger,
     });
+    dispatchTrigger = createDispatchTrigger({
+      dispatcher,
+      keepAlive: (pass) => waitUntil(pass),
+      logger: notificationsLogger,
+    });
+    if (dispatchNotificationsAfterResponse) {
+      const trigger = dispatchTrigger;
+      app.addHook('onResponse', async (request, reply) => {
+        const route = request.routeOptions.url ?? '';
+        if (
+          request.method === 'POST' &&
+          reply.statusCode < 400 &&
+          ROUTES_THAT_QUEUE_EMAIL.some((suffix) => route.endsWith(suffix))
+        ) {
+          trigger.kick();
+        }
+      });
+    }
     if (runNotificationWorker) {
       const worker = createNotificationWorker({
         dispatcher,
@@ -364,6 +410,12 @@ export async function buildApp({
       }
       if (admin) {
         await v1.register(adminRoutes, { prefix: '/admin', verifier, ...admin });
+      }
+      if (dispatchTrigger) {
+        await v1.register(dispatchRoutes, {
+          trigger: dispatchTrigger,
+          cronSecret: config.notifications.cronSecret,
+        });
       }
     },
     { prefix: API_V1_PREFIX },

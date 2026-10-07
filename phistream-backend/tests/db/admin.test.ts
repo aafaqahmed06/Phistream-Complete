@@ -394,7 +394,17 @@ describe.skipIf(!TEST_DATABASE_URL)('admin API (PostgreSQL)', () => {
       expect(data.serviceTier).toEqual({ id: tierId, slug: 'growth', name: 'Growth' });
       expect(data.answers).toEqual([
         { questionKey: 'about', label: 'About', type: 'text', answer: 'I make videos.' },
-        { questionKey: 'platform', label: 'Platform', type: 'single_choice', answer: 'instagram' },
+        {
+          questionKey: 'platform',
+          label: 'Platform',
+          type: 'single_choice',
+          answer: 'instagram',
+          // The answered form's options, so the dashboard shows labels, not values.
+          options: [
+            { value: 'instagram', label: 'Instagram' },
+            { value: 'tiktok', label: 'TikTok' },
+          ],
+        },
         { questionKey: 'agree', label: 'Agree', type: 'boolean', answer: true },
       ]);
       expect(data.events.map((e) => [e.eventType, e.actor])).toEqual([
@@ -594,7 +604,8 @@ describe.skipIf(!TEST_DATABASE_URL)('admin API (PostgreSQL)', () => {
     it.each([
       ['search=hello', ['cy_under@example.com']],
       ['search=CY_UNDER', ['cy_under@example.com']],
-      ['search=%25', []],
+      // LIKE wildcards are matched literally (search needs 2+ characters).
+      ['search=%25%25', []],
     ])('filters contact messages by %s', async (query, expected) => {
       const response = await get(`/api/v1/admin/contact-submissions?${query}`);
       expect(response.statusCode).toBe(200);

@@ -1,4 +1,4 @@
-import { requestBody } from "@/lib/api";
+import { ApiError, requestBody } from "@/lib/api";
 
 /**
  * The staff-only admin API (backend /api/v1/admin/*). Every call carries the
@@ -203,11 +203,45 @@ export function query(params: Record<string, string | number | undefined>) {
   return text ? `?${text}` : "";
 }
 
+/** Worth another try: the server failed or never answered (not 4xx). */
+function isTransient(error: unknown) {
+  return error instanceof ApiError && (error.status >= 500 || error.code === "NETWORK_ERROR");
+}
+
+const RETRY_DELAYS_MS = [400, 1200];
+
+/** Identical reads already on their way (same path, same token). */
+const inFlight = new Map<string, Promise<unknown>>();
+
+/**
+ * Reads are safe to repeat, so a server error or dropped connection is
+ * retried twice before it reaches the screen; one hiccup should not show an
+ * error panel. Several components asking for the same thing at once (the
+ * nav badge and the overview both count new applications) share one request.
+ */
 export function adminGet<B>(path: string, token: string): Promise<B> {
-  return requestBody<B>(`/admin${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-    cache: "no-store",
-  });
+  const key = `${token}\n${path}`;
+  const existing = inFlight.get(key);
+  if (existing) return existing as Promise<B>;
+
+  const attempt = async (): Promise<B> => {
+    for (let i = 0; ; i++) {
+      try {
+        return await requestBody<B>(`/admin${path}`, {
+          headers: { Authorization: `Bearer ${token}` },
+          cache: "no-store",
+        });
+      } catch (error) {
+        const delay = RETRY_DELAYS_MS[i];
+        if (!isTransient(error) || delay === undefined) throw error;
+        await new Promise((resolve) => setTimeout(resolve, delay));
+      }
+    }
+  };
+
+  const request = attempt().finally(() => inFlight.delete(key));
+  inFlight.set(key, request);
+  return request;
 }
 
 /** State-changing admin calls. Every one is audited by the backend. */

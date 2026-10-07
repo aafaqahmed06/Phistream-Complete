@@ -49,6 +49,7 @@ const EXPECTED_OPERATIONS = {
   'POST /api/v1/admin/notifications/{id}/retry': 'adminRetryNotification',
   'GET /api/v1/admin/analytics/funnel': 'adminGetFunnel',
   'GET /api/v1/admin/audit-logs': 'adminListAuditLogs',
+  'GET /api/v1/admin/contact-submissions': 'adminListContactSubmissions',
 } as const;
 
 describe.skipIf(!TEST_DATABASE_URL)('OpenAPI contract', () => {

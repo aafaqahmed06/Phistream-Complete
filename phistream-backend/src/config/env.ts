@@ -115,9 +115,14 @@ const databaseShape = {
   MIGRATION_DATABASE_URL: postgresUrl.optional(),
   DATABASE_SSL: z.enum(DATABASE_SSL_MODES).optional(),
   DATABASE_SSL_CA: z.string().optional(),
-  DATABASE_POOL_MAX: intString(1, 100).default(10),
+  /** Per process. Default 10, or 2 on Vercel, where many instances run at once. */
+  DATABASE_POOL_MAX: intString(1, 100).optional(),
+  /** How long an unused connection stays open. Default 30s, or 5s on Vercel. */
+  DATABASE_IDLE_TIMEOUT_MS: intString(1000, 600_000).optional(),
   DATABASE_CONNECTION_TIMEOUT_MS: intString(250, 60_000).default(5000),
   DATABASE_STATEMENT_TIMEOUT_MS: intString(0, 600_000).default(15_000),
+  /** Set by Vercel ("1") in its build and runtime environments. */
+  VERCEL: z.string().optional(),
 };
 
 const serverShape = {
@@ -231,6 +236,18 @@ const serverShape = {
   NOTIFICATIONS_POLL_INTERVAL_MS: intString(1000, 10 * 60 * 1000).default(15_000),
   NOTIFICATIONS_BATCH_SIZE: intString(1, 100).default(10),
   NOTIFICATIONS_MAX_ATTEMPTS: intString(1, 50).default(8),
+  /**
+   * Process the outbox right after any request that may have queued an email.
+   * The polling worker cannot be relied on in serverless functions (they are
+   * paused between requests), so this defaults to on when running on Vercel.
+   */
+  NOTIFICATIONS_DISPATCH_AFTER_RESPONSE: booleanString.optional(),
+  /**
+   * Bearer secret for GET /api/v1/internal/notifications/dispatch (the
+   * scheduled sweep). Vercel Cron sends it automatically when this is set.
+   * Unset = the endpoint answers 404.
+   */
+  CRON_SECRET: z.string().min(16).optional(),
 
   /** Per-IP limit for POST /analytics/events (VSL progress sends several per visit). */
   ANALYTICS_RATE_LIMIT_MAX: intString(1, 10_000).default(120),
@@ -350,8 +367,14 @@ export interface DatabaseConfig {
   readonly ssl: DatabaseSslMode;
   readonly sslCa: string | undefined;
   readonly poolMax: number;
+  readonly idleTimeoutMs: number;
   readonly connectionTimeoutMs: number;
   readonly statementTimeoutMs: number;
+  /**
+   * Running as Vercel functions: instances are paused between requests, so
+   * idle connections must be closed before that (see db/client.ts).
+   */
+  readonly serverless: boolean;
 }
 
 export interface AppConfig {
@@ -428,6 +451,10 @@ export interface EmailConfig {
 
 export interface NotificationsConfig {
   readonly workerEnabled: boolean;
+  /** Run the dispatcher after state-changing requests (serverless hosting). */
+  readonly dispatchAfterResponse: boolean;
+  /** Secret guarding the scheduled dispatch endpoint; undefined = disabled. */
+  readonly cronSecret: string | undefined;
   readonly pollIntervalMs: number;
   readonly batchSize: number;
   readonly maxAttempts: number;
@@ -477,13 +504,16 @@ function parseOrThrow<T>(schema: z.ZodType<T>, source: NodeJS.ProcessEnv): T {
 }
 
 function toDatabaseConfig(env: DatabaseEnv): DatabaseConfig {
+  const serverless = env.VERCEL === '1';
   return {
+    serverless,
     url: env.DATABASE_URL,
     migrationUrl: env.MIGRATION_DATABASE_URL ?? env.DATABASE_URL,
     // Secure by default in production; local Postgres usually has no TLS.
     ssl: env.DATABASE_SSL ?? (env.NODE_ENV === 'production' ? 'verify-full' : 'disable'),
     sslCa: env.DATABASE_SSL_CA?.replaceAll('\\n', '\n'),
-    poolMax: env.DATABASE_POOL_MAX,
+    poolMax: env.DATABASE_POOL_MAX ?? (serverless ? 2 : 10),
+    idleTimeoutMs: env.DATABASE_IDLE_TIMEOUT_MS ?? (serverless ? 5_000 : 30_000),
     connectionTimeoutMs: env.DATABASE_CONNECTION_TIMEOUT_MS,
     statementTimeoutMs: env.DATABASE_STATEMENT_TIMEOUT_MS,
   };
@@ -596,6 +626,8 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
     email: toEmailConfig(env),
     notifications: {
       workerEnabled: env.NOTIFICATIONS_WORKER_ENABLED,
+      dispatchAfterResponse: env.NOTIFICATIONS_DISPATCH_AFTER_RESPONSE ?? env.VERCEL === '1',
+      cronSecret: env.CRON_SECRET,
       pollIntervalMs: env.NOTIFICATIONS_POLL_INTERVAL_MS,
       batchSize: env.NOTIFICATIONS_BATCH_SIZE,
       maxAttempts: env.NOTIFICATIONS_MAX_ATTEMPTS,

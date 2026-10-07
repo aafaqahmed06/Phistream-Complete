@@ -1,0 +1,39 @@
+name: Frontend CI
+
+on:
+  push:
+    branches: [main]
+    paths: ['PhiStream Frontend/**', '.github/workflows/frontend-ci.yml']
+  pull_request:
+    paths: ['PhiStream Frontend/**', '.github/workflows/frontend-ci.yml']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: PhiStream Frontend/sstream
+
+jobs:
+  verify:
+    name: Lint, typecheck, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: PhiStream Frontend/sstream/package-lock.json
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      # No backend here: pages fall back to their static copy (lib/content.ts).
+      - run: npm run build

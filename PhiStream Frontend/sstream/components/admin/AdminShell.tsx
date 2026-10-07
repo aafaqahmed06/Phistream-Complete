@@ -141,7 +141,7 @@ function Unreachable() {
       <div className="container-x flex min-h-svh flex-col justify-center py-16">
         <Wordmark className="text-2xl text-cream" />
         <h1 className="mt-14 max-w-[20ch] font-display text-display-m font-light text-cream">
-          The control room can&apos;t reach the server.
+          The control room can&apos;t load right now.
         </h1>
         <p className="mt-6 max-w-[52ch] text-body text-cream/80">
           {problem} You&apos;re still signed in.

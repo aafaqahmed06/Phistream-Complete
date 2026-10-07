@@ -1,3 +1,4 @@
+import { attachDatabasePool } from '@vercel/functions';
 import { drizzle, type NodePgDatabase } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 
@@ -48,7 +49,8 @@ export function buildPoolConfig(
   config: Pick<
     DatabaseConfig,
     'ssl' | 'sslCa' | 'poolMax' | 'connectionTimeoutMs' | 'statementTimeoutMs'
-  >,
+  > &
+    Partial<Pick<DatabaseConfig, 'idleTimeoutMs'>>,
   applicationName = 'phistream-backend',
 ): pg.PoolConfig {
   const parsed = new URL(url);
@@ -59,7 +61,7 @@ export function buildPoolConfig(
     ssl: toSslOption(config.ssl, config.sslCa),
     max: config.poolMax,
     connectionTimeoutMillis: config.connectionTimeoutMs,
-    idleTimeoutMillis: 30_000,
+    idleTimeoutMillis: config.idleTimeoutMs ?? 30_000,
     // 0 disables the timeout (node-postgres treats a falsy value as "none").
     ...(config.statementTimeoutMs > 0 ? { statement_timeout: config.statementTimeoutMs } : {}),
     application_name: applicationName,
@@ -99,6 +101,12 @@ export function createDatabase(
   });
   // ...and on a checked-out one, which the pool does not cover.
   guardClientErrors(pool, logger);
+
+  // A paused Vercel instance keeps its open connections, and each one holds a
+  // slot in the Supabase pooler (15 in all), so a few idle instances lock
+  // everyone else out. This keeps the instance alive just long enough for the
+  // pool to close its idle connections first.
+  if (config.serverless) attachDatabasePool(pool);
 
   const db = drizzle({ client: pool, schema });
   let closed = false;

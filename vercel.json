@@ -22,6 +22,12 @@
       "buildCommand": "npm run typecheck"
     }
   },
+  "crons": [
+    {
+      "path": "/api/v1/internal/notifications/dispatch",
+      "schedule": "0 4 * * *"
+    }
+  ],
   "rewrites": [
     {
       "source": "/api/(.*)",

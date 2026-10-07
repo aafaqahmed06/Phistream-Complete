@@ -32,6 +32,8 @@ const FILTERS: readonly { value: Filter; label: string }[] = [
   { value: "CONTACTED", label: leadStatusLabel.CONTACTED },
   { value: "QUALIFIED", label: leadStatusLabel.QUALIFIED },
   { value: "CONVERTED", label: leadStatusLabel.CONVERTED },
+  { value: "LOST", label: leadStatusLabel.LOST },
+  { value: "ARCHIVED", label: leadStatusLabel.ARCHIVED },
 ];
 
 const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;

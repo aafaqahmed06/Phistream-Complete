@@ -144,9 +144,28 @@ describe('loadConfig', () => {
         ssl: 'disable',
         sslCa: undefined,
         poolMax: 10,
+        idleTimeoutMs: 30_000,
         connectionTimeoutMs: 5000,
         statementTimeoutMs: 15_000,
+        serverless: false,
       });
+    });
+
+    it('uses a small, quickly released pool on Vercel', () => {
+      const config = load({ VERCEL: '1' });
+      expect(config.database).toMatchObject({ serverless: true, poolMax: 2, idleTimeoutMs: 5_000 });
+      expect(config.notifications.dispatchAfterResponse).toBe(true);
+    });
+
+    it('lets explicit pool settings override the Vercel defaults', () => {
+      const config = load({
+        VERCEL: '1',
+        DATABASE_POOL_MAX: '4',
+        DATABASE_IDLE_TIMEOUT_MS: '8000',
+        NOTIFICATIONS_DISPATCH_AFTER_RESPONSE: 'false',
+      });
+      expect(config.database).toMatchObject({ poolMax: 4, idleTimeoutMs: 8_000 });
+      expect(config.notifications.dispatchAfterResponse).toBe(false);
     });
 
     it('defaults to verify-full SSL in production', () => {
