@@ -338,6 +338,10 @@ export const apply = {
   tierLabel: "Which way of working interests you?",
   tierNone: "Not sure yet",
   submit: "Submit application",
+  /** Shown above the submit button when required answers are missing. */
+  missingRequired: "A few required answers are missing. They are marked in red.",
+  requiredField: "Please fill this in.",
+  urlPlaceholder: "yoursite.com or youtube.com/@you",
   closed: {
     title: "Applications are closed right now.",
     body: "We are not taking new applications at the moment. You can still send us a note from the homepage.",

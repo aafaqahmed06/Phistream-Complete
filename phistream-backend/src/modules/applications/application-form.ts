@@ -153,6 +153,30 @@ export interface ApplicationForm {
 
 // ---- Answer validation -----------------------------------------------------------
 
+const HAS_SCHEME = /^[a-z][a-z0-9+.-]*:\/\//i;
+
+/**
+ * Lets applicants type a web address the way they would say it --
+ * "youtube.com/@name", "www.site.com" -- by adding https:// when no scheme was
+ * given. The stored answer is always a full http(s) URL, so the dashboard can
+ * link to it.
+ */
+export function normalizeWebAddress(value: unknown): unknown {
+  if (typeof value !== 'string') return value;
+  const trimmed = value.trim();
+  if (trimmed === '' || HAS_SCHEME.test(trimmed)) return trimmed;
+  return `https://${trimmed.replace(/^\/+/, '')}`;
+}
+
+/** A real public host name: dotted, ending in a letters-only top-level domain. */
+function hasPublicHostname(value: string): boolean {
+  try {
+    return /\.[a-z]{2,63}$/i.test(new URL(value).hostname);
+  } catch {
+    return false;
+  }
+}
+
 /** A validated answer value as stored in `application_answers.answer`. */
 export type AnswerValue = string | number | boolean | string[];
 
@@ -197,11 +221,16 @@ function answerSchemaFor(question: FormQuestion): z.ZodType<AnswerValue> {
     case 'boolean':
       return z.boolean();
     case 'url':
-      return z
-        .string()
-        .trim()
-        .max(FORM_LIMITS.urlMaxLength)
-        .pipe(z.url({ protocol: /^https?$/, error: 'must be an http(s) URL' }));
+      return z.preprocess(
+        normalizeWebAddress,
+        z
+          .string()
+          .max(FORM_LIMITS.urlMaxLength)
+          .pipe(z.url({ protocol: /^https?$/, error: 'must be a web address' }))
+          .refine(hasPublicHostname, {
+            error: 'must be a web address, like yoursite.com or youtube.com/@you',
+          }),
+      );
   }
 }
 

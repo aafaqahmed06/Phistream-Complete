@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import { getAttribution, track } from "@/lib/analytics";
 import {
   ApiError,
@@ -86,9 +86,36 @@ function toAnswers(
     if (!trimmed) continue;
     if (q.type === "number") out[q.key] = Number(trimmed);
     else if (q.type === "boolean") out[q.key] = trimmed === "true";
+    else if (q.type === "url") out[q.key] = withScheme(trimmed);
     else out[q.key] = trimmed;
   }
   return out;
+}
+
+/** "youtube.com/@you" -> "https://youtube.com/@you"; the backend does the same. */
+function withScheme(address: string) {
+  return /^[a-z][a-z0-9+.-]*:\/\//i.test(address)
+    ? address
+    : `https://${address.replace(/^\/+/, "")}`;
+}
+
+const isBlank = (value: RawAnswer | undefined) =>
+  value === undefined || (Array.isArray(value) ? value.length === 0 : !value.trim());
+
+/** The element to scroll to for a missing field key ("name", "answers.track"). */
+const elementIdFor = (key: string) =>
+  key.startsWith("answers.") ? `q-${key.slice("answers.".length)}` : `apply-${key}`;
+
+/**
+ * Wraps a field that was left empty on submit. Its key changes with every
+ * attempt, so the red flash plays again each time submit is pressed.
+ */
+function Flash({ on, attempt, children }: { on: boolean; attempt: number; children: ReactNode }) {
+  return (
+    <div key={on ? `flash-${attempt}` : "idle"} className={on ? "flash-required" : undefined}>
+      {children}
+    </div>
+  );
 }
 
 const emptyContact = { name: "", email: "", phone: "", companyName: "" };
@@ -109,12 +136,37 @@ export function ApplicationForm({
   const [error, setError] = useState<unknown>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [receipt, setReceipt] = useState<StoredReceipt | null>(null);
+  /** Required fields left empty at the last submit ("name", "answers.track"). */
+  const [missing, setMissing] = useState<ReadonlySet<string>>(new Set());
+  const [attempt, setAttempt] = useState(0);
   const started = useRef(false);
 
   // Restore an application submitted earlier in this tab.
   useEffect(() => setReceipt(loadReceipt()), []);
 
-  const errors = fieldErrors(error);
+  const serverErrors = fieldErrors(error);
+  /** The server's message for a field, else "Please fill this in." if left empty. */
+  const errorFor = (key: string) =>
+    serverErrors[key] ?? (missing.has(key) ? copy.requiredField : undefined);
+
+  /** Filling a field clears its "missing" mark. */
+  const filled = (key: string) =>
+    setMissing((m) => {
+      if (!m.has(key)) return m;
+      const next = new Set(m);
+      next.delete(key);
+      return next;
+    });
+
+  function findMissing(): string[] {
+    const gaps: string[] = [];
+    if (!contact.name.trim()) gaps.push("name");
+    if (!contact.email.trim()) gaps.push("email");
+    for (const q of form.questions) {
+      if (q.required && isBlank(answers[q.key])) gaps.push(`answers.${q.key}`);
+    }
+    return gaps;
+  }
 
   function onFirstInteraction() {
     if (started.current) return;
@@ -124,9 +176,26 @@ export function ApplicationForm({
 
   async function onSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
-    setPending(true);
     setError(null);
     setNotice(null);
+
+    // Every empty required field at once, rather than the browser's one-at-a-
+    // time bubble: mark them, flash them, and bring the first into view.
+    const gaps = findMissing();
+    setMissing(new Set(gaps));
+    if (gaps.length) {
+      setAttempt((n) => n + 1);
+      const first = document.getElementById(elementIdFor(gaps[0]));
+      first?.scrollIntoView({ block: "center", behavior: "smooth" });
+      const control =
+        first instanceof HTMLInputElement || first instanceof HTMLTextAreaElement
+          ? first
+          : first?.querySelector<HTMLInputElement>("input");
+      control?.focus({ preventScroll: true });
+      return;
+    }
+
+    setPending(true);
     try {
       const result = await submitApplication({
         formVersion: form.version,
@@ -180,6 +249,7 @@ export function ApplicationForm({
           setContact(emptyContact);
           setAnswers({});
           setTierSlug("");
+          setMissing(new Set());
           started.current = false;
         }}
       />
@@ -188,13 +258,18 @@ export function ApplicationForm({
 
   const setField =
     (key: keyof typeof emptyContact) =>
-    (e: { target: { value: string } }) =>
+    (e: { target: { value: string } }) => {
       setContact((v) => ({ ...v, [key]: e.target.value }));
+      if (e.target.value.trim()) filled(key);
+    };
 
   return (
     <form
       onSubmit={onSubmit}
       onFocusCapture={onFirstInteraction}
+      // Required fields are checked by the form itself (all at once, in red)
+      // instead of the browser's one-field-at-a-time bubble.
+      noValidate
       className="relative space-y-10"
     >
       <fieldset className="space-y-6">
@@ -202,27 +277,31 @@ export function ApplicationForm({
           About you
         </legend>
         <div className="grid gap-6 sm:grid-cols-2">
-          <InputField
-            id="apply-name"
-            label="Name"
-            required
-            maxLength={200}
-            autoComplete="name"
-            value={contact.name}
-            onChange={setField("name")}
-            error={errors.name}
-          />
-          <InputField
-            id="apply-email"
-            label="Email"
-            type="email"
-            required
-            maxLength={320}
-            autoComplete="email"
-            value={contact.email}
-            onChange={setField("email")}
-            error={errors.email}
-          />
+          <Flash on={missing.has("name")} attempt={attempt}>
+            <InputField
+              id="apply-name"
+              label="Name"
+              required
+              maxLength={200}
+              autoComplete="name"
+              value={contact.name}
+              onChange={setField("name")}
+              error={errorFor("name")}
+            />
+          </Flash>
+          <Flash on={missing.has("email")} attempt={attempt}>
+            <InputField
+              id="apply-email"
+              label="Email"
+              type="email"
+              required
+              maxLength={320}
+              autoComplete="email"
+              value={contact.email}
+              onChange={setField("email")}
+              error={errorFor("email")}
+            />
+          </Flash>
           <InputField
             id="apply-phone"
             label="Phone"
@@ -231,7 +310,7 @@ export function ApplicationForm({
             autoComplete="tel"
             value={contact.phone}
             onChange={setField("phone")}
-            error={errors.phone}
+            error={errorFor("phone")}
           />
           <InputField
             id="apply-company"
@@ -240,7 +319,7 @@ export function ApplicationForm({
             autoComplete="organization"
             value={contact.companyName}
             onChange={setField("companyName")}
-            error={errors.companyName}
+            error={errorFor("companyName")}
           />
         </div>
 
@@ -248,14 +327,14 @@ export function ApplicationForm({
           <FieldShell
             id="apply-tier"
             label={copy.tierLabel}
-            error={errors.serviceTierSlug}
+            error={errorFor("serviceTierSlug")}
           >
             <select
               id="apply-tier"
               value={tierSlug}
               onChange={(e) => setTierSlug(e.target.value)}
-              aria-invalid={errors.serviceTierSlug ? true : undefined}
-              aria-describedby={describedBy("apply-tier", null, errors.serviceTierSlug)}
+              aria-invalid={errorFor("serviceTierSlug") ? true : undefined}
+              aria-describedby={describedBy("apply-tier", null, errorFor("serviceTierSlug"))}
               className={controlClass}
             >
               <option value="">{copy.tierNone}</option>
@@ -277,18 +356,27 @@ export function ApplicationForm({
           <p className="text-body text-ink/70">{form.description}</p>
         ) : null}
         {form.questions.map((q) => (
-          <Question
+          <Flash
             key={`${form.version}:${q.key}`}
-            question={q}
-            value={answers[q.key]}
-            error={errors[`answers.${q.key}`]}
-            onChange={(v) => setAnswers((a) => ({ ...a, [q.key]: v }))}
-          />
+            on={missing.has(`answers.${q.key}`)}
+            attempt={attempt}
+          >
+            <Question
+              question={q}
+              value={answers[q.key]}
+              error={errorFor(`answers.${q.key}`)}
+              onChange={(v) => {
+                setAnswers((a) => ({ ...a, [q.key]: v }));
+                if (!isBlank(v)) filled(`answers.${q.key}`);
+              }}
+            />
+          </Flash>
         ))}
       </fieldset>
 
       <Honeypot value={honeypot} onChange={setHoneypot} />
 
+      {missing.size ? <FormNotice tone="error">{copy.missingRequired}</FormNotice> : null}
       {notice ? <FormNotice tone="success">{notice}</FormNotice> : null}
       {error ? <FormNotice tone="error">{describeError(error)}</FormNotice> : null}
 
@@ -358,10 +446,16 @@ function Question({
 
     case "url":
       return (
+        // Plain text, not type="url": the browser would demand "https://",
+        // and people type "youtube.com/@name". toAnswers adds the scheme.
         <InputField
           {...common}
-          type="url"
-          placeholder="https://"
+          type="text"
+          inputMode="url"
+          autoComplete="url"
+          autoCapitalize="none"
+          spellCheck={false}
+          placeholder={copy.urlPlaceholder}
           value={text}
           onChange={(e) => onChange(e.target.value)}
         />
@@ -430,7 +524,7 @@ function ChoiceGroup({
   onToggle: (value: string) => void;
 }) {
   return (
-    <fieldset aria-describedby={describedBy(id, hint, error)}>
+    <fieldset id={id} aria-describedby={describedBy(id, hint, error)}>
       <legend className="text-small font-medium text-ink">
         {label}
         {required ? null : (
@@ -451,7 +545,9 @@ function ChoiceGroup({
               className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-small transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-gold ${
                 checked
                   ? "border-ink bg-ink text-cream"
-                  : "border-ink/60 text-ink hover:bg-gold/10"
+                  : error
+                    ? "border-alert text-ink hover:bg-gold/10"
+                    : "border-ink/60 text-ink hover:bg-gold/10"
               }`}
             >
               <input

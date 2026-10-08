@@ -385,6 +385,42 @@
 }
 
 /* ============================================================================
+   Required answers left empty
+   ----------------------------------------------------------------------------
+   Pressing submit with gaps flashes each empty required field red twice; the
+   field then keeps its red edge (aria-invalid) and message until it is filled.
+   The wrapper is pulled out by its own padding so the glow surrounds the
+   field without moving anything.
+   ========================================================================= */
+
+@keyframes flash-required {
+  0%,
+  30%,
+  100% {
+    background-color: transparent;
+    box-shadow: 0 0 0 0 transparent;
+  }
+  15%,
+  45% {
+    background-color: color-mix(in srgb, var(--color-alert) 12%, transparent);
+    box-shadow: 0 0 0 2px var(--color-alert);
+  }
+}
+
+.flash-required {
+  margin: -0.75rem;
+  padding: 0.75rem;
+  border-radius: 1.25rem;
+  animation: flash-required 1.4s ease-in-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .flash-required {
+    outline: 2px solid var(--color-alert);
+  }
+}
+
+/* ============================================================================
    Reduced motion
    ----------------------------------------------------------------------------
    Motion's useReducedMotion() gates the JS-driven transforms; this catches

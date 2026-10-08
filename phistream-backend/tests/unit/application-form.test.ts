@@ -147,12 +147,26 @@ describe('answers validation', () => {
     ['a boolean as string', { ...TEST_ANSWERS, agree: 'true' }, 'agree'],
     ['a javascript: URL', { ...TEST_ANSWERS, portfolio: 'javascript:alert(1)' }, 'portfolio'],
     ['a non-URL', { ...TEST_ANSWERS, portfolio: 'my site' }, 'portfolio'],
+    ['a word with no domain', { ...TEST_ANSWERS, portfolio: 'hello' }, 'portfolio'],
+    ['a bare handle', { ...TEST_ANSWERS, portfolio: '@mychannel' }, 'portfolio'],
+    ['an ftp URL', { ...TEST_ANSWERS, portfolio: 'ftp://example.com' }, 'portfolio'],
     ['an object as text', { ...TEST_ANSWERS, about: { nested: true } }, 'about'],
   ])('rejects %s', (_, input, path) => {
     const result = answers.safeParse(input);
     expect(result.success).toBe(false);
     // Array issues point at the element (e.g. "goals/0").
     expect(issuePaths(result).some((p) => p === path || p.startsWith(`${path}/`))).toBe(true);
+  });
+
+  it.each([
+    ['youtube.com/@mychannel', 'https://youtube.com/@mychannel'],
+    ['www.example.com', 'https://www.example.com'],
+    ['  example.co.uk/about  ', 'https://example.co.uk/about'],
+    ['http://example.com', 'http://example.com'],
+    ['https://example.com/me', 'https://example.com/me'],
+    ['HTTPS://Example.com', 'HTTPS://Example.com'],
+  ])('accepts the web address %j without needing https:// (stored as %j)', (typed, stored) => {
+    expect(answers.parse({ ...TEST_ANSWERS, portfolio: typed }).portfolio).toBe(stored);
   });
 
   it('rejects answers to questions that are not on the form', () => {
