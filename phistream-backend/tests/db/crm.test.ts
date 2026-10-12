@@ -63,9 +63,13 @@ describe.skipIf(!TEST_DATABASE_URL)('CRM sync outbox (PostgreSQL)', () => {
     const lead = await admin.query<{ id: string }>(
       `insert into leads (email, full_name) values ('jane@example.com', 'Jane') returning id`,
     );
+    await admin.query(
+      `insert into application_forms (version, definition) values ('crm-test-v1', '{"questions": []}')
+       on conflict (version) do nothing`,
+    );
     const application = await admin.query<{ id: string }>(
       `insert into applications (reference, lead_id, form_version)
-       values ('CRM-1', $1, 'legacy-v1') returning id`,
+       values ('CRM-1', $1, 'crm-test-v1') returning id`,
       [lead.rows[0]?.id],
     );
     return { leadId: lead.rows[0]?.id ?? '', applicationId: application.rows[0]?.id ?? '' };
