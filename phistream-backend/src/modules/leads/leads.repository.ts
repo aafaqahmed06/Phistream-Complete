@@ -151,7 +151,7 @@ export function leadResolutionOperations(tx: DbTransaction): LeadResolutionOpera
   };
 }
 
-function contactOperations(tx: DbTransaction): LeadsTransaction {
+function contactOperations(tx: DbTransaction, crm: boolean): LeadsTransaction {
   return {
     ...leadResolutionOperations(tx),
 
@@ -185,6 +185,13 @@ function contactOperations(tx: DbTransaction): LeadsTransaction {
         .values(submission)
         .returning({ id: contactSubmissions.id });
       if (!row) throw new Error('contact submission insert returned no row');
+      if (crm) {
+        await enqueueNotificationEvent(tx, {
+          eventType: 'CRM_CONTACT_SYNC',
+          subjectType: 'contact_submission',
+          subjectId: row.id,
+        });
+      }
       return row.id;
     },
 
@@ -192,9 +199,12 @@ function contactOperations(tx: DbTransaction): LeadsTransaction {
   };
 }
 
-export function createLeadsRepository(db: Db): LeadsRepository {
+export function createLeadsRepository(
+  db: Db,
+  { crm = false }: { crm?: boolean } = {},
+): LeadsRepository {
   return {
     withEmailLock: (email, work) =>
-      runWithEmailLock(db, email, (tx) => work(contactOperations(tx))),
+      runWithEmailLock(db, email, (tx) => work(contactOperations(tx, crm))),
   };
 }

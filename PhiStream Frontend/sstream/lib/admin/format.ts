@@ -90,6 +90,8 @@ const notificationLabels: Record<string, string> = {
   MEETING_RESCHEDULED: "Call moved",
   MEETING_CANCELLED: "Call cancelled",
   SCHEDULING_BOOKING_NEEDS_ATTENTION: "Booking needs a look",
+  CRM_CONTACT_SYNC: "Contact message",
+  CRM_APPLICATION_SYNC: "Application update",
 };
 
 export function notificationLabel(eventType: string) {

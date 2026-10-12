@@ -15,8 +15,14 @@ export const NOTIFICATION_EVENT_TYPES = [
   'MEETING_CANCELLED',
   /** A provider booking could not be linked, or came from an ineligible application. */
   'SCHEDULING_BOOKING_NEEDS_ATTENTION',
+  /** CRM sync of a contact message (subject: contact_submission). */
+  'CRM_CONTACT_SYNC',
+  /** CRM sync after an application lifecycle event (subject: application_event). */
+  'CRM_APPLICATION_SYNC',
 ] as const;
 export type NotificationEventType = (typeof NOTIFICATION_EVENT_TYPES)[number];
+
+export const isCrmEvent = (eventType: string) => eventType.startsWith('CRM_');
 
 export interface NotificationEventInput {
   readonly eventType: NotificationEventType;

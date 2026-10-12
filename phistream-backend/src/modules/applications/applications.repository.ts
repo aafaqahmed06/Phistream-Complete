@@ -157,13 +157,31 @@ export interface ApplicationsRepository {
   ): Promise<T | undefined>;
 }
 
-function insertEvent(tx: DbTransaction, event: NewApplicationEvent): Promise<unknown> {
+/**
+ * Every lifecycle event also queues a CRM sync (when `crm` is on), keyed by the
+ * event row so each transition syncs exactly once, in the same transaction.
+ */
+async function insertEvent(
+  tx: DbTransaction,
+  event: NewApplicationEvent,
+  crm: boolean,
+): Promise<void> {
   // clock_timestamp(): events written in one transaction keep their order
   // (now() would give them all the transaction start time).
-  return tx.insert(applicationEvents).values({ ...event, createdAt: sql`clock_timestamp()` });
+  const [row] = await tx
+    .insert(applicationEvents)
+    .values({ ...event, createdAt: sql`clock_timestamp()` })
+    .returning({ id: applicationEvents.id });
+  if (crm && row) {
+    await enqueueNotificationEvent(tx, {
+      eventType: 'CRM_APPLICATION_SYNC',
+      subjectType: 'application_event',
+      subjectId: row.id,
+    });
+  }
 }
 
-function submissionOperations(tx: DbTransaction): SubmissionTransaction {
+function submissionOperations(tx: DbTransaction, crm: boolean): SubmissionTransaction {
   return {
     ...leadResolutionOperations(tx),
 
@@ -206,9 +224,7 @@ function submissionOperations(tx: DbTransaction): SubmissionTransaction {
       if (rows.length > 0) await tx.insert(applicationAnswers).values(rows);
     },
 
-    async insertEvent(event) {
-      await insertEvent(tx, event);
-    },
+    insertEvent: (event) => insertEvent(tx, event, crm),
 
     async insertAccessToken(token) {
       await tx.insert(applicationAccessTokens).values(token);
@@ -218,7 +234,10 @@ function submissionOperations(tx: DbTransaction): SubmissionTransaction {
   };
 }
 
-export function createApplicationsRepository(db: Db): ApplicationsRepository {
+export function createApplicationsRepository(
+  db: Db,
+  { crm = false }: { crm?: boolean } = {},
+): ApplicationsRepository {
   return {
     async findActiveForm() {
       const rows = await db
@@ -239,7 +258,7 @@ export function createApplicationsRepository(db: Db): ApplicationsRepository {
     },
 
     withEmailLock: (email, work) =>
-      runWithEmailLock(db, email, (tx) => work(submissionOperations(tx))),
+      runWithEmailLock(db, email, (tx) => work(submissionOperations(tx, crm))),
 
     async findStatusByAccessToken({ applicationId, tokenHash, purpose, now }) {
       // One query for every failure mode (unknown application, wrong token,
@@ -268,7 +287,7 @@ export function createApplicationsRepository(db: Db): ApplicationsRepository {
 
     async withApplicationLock(applicationId, work) {
       return db.transaction(async (tx) => {
-        const locked = await lockApplication(tx, applicationId);
+        const locked = await lockApplication(tx, applicationId, crm);
         return locked ? work(locked) : undefined;
       });
     },
@@ -284,6 +303,7 @@ export function createApplicationsRepository(db: Db): ApplicationsRepository {
 export async function lockApplication(
   tx: DbTransaction,
   applicationId: string,
+  crm = false,
 ): Promise<LifecycleTransaction | undefined> {
   const [application] = await tx
     .select({ id: applications.id, status: applications.status })
@@ -301,9 +321,7 @@ export async function lockApplication(
       await tx.update(applications).set(update).where(eq(applications.id, applicationId));
       status = update.status;
     },
-    async insertEvent(event) {
-      await insertEvent(tx, event);
-    },
+    insertEvent: (event) => insertEvent(tx, event, crm),
     async insertNote(note) {
       const [row] = await tx
         .insert(applicationNotes)

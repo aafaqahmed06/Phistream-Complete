@@ -131,7 +131,7 @@ export const adminRoutes: FastifyPluginAsyncZod<AdminRoutesOptions> = async (app
           operationId: 'adminEraseLead',
           summary: 'Permanently erase a lead (privacy request)',
           description: describe(
-            'Roles: ADMIN only. Irreversible. Deletes the lead and everything linked to it: contact messages, applications, answers, notes, lifecycle events, tokens, scheduling sessions, meetings, and related notification records. Anonymous analytics rows are unlinked. Audited as `lead.erased` with counts only. Data held by providers (Cal.com, Resend, Supabase Auth) must be erased there separately.',
+            'Roles: ADMIN only. Irreversible. Deletes the lead and everything linked to it: contact messages, applications, answers, notes, lifecycle events, tokens, scheduling sessions, meetings, and related notification records. Anonymous analytics rows are unlinked. Audited as `lead.erased` with counts only. When the CRM (Attio) is configured, the person and their deals are deleted there first; if that fails (503) nothing is deleted and the request can be repeated. Data held by other providers (Cal.com, Resend, Supabase Auth) must be erased there separately.',
             ['- `404`: Unknown lead.'],
           ),
           params: leadIdParamsSchema,
@@ -352,7 +352,7 @@ export const adminRoutes: FastifyPluginAsyncZod<AdminRoutesOptions> = async (app
           operationId: 'adminListNotifications',
           summary: 'Notification events and their deliveries (newest first)',
           description: describe(
-            'Roles: ADMIN only. Use `?status=FAILED` to find notifications that need attention. `lastError` values are sanitized codes (e.g. `resend_403_validation_error`, `no_staff_recipients`).',
+            'Roles: ADMIN only. Use `?status=FAILED` to find notifications that need attention, and `?kind=crm` for the Attio sync status (`CRM_*` events; they have no deliveries). `lastError` values are sanitized codes (e.g. `resend_403_validation_error`, `no_staff_recipients`).',
           ),
           querystring: notificationListQuerySchema,
           response: { 200: notificationListResponseSchema, ...errorResponses },

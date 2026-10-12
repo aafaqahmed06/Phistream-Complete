@@ -54,6 +54,7 @@ Every item below is backed by automated tests (1,397 tests; ~92 % statement / 85
 | Hosting                  | A container host with HTTPS termination; set `TRUST_PROXY` to the proxy hop count; route health checks to `/health`, readiness to `/health/ready`.                 |
 | Supabase database        | `DATABASE_URL` (transaction pooler, port 6543), `MIGRATION_DATABASE_URL` (direct or session pooler, port 5432), `DATABASE_SSL_CA` for `verify-full`. Enable backups/PITR. |
 | Supabase Auth            | `SUPABASE_URL`; **disable public sign-ups**; create staff users, then `npm run staff:prod -- add …`. Consider requiring MFA.                                         |
+| Attio (optional)         | `ATTIO_API_KEY`, `ATTIO_DEAL_OWNER_EMAIL`, optional `ATTIO_STAGE_MAP`; workspace setup in `docs/crm.md`. |
 | Resend                   | Verify the sending domain; `RESEND_API_KEY` (sending access only), `EMAIL_FROM`; `STAFF_NOTIFICATION_EMAILS`.                                                      |
 | Cal.com                  | Hidden event type → `CALCOM_BOOKING_URL`; webhook to `/api/v1/webhooks/scheduling/calcom` with `CALCOM_WEBHOOK_SECRET`; optional `CALCOM_API_KEY`. Verify with a test booking (the adapter follows Cal.com's documented formats and has not yet been run against a live account). |
 | Frontend                 | `CORS_ALLOWED_ORIGINS` (site and admin dashboard), `SCHEDULING_PAGE_URL`, `ADMIN_DASHBOARD_URL`.                                                                 |
@@ -113,7 +114,7 @@ node dist/db/scripts/retention.js --dry-run            # then without --dry-run,
 
 ## Data retention and erasure
 
-- **Erasure:** `DELETE /api/v1/admin/leads/:id` (ADMIN, audited as `lead.erased` with counts only) removes the person's lead, messages, applications, answers, notes, events, tokens, sessions, meetings, and related notification records. Anonymous analytics rows are unlinked. Copies held by Cal.com, Resend, and Supabase Auth must be erased in those systems too.
+- **Erasure:** `DELETE /api/v1/admin/leads/:id` (ADMIN, audited as `lead.erased` with counts only) removes the person's lead, messages, applications, answers, notes, events, tokens, sessions, meetings, and related notification records. Anonymous analytics rows are unlinked. With Attio configured, erasure deletes the person and their deals there first (503 and nothing deleted if Attio fails). Copies held by Cal.com, Resend, and Supabase Auth must be erased in those systems too.
 - **Retention:** `retention.js` deletes, using the database clock:
   - analytics events after 395 days;
   - settled notification events and their deliveries after 365 days;

@@ -58,6 +58,9 @@ import corsPlugin from './plugins/cors/index.js';
 import rateLimitPlugin from './plugins/rate-limit/index.js';
 import securityHeadersPlugin from './plugins/security-headers/index.js';
 import swaggerPlugin from './plugins/swagger/index.js';
+import { createCrmSync } from './modules/crm/crm-sync.js';
+import type { CrmProvider } from './providers/crm/crm-provider.js';
+import { createCrmProvider } from './providers/crm/index.js';
 import type { EmailProvider } from './providers/email/email-provider.js';
 import { createEmailProvider } from './providers/email/index.js';
 import { LOG_PROVIDER } from './providers/email/log-provider.js';
@@ -97,6 +100,7 @@ function requireDb(database: Database | undefined): Database {
 const ROUTES_THAT_QUEUE_EMAIL = [
   '/contact',
   '/applications',
+  '/applications/:id/review',
   '/applications/:id/accept',
   '/applications/:id/reject',
   '/webhooks/scheduling/:provider',
@@ -135,6 +139,8 @@ export interface BuildAppOptions {
   readonly schedulingProvider?: SchedulingProvider;
   /** Email provider override (tests). By default built from `config.email`. */
   readonly emailProvider?: EmailProvider;
+  /** CRM provider override (tests). By default built from `config.crm`. */
+  readonly crmProvider?: CrmProvider;
   /**
    * Run the notification worker (outbox → email) while the app is up.
    * server.ts enables it from config; tests drive the dispatcher directly.
@@ -172,6 +178,7 @@ export async function buildApp({
   staffTokenVerifier,
   schedulingProvider,
   emailProvider,
+  crmProvider,
   runNotificationWorker = false,
   dispatchNotificationsAfterResponse = false,
   logStream,
@@ -237,12 +244,16 @@ export async function buildApp({
         })
       : undefined);
 
+  // CRM (Attio): when configured, lead/application writes also queue a sync.
+  const crm = crmProvider ?? createCrmProvider(config.crm);
+  const crmOptions = { crm: crm !== undefined };
+
   const contactLogger = app.log.child({ module: 'contact' });
   const contactService =
     services?.contact ??
     (database
       ? createContactService({
-          repository: createLeadsRepository(database.db),
+          repository: createLeadsRepository(database.db, crmOptions),
           spamGuard: createPublicFormSpamGuard({ humanVerifier, logger: contactLogger }),
           logger: contactLogger,
         })
@@ -253,7 +264,7 @@ export async function buildApp({
     services?.applications ??
     (database
       ? createApplicationsService({
-          repository: createApplicationsRepository(database.db),
+          repository: createApplicationsRepository(database.db, crmOptions),
           spamGuard: createPublicFormSpamGuard({ humanVerifier, logger: applicationsLogger }),
           logger: applicationsLogger,
           policy: { statusTokenTtlMs: config.applications.statusTokenTtlMs },
@@ -266,7 +277,9 @@ export async function buildApp({
     services?.scheduling ??
     (database
       ? createSchedulingService({
-          repository: provider ? createSchedulingRepository(database.db, provider.name) : undefined,
+          repository: provider
+            ? createSchedulingRepository(database.db, provider.name, crmOptions)
+            : undefined,
           provider,
           tokenTtlMs: config.scheduling.tokenTtlMs,
           pageUrl: config.scheduling.pageUrl,
@@ -292,13 +305,15 @@ export async function buildApp({
         'email provider is "log": notifications are recorded but not delivered',
       );
     }
+    const notificationContext = createNotificationContext(database.db, {
+      staffRecipients: config.notifications.staffRecipients,
+    });
     const dispatcher = createNotificationDispatcher({
       repository: notificationsRepository,
-      context: createNotificationContext(database.db, {
-        staffRecipients: config.notifications.staffRecipients,
-      }),
+      context: notificationContext,
       provider: mailer,
       scheduling: schedulingService,
+      crm: crm && createCrmSync({ db: database.db, provider: crm, context: notificationContext }),
       options: {
         from: config.email.from,
         replyTo: config.email.replyTo,
@@ -356,11 +371,12 @@ export async function buildApp({
             createAdminService({
               repository: createAdminRepository(requireDb(database).db),
               database: requireDb(database).db,
+              crm,
             }),
           reviewService:
             services?.review ??
             createApplicationReviewService({
-              repository: createApplicationsRepository(requireDb(database).db),
+              repository: createApplicationsRepository(requireDb(database).db, crmOptions),
             }),
           directory: services?.staffDirectory ?? createStaffDirectory(requireDb(database).db),
           schedulingService,

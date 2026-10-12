@@ -85,6 +85,8 @@ export interface NotificationsRepository {
   listEvents(filters: {
     status?: NotificationEventStatus | undefined;
     eventType?: string | undefined;
+    /** `crm` = Attio sync events only, `email` = all others. */
+    kind?: 'email' | 'crm' | undefined;
     limit: number;
     offset: number;
   }): Promise<{ items: NotificationEventListItem[]; total: number }>;
@@ -223,10 +225,12 @@ export function createNotificationsRepository(db: Db): NotificationsRepository {
         .where(eq(notificationDeliveries.id, id));
     },
 
-    async listEvents({ status, eventType, limit, offset }) {
+    async listEvents({ status, eventType, kind, limit, offset }) {
+      const isCrm = sql`starts_with(${notificationEvents.eventType}, 'CRM_')`;
       const where = and(
         status ? eq(notificationEvents.status, status) : undefined,
         eventType ? eq(notificationEvents.eventType, eventType) : undefined,
+        kind === 'crm' ? isCrm : kind === 'email' ? sql`not ${isCrm}` : undefined,
       );
       const [events, totals] = await Promise.all([
         db

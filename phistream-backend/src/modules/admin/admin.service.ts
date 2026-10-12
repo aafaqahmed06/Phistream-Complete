@@ -15,7 +15,8 @@ import type {
   LeadFilters,
 } from './admin.repository.js';
 import type { Db } from '../../db/client.js';
-import { eraseLead, type ErasureSummary } from './data-retention.js';
+import type { CrmProvider } from '../../providers/crm/crm-provider.js';
+import { eraseLead, eraseLeadFromCrm, type ErasureSummary } from './data-retention.js';
 import { hasPermission } from './permissions.js';
 
 /**
@@ -133,11 +134,18 @@ export function createAdminService(deps: {
   repository: AdminRepository;
   /** Enables erasure; omitted in HTTP-only tests. */
   database?: Db;
+  /** When set, erasure also deletes the person and deals in the CRM. */
+  crm?: CrmProvider | undefined;
 }): AdminService {
-  const { repository, database } = deps;
+  const { repository, database, crm } = deps;
   return {
     ...(database
-      ? { eraseLead: (id: string, actorId: string) => eraseLead(database, id, actorId) }
+      ? {
+          eraseLead: async (id: string, actorId: string) => {
+            if (crm) await eraseLeadFromCrm(database, crm, id);
+            return eraseLead(database, id, actorId);
+          },
+        }
       : {}),
     async listLeads(filters) {
       return paged(await repository.listLeads(filters), filters);

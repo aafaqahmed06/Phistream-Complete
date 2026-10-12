@@ -1,9 +1,12 @@
 import { and, count, eq, inArray, isNotNull, lt, or, sql } from 'drizzle-orm';
 
 import type { Db } from '../../db/client.js';
+import { AppError } from '../../shared/errors/app-error.js';
+import { CrmSyncError, type CrmProvider } from '../../providers/crm/crm-provider.js';
 import {
   analyticsEvents,
   applicationAccessTokens,
+  applicationEvents,
   applications,
   contactSubmissions,
   leads,
@@ -70,9 +73,20 @@ export async function eraseLead(
               .where(inArray(meetings.applicationId, applicationIds))
           ).map((row) => row.id);
 
+    const applicationEventIds =
+      applicationIds.length === 0
+        ? []
+        : (
+            await tx
+              .select({ id: applicationEvents.id })
+              .from(applicationEvents)
+              .where(inArray(applicationEvents.applicationId, applicationIds))
+          ).map((row) => row.id);
+
     // Outbox events about this person's records (deliveries cascade with them).
     const subjects = [
       ['application', applicationIds],
+      ['application_event', applicationEventIds],
       ['contact_submission', submissionIds],
       ['meeting', meetingIds],
     ] as const;
@@ -108,6 +122,39 @@ export async function eraseLead(
     });
     return summary;
   });
+}
+
+/**
+ * Deletes the lead's person and deals in the CRM. Runs BEFORE the local erase
+ * (and outside its transaction): if the CRM call fails nothing is deleted, so
+ * the request can simply be repeated and no copy is left behind unnoticed.
+ */
+export async function eraseLeadFromCrm(db: Db, crm: CrmProvider, leadId: string): Promise<void> {
+  const [lead] = await db
+    .select({ email: leads.email })
+    .from(leads)
+    .where(eq(leads.id, leadId))
+    .limit(1);
+  if (!lead) return;
+  const references = (
+    await db
+      .select({ reference: applications.reference })
+      .from(applications)
+      .innerJoin(leads, eq(leads.id, applications.leadId))
+      .where(eq(leads.email, lead.email))
+  ).map((row) => row.reference);
+  try {
+    await crm.erase({ email: lead.email, references });
+  } catch (error) {
+    if (!(error instanceof CrmSyncError)) throw error;
+    throw new AppError(
+      503,
+      'SERVICE_UNAVAILABLE',
+      'The CRM could not be reached; nothing was deleted. Try again.',
+      undefined,
+      { cause: error },
+    );
+  }
 }
 
 // ---- Retention -------------------------------------------------------------------------

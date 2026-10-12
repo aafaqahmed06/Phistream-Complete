@@ -1,7 +1,9 @@
+import { CrmSyncError } from '../../providers/crm/crm-provider.js';
 import { EmailSendError, type EmailProvider } from '../../providers/email/email-provider.js';
 import { AppError } from '../../shared/errors/app-error.js';
+import type { CrmSync } from '../crm/crm-sync.js';
 import type { NotificationContext } from './notification-context.js';
-import type { NotificationEventType } from './notification-outbox.js';
+import { isCrmEvent, type NotificationEventType } from './notification-outbox.js';
 import type { ClaimedEvent, NotificationsRepository } from './notifications.repository.js';
 import {
   applicantApplicationAccepted,
@@ -113,10 +115,12 @@ export function createNotificationDispatcher(deps: {
   context: NotificationContext;
   provider: EmailProvider;
   scheduling: SchedulingLinkIssuer | undefined;
+  /** CRM events (`CRM_*`) are synced here; without it they complete as skipped. */
+  crm?: CrmSync | undefined;
   options: DispatcherOptions;
   logger: DispatcherLogger;
 }): NotificationDispatcher {
-  const { repository, context, provider, scheduling, options, logger } = deps;
+  const { repository, context, provider, scheduling, crm, options, logger } = deps;
   const adminLink = (applicationId: string | null) =>
     options.adminDashboardUrl && applicationId
       ? `${options.adminDashboardUrl}/applications/${applicationId}`
@@ -296,7 +300,25 @@ export function createNotificationDispatcher(deps: {
     return 'retried';
   }
 
+  /** CRM events share the outbox, retry/backoff and dead-letter handling with email. */
+  async function processCrmEvent(event: ClaimedEvent): Promise<'processed' | 'retried' | 'failed'> {
+    let skipped: string | undefined = 'crm_disabled';
+    try {
+      if (crm) skipped = await crm.handle(event);
+    } catch (error) {
+      if (error instanceof CrmSyncError) return settle(event, error.code, !error.retryable);
+      throw error;
+    }
+    await repository.completeEvent(event.id);
+    logger.info(
+      { notificationEventId: event.id, eventType: event.eventType, ...(skipped && { skipped }) },
+      skipped ? 'crm sync skipped' : 'crm synced',
+    );
+    return 'processed';
+  }
+
   async function processEvent(event: ClaimedEvent): Promise<'processed' | 'retried' | 'failed'> {
+    if (isCrmEvent(event.eventType)) return processCrmEvent(event);
     const planned = await plan(event);
     if (planned.kind === 'skip') {
       await repository.completeEvent(event.id);

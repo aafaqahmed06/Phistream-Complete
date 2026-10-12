@@ -26,29 +26,44 @@ import {
 
 type Filter = "ALL" | NotificationEventStatus;
 
-const FILTERS: readonly { value: Filter; label: string }[] = [
+const filters = (waiting: string, done: string): readonly { value: Filter; label: string }[] => [
   { value: "ALL", label: "All" },
   { value: "FAILED", label: "Failed" },
-  { value: "PENDING", label: "Sending" },
-  { value: "PROCESSED", label: "Sent" },
+  { value: "PENDING", label: waiting },
+  { value: "PROCESSED", label: done },
 ];
 
 /**
  * Every email the backend has sent or tried to send, newest first. A failed
  * one can be retried; deliveries that already went out are not sent twice.
+ * With `kind="crm"` the same list shows the Attio sync instead: one row per
+ * contact message or application update pushed to the CRM.
  */
-export function NotificationsList() {
+export function NotificationsList({ kind = "email" }: { kind?: "email" | "crm" }) {
+  const crm = kind === "crm";
   const [filter, setFilter] = useState<Filter>("ALL");
   const list = useAdminList<AdminNotification>("/notifications", {
     status: filter === "ALL" ? undefined : filter,
+    kind,
   });
 
   return (
     <Workspace>
       <PageHeader
-        title="Emails"
-        lead="What the studio's server has emailed, to applicants and to staff. Failed ones can be sent again."
-        aside={<FilterTabs label="Filter by status" options={FILTERS} value={filter} onChange={setFilter} />}
+        title={crm ? "CRM sync" : "Emails"}
+        lead={
+          crm
+            ? "Contacts and applications the server has sent to Attio. Failed ones can be synced again."
+            : "What the studio's server has emailed, to applicants and to staff. Failed ones can be sent again."
+        }
+        aside={
+          <FilterTabs
+            label="Filter by status"
+            options={crm ? filters("Syncing", "Synced") : filters("Sending", "Sent")}
+            value={filter}
+            onChange={setFilter}
+          />
+        }
       />
 
       <div className="mt-10">
@@ -57,8 +72,10 @@ export function NotificationsList() {
         ) : list.initialLoading ? (
           <LoadingRows />
         ) : list.items.length === 0 ? (
-          <EmptyState title={filter === "FAILED" ? "Nothing has failed." : "No emails yet."}>
-            Emails appear here when someone sends a message, applies, or is accepted or declined.
+          <EmptyState title={filter === "FAILED" ? "Nothing has failed." : crm ? "Nothing synced yet." : "No emails yet."}>
+            {crm
+              ? "Rows appear here when someone sends a message or applies, once the Attio key is set on the backend."
+              : "Emails appear here when someone sends a message, applies, or is accepted or declined."}
           </EmptyState>
         ) : (
           <>
@@ -71,7 +88,7 @@ export function NotificationsList() {
             ) : null}
             <ul className="divide-y divide-taupe/40 border-y border-taupe/40">
               {list.items.map((n) => (
-                <Notification key={n.id} notification={n} />
+                <Notification key={n.id} notification={n} crm={crm} />
               ))}
             </ul>
             <ListFooter shown={list.items.length} total={list.total} onMore={list.more} loading={list.loading} />
@@ -82,7 +99,7 @@ export function NotificationsList() {
   );
 }
 
-function Notification({ notification }: { notification: AdminNotification }) {
+function Notification({ notification, crm }: { notification: AdminNotification; crm: boolean }) {
   const { token } = useAdminSession();
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -125,7 +142,7 @@ function Notification({ notification }: { notification: AdminNotification }) {
       </div>
 
       <div className="space-y-3 lg:col-span-6">
-        {n.deliveries.length ? (
+        {crm ? null : n.deliveries.length ? (
           <ul className="space-y-2 text-small">
             {n.deliveries.map((d) => (
               <li key={d.id} className="flex flex-wrap items-baseline gap-x-3">
@@ -163,7 +180,7 @@ function Notification({ notification }: { notification: AdminNotification }) {
             disabled={busy}
             className="rounded-full border border-ink/60 px-4 py-2 text-small font-medium text-ink transition-colors hover:border-gold-deep hover:bg-gold/10 disabled:opacity-70"
           >
-            {busy ? "Retrying…" : "Send again"}
+            {busy ? "Retrying…" : crm ? "Sync again" : "Send again"}
           </button>
         ) : null}
       </div>

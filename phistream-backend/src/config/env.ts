@@ -1,6 +1,8 @@
 import { isIP } from 'node:net';
 import { z } from 'zod';
 
+import { APPLICATION_STATUSES, type ApplicationStatus } from '../db/schema/enums.js';
+
 /**
  * Environment validation.
  *
@@ -232,6 +234,39 @@ const serverShape = {
   /** Admin dashboard base URL, for links in staff emails. */
   ADMIN_DASHBOARD_URL: httpUrl.optional(),
 
+  /**
+   * Attio CRM sync. Setting ATTIO_API_KEY turns it on; unset = no CRM sync.
+   * The deal owner (a workspace member's email) is required by Attio deals.
+   * ATTIO_STAGE_MAP optionally overrides the deal stage per application status,
+   * as JSON, e.g. {"NEW":"Applied","SCHEDULED":"Call booked"}.
+   */
+  ATTIO_API_KEY: z.string().min(1).optional(),
+  ATTIO_API_BASE_URL: httpUrl.default('https://api.attio.com/v2'),
+  ATTIO_DEAL_OWNER_EMAIL: z.email().optional(),
+  ATTIO_STAGE_MAP: z
+    .string()
+    .transform((raw, ctx) => {
+      let parsed: unknown;
+      try {
+        parsed = JSON.parse(raw);
+      } catch {
+        ctx.addIssue({ code: 'custom', message: 'must be valid JSON' });
+        return z.NEVER;
+      }
+      const stages = z
+        .partialRecord(z.enum(APPLICATION_STATUSES), z.string().min(1).max(100))
+        .safeParse(parsed);
+      if (!stages.success) {
+        ctx.addIssue({
+          code: 'custom',
+          message: 'must map application statuses (e.g. NEW) to stage titles',
+        });
+        return z.NEVER;
+      }
+      return stages.data;
+    })
+    .optional(),
+
   NOTIFICATIONS_WORKER_ENABLED: booleanString.default(true),
   NOTIFICATIONS_POLL_INTERVAL_MS: intString(1000, 10 * 60 * 1000).default(15_000),
   NOTIFICATIONS_BATCH_SIZE: intString(1, 100).default(10),
@@ -305,6 +340,14 @@ const envSchema = z.object({ ...databaseShape, ...serverShape }).superRefine((en
         });
       }
     }
+  }
+
+  if (env.ATTIO_API_KEY !== undefined && env.ATTIO_DEAL_OWNER_EMAIL === undefined) {
+    ctx.addIssue({
+      code: 'custom',
+      path: ['ATTIO_DEAL_OWNER_EMAIL'],
+      message: 'is required when ATTIO_API_KEY is set',
+    });
   }
 
   if (env.NODE_ENV !== 'production') return;
@@ -416,6 +459,8 @@ export interface AppConfig {
   readonly staffAuth: StaffAuthConfig | undefined;
   readonly scheduling: SchedulingConfig;
   readonly email: EmailConfig;
+  /** Attio CRM sync; undefined = disabled. */
+  readonly crm: CrmConfig | undefined;
   readonly notifications: NotificationsConfig;
   readonly analytics: {
     readonly rateLimit: { readonly max: number; readonly windowMs: number };
@@ -447,6 +492,13 @@ export interface EmailConfig {
     | { readonly kind: 'log' };
   readonly from: string;
   readonly replyTo: string | undefined;
+}
+
+export interface CrmConfig {
+  readonly apiKey: string;
+  readonly apiBaseUrl: string;
+  readonly dealOwnerEmail: string;
+  readonly stages: Readonly<Partial<Record<ApplicationStatus, string>>>;
 }
 
 export interface NotificationsConfig {
@@ -624,6 +676,16 @@ export function loadConfig(source: NodeJS.ProcessEnv = process.env): AppConfig {
       pageUrl: env.SCHEDULING_PAGE_URL,
     },
     email: toEmailConfig(env),
+    // ATTIO_DEAL_OWNER_EMAIL is guaranteed by envSchema when the key is set.
+    crm:
+      env.ATTIO_API_KEY !== undefined && env.ATTIO_DEAL_OWNER_EMAIL !== undefined
+        ? {
+            apiKey: env.ATTIO_API_KEY,
+            apiBaseUrl: env.ATTIO_API_BASE_URL,
+            dealOwnerEmail: env.ATTIO_DEAL_OWNER_EMAIL,
+            stages: env.ATTIO_STAGE_MAP ?? {},
+          }
+        : undefined,
     notifications: {
       workerEnabled: env.NOTIFICATIONS_WORKER_ENABLED,
       dispatchAfterResponse: env.NOTIFICATIONS_DISPATCH_AFTER_RESPONSE ?? env.VERCEL === '1',

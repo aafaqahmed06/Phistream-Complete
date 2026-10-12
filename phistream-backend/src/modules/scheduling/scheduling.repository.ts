@@ -121,7 +121,11 @@ const meetingColumns = {
   meetingUrl: meetings.meetingUrl,
 };
 
-export function createSchedulingRepository(db: Db, providerName: string): SchedulingRepository {
+export function createSchedulingRepository(
+  db: Db,
+  providerName: string,
+  { crm = false }: { crm?: boolean } = {},
+): SchedulingRepository {
   function webhookOperations(tx: DbTransaction, webhookEventId: string): WebhookTransaction {
     return {
       webhookEventId,
@@ -154,7 +158,7 @@ export function createSchedulingRepository(db: Db, providerName: string): Schedu
         return rows[0];
       },
 
-      lockApplication: (applicationId) => lockApplication(tx, applicationId),
+      lockApplication: (applicationId) => lockApplication(tx, applicationId, crm),
 
       async insertMeeting(meeting) {
         const [row] = await tx
@@ -183,7 +187,7 @@ export function createSchedulingRepository(db: Db, providerName: string): Schedu
   return {
     async withApplicationForIssue(applicationId, work) {
       return db.transaction(async (tx) => {
-        const lifecycle = await lockApplication(tx, applicationId);
+        const lifecycle = await lockApplication(tx, applicationId, crm);
         if (!lifecycle) return undefined;
         return work({
           lifecycle,

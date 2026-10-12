@@ -327,6 +327,10 @@ export const notificationListQuerySchema = z.strictObject({
   ...paginationQuerySchema.shape,
   status: z.enum(NOTIFICATION_EVENT_STATUSES).optional(),
   eventType: z.enum(NOTIFICATION_EVENT_TYPES).optional(),
+  kind: z
+    .enum(['email', 'crm'])
+    .optional()
+    .describe('`crm` = Attio sync events only; `email` = everything else'),
 });
 
 export const notificationIdParamsSchema = z.object({ id: z.uuid() });
