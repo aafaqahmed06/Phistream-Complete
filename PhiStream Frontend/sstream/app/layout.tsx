@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
 import { DM_Sans, Fraunces, JetBrains_Mono } from "next/font/google";
-import { Scanlines } from "@/components/ui/Scanlines";
 import "./globals.css";
 
 /**
- * Fraunces carries the whole typographic idea, so its variable axes matter:
- * SOFT rounds the terminals and WONK swaps in the eccentric letterforms. At
- * WONK 0 it reads as an expensive corporate serif; cranked up it gets strange.
- * That range is the "expensive serif wearing a gold sticker" brief expressed in
- * a single family -- the light end sets the sentences, the heavy wonky end sets
- * the four or five words that have to land.
+ * Fraunces carries the typographic identity. The public site runs it at SOFT 0 /
+ * WONK 0 with automatic optical sizing -- sharp, high-contrast and calm at
+ * display sizes, sturdier in small headings. The italic is the one emphasis
+ * device (see .accent in globals.css). The SOFT and WONK axes stay loaded
+ * because the staff admin area still uses them.
  *
  * If the build ever fails on this call, the `axes` line is the culprit -- the
- * axis names must match what Google Fonts reports. Dropping `axes` builds
- * cleanly but loses the personality, leaving only wght variable.
+ * axis names must match what Google Fonts reports.
  */
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -82,13 +79,11 @@ export default function RootLayout({
       >
         <a
           href="#main"
-          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-full focus:bg-gold focus:px-5 focus:py-3 focus:text-small focus:font-medium focus:text-ink"
+          className="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[60] focus:rounded-[2px] focus:bg-gold focus:px-5 focus:py-3 focus:text-small focus:font-medium focus:text-ink"
         >
           Skip to content
         </a>
         {children}
-        {/* Fixed CRT raster over the whole document, below the nav. */}
-        <Scanlines />
       </body>
     </html>
   );

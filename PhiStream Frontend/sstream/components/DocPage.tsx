@@ -6,6 +6,7 @@ import { Footer } from "./Footer";
 import { Nav } from "./Nav";
 import { Button } from "./ui/Button";
 import { Eyebrow } from "./ui/Eyebrow";
+import { PageHeader } from "./ui/PageHeader";
 
 export function docMetadata(page: Doc): Metadata {
   return { title: `${page.name} — Phistreams`, description: page.lead };
@@ -25,17 +26,11 @@ export async function DocPage({ page }: { page: Doc }) {
     <>
       <Nav />
       <main id="main">
-        <section className="surface-ink pb-16 pt-40 md:pb-24 md:pt-48">
-          <div className="container-x">
-            <Eyebrow tone="gold-on-ink">{page.eyebrow}</Eyebrow>
-            <h1 className="mt-6 max-w-[18ch] font-display text-display-xl font-light text-cream">
-              {page.title}
-            </h1>
-            <p className="mt-8 max-w-[52ch] text-body-l text-cream/80">
-              {page.lead}
-            </p>
-          </div>
-        </section>
+        <PageHeader
+          eyebrow={page.eyebrow}
+          title={page.title}
+          lead={page.lead}
+        />
 
         <section className="surface-cream section-y">
           <div className="container-x">
@@ -43,7 +38,7 @@ export async function DocPage({ page }: { page: Doc }) {
               <section
                 key={section.heading}
                 id={section.id}
-                className="grid scroll-mt-28 grid-cols-12 gap-x-4 md:gap-x-8 gap-y-5 border-t border-taupe/40 py-12 last:border-b"
+                className="grid scroll-mt-28 grid-cols-12 gap-x-4 md:gap-x-8 gap-y-5 border-t border-ink/20 py-12 md:py-14 last:border-b"
               >
                 <div className="col-span-12 md:col-span-5">
                   {section.eyebrow ? (
@@ -51,7 +46,7 @@ export async function DocPage({ page }: { page: Doc }) {
                       {section.eyebrow}
                     </Eyebrow>
                   ) : null}
-                  <h2 className="font-display text-display-m text-ink">
+                  <h2 className="font-display text-display-m font-light text-ink">
                     {section.heading}
                   </h2>
                 </div>

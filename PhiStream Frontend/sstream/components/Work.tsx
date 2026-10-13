@@ -1,168 +1,130 @@
 import Link from "next/link";
 import { work } from "@/lib/content";
-import { CursorGlow } from "./CursorGlow";
-import { Lift } from "./motion/Lift";
 import { Reveal } from "./motion/Reveal";
-import { Eyebrow } from "./ui/Eyebrow";
-import { Sticker } from "./ui/Sticker";
+import { FunnelPlate, SignalPlate } from "./ui/Plates";
+import { SectionRule } from "./ui/SectionRule";
 
 /**
- * Deliberately uneven -- 7/5. Two equal cards is the thing this section exists
- * to not be.
+ * Two engagements, laid out as case-study cards over a generated diagram.
  *
- * Every example is built as a THUMBNAIL: 16:9 plate, corner chips, and a big
- * headline burned across the bottom. It is the format the visitor already
- * reads for a living.
+ * Deliberately uneven -- 7/5 -- so the pair reads as editorial layout rather
+ * than a pricing table. Each plate is a small diagram of what the engagement is
+ * about (see ui/Plates.tsx): attention narrowing into an owned product for the
+ * creator track, one source radiating outward for the founder track.
  *
- * With no photography in the build, each plate is generated: an ink ground, a
- * gold radial wash, a faint blueprint grid, and the track's initial ghosted
- * behind it. The wash layer is the thing that scales on hover.
+ * Each card is a single link (the title link is stretched over the whole
+ * card), so the entire surface is the click target.
  *
- * Each card links to its illustrative case study page at /work/<id>.
+ * The examples are ILLUSTRATIVE, not client results, and the page says so --
+ * the disclaimer under the heading and the label on every plate. Swap in real
+ * work once it exists.
  */
 const spacing = ["md:col-span-7", "md:col-span-5"] as const;
 
-const accents: Record<string, string> = {
-  "top-left":
-    "bg-[radial-gradient(ellipse_at_top_left,rgba(200,155,60,0.22),transparent_58%)]",
-  "top-right":
-    "bg-[radial-gradient(ellipse_at_top_right,rgba(200,155,60,0.22),transparent_58%)]",
-  "bottom-left":
-    "bg-[radial-gradient(ellipse_at_bottom_left,rgba(200,155,60,0.22),transparent_58%)]",
-  "bottom-right":
-    "bg-[radial-gradient(ellipse_at_bottom_right,rgba(200,155,60,0.22),transparent_58%)]",
+const plates: Record<string, typeof FunnelPlate> = {
+  creator: FunnelPlate,
+  founder: SignalPlate,
 };
-
-const BLUEPRINT =
-  "[background-image:linear-gradient(to_right,rgba(243,239,230,0.35)_1px,transparent_1px),linear-gradient(to_bottom,rgba(243,239,230,0.35)_1px,transparent_1px)] [background-size:2.5rem_2.5rem]";
 
 export function Work() {
   return (
-    <section id="work" className="surface-ink section-y relative isolate">
-      {/* Sits behind everything and lights the plates as the cursor moves
-          across them. Direct child of the section, which is what it measures. */}
-      <CursorGlow />
+    <section id="work" className="surface-ink section-y relative">
+      <div className="container-x">
+        <SectionRule label={work.eyebrow} aside={work.chip} />
 
-      <div className="container-x relative z-10">
-        <div className="flex flex-wrap items-end justify-between gap-8">
-          <div>
-            <Reveal y={16}>
-              <Eyebrow tone="on-ink">{work.eyebrow}</Eyebrow>
-            </Reveal>
-            <Reveal delay={0.08}>
-              <h2 className="mt-6 font-display text-display-l text-cream">
-                {work.heading}
-              </h2>
-            </Reveal>
-            <Reveal delay={0.12}>
-              <p className="mt-5 max-w-[52ch] text-small text-taupe">
-                {work.disclaimer}
-              </p>
-            </Reveal>
-          </div>
-
-          <Reveal delay={0.14}>
-            <Sticker tone="ink-outline" className="-rotate-3">
-              {work.sticker}
-            </Sticker>
+        <div className="mt-14 grid grid-cols-12 items-end gap-x-8 gap-y-6 md:mt-20">
+          <Reveal className="col-span-12 md:col-span-7">
+            <h2 className="max-w-[14ch] font-display text-display-l font-light text-cream">
+              {work.heading}
+            </h2>
+          </Reveal>
+          <Reveal
+            delay={0.1}
+            className="col-span-12 md:col-span-4 md:col-start-9"
+          >
+            <p className="max-w-[40ch] text-small text-taupe">
+              {work.disclaimer}
+            </p>
           </Reveal>
         </div>
 
-        <div className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-12">
-          {work.items.map((item, i) => (
-            <Reveal key={item.id} delay={i * 0.06} className={spacing[i] ?? ""}>
-              <Lift className="h-full" scale={1.015}>
-                <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-taupe/20 bg-ink transition-colors duration-300 hover:border-gold/40">
-                  {/* Decorative plate; the text below carries the content. */}
-                  <div className="relative aspect-video shrink-0 overflow-hidden">
+        <div className="mt-14 grid grid-cols-1 gap-6 md:mt-20 md:grid-cols-12">
+          {work.items.map((item, i) => {
+            const Plate = plates[item.id] ?? FunnelPlate;
+            return (
+              <Reveal
+                key={item.id}
+                delay={i * 0.08}
+                className={spacing[i] ?? ""}
+              >
+                <article className="group relative flex h-full flex-col border border-cream/15 transition-colors duration-500 hover:border-gold/60">
+                  <div className="relative aspect-[16/9] overflow-hidden border-b border-cream/15 bg-cream/[0.03]">
+                    <Plate className="absolute inset-0 h-full w-full transition-transform duration-[1200ms] ease-expo-out group-hover:scale-[1.03]" />
                     <span
                       aria-hidden="true"
-                      className={`absolute -inset-[6%] transition-transform duration-700 ease-expo-out group-hover:scale-105 ${accents[item.accent] ?? ""}`}
-                    />
-
-                    <span
-                      aria-hidden="true"
-                      className={`absolute inset-0 opacity-[0.07] ${BLUEPRINT}`}
-                    />
-
-                    <span
-                      aria-hidden="true"
-                      className="bleed-glyph wonk left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[9rem] text-gold opacity-[0.10]"
-                    >
-                      {item.track.charAt(0)}
-                    </span>
-
-                    {/* Scrim. Thumbnail type sits on top of generated art, so it
-                        needs its own ground to guarantee contrast. */}
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-x-0 bottom-0 h-3/5 bg-gradient-to-t from-ink via-ink/85 to-transparent"
-                    />
-
-                    {/* The plate repeats the title and track below, so it is
-                        hidden from the a11y tree rather than read twice. */}
-                    <span
-                      aria-hidden="true"
-                      className="absolute left-3 top-3 rounded-md bg-ink/85 px-2 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-cream"
+                      className="absolute left-5 top-4 font-mono text-eyebrow uppercase text-taupe"
                     >
                       {item.track}
                     </span>
                     <span
                       aria-hidden="true"
-                      className="absolute right-3 top-3 rounded-md bg-ink/85 px-2 py-1 font-mono text-[0.6875rem] uppercase tracking-[0.08em] text-cream"
+                      className="absolute right-5 top-4 font-mono text-eyebrow tabular uppercase text-taupe"
                     >
-                      {work.chip}
-                    </span>
-
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-x-0 bottom-0 p-4 font-display text-xl font-semibold leading-[0.98] text-cream md:p-5 md:text-2xl"
-                    >
-                      {item.title}
+                      {String(i + 1).padStart(2, "0")}
                     </span>
                   </div>
 
-                  <div className="flex flex-1 flex-col p-6">
-                    <Eyebrow tone="on-ink">
-                      {item.track} · {work.chip}
-                    </Eyebrow>
-
-                    <h3 className="mb-4 mt-4 font-display text-heading text-cream">
-                      {item.title}
+                  <div className="flex flex-1 flex-col p-6 md:p-8">
+                    <h3 className="font-display text-display-m font-light text-cream">
+                      <Link
+                        href={`/work/${item.id}`}
+                        className="after:absolute after:inset-0 focus-visible:outline-none"
+                      >
+                        {item.title}
+                        <span className="sr-only">
+                          {" "}
+                          — {item.track}, {work.chip.toLowerCase()}
+                        </span>
+                      </Link>
                     </h3>
 
-                    <p className="max-w-[48ch] text-small text-cream/80">
+                    <p className="mt-5 max-w-[52ch] text-small text-cream/75">
                       {item.body}
                     </p>
-                    <p className="mb-6 mt-4 text-small text-taupe">
-                      {work.metricLabel}:{" "}
-                      <span className="text-gold">{item.metric}</span>
-                    </p>
 
-                    <Link
-                      href={`/work/${item.id}`}
-                      className="mt-auto flex items-center gap-2 border-t border-taupe/25 pt-5 text-small font-medium text-gold"
-                    >
-                      {work.open}
-                      <span className="sr-only">: {item.title}</span>
-                      <svg
+                    <div className="mt-auto pt-8">
+                      <div className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2 border-t border-cream/15 pt-5">
+                        <span className="font-mono text-eyebrow uppercase text-taupe">
+                          {work.metricLabel}
+                        </span>
+                        <span className="text-small text-gold">
+                          {item.metric}
+                        </span>
+                      </div>
+
+                      <span
                         aria-hidden="true"
-                        viewBox="0 0 16 16"
-                        className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-1"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="1.6"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
+                        className="mt-5 inline-flex items-center gap-2.5 text-small font-medium text-cream transition-colors duration-300 group-hover:text-gold"
                       >
-                        <path d="M2 8h11M9 4l4 4-4 4" />
-                      </svg>
-                    </Link>
+                        {work.open}
+                        <svg
+                          viewBox="0 0 16 16"
+                          className="h-3.5 w-3.5 transition-transform duration-500 ease-expo-out group-hover:translate-x-1.5"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M2 8h11M9 4l4 4-4 4" />
+                        </svg>
+                      </span>
+                    </div>
                   </div>
                 </article>
-              </Lift>
-            </Reveal>
-          ))}
+              </Reveal>
+            );
+          })}
         </div>
       </div>
     </section>

@@ -4,6 +4,7 @@ import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { getApplicationForm, getHomeContent, getServiceTiers } from "@/lib/api";
 import { apply } from "@/lib/content";
 
@@ -34,17 +35,12 @@ export default async function ApplyPage() {
     <>
       <Nav />
       <main id="main">
-        <section className="surface-ink pb-16 pt-40 md:pb-24 md:pt-48">
-          <div className="container-x">
-            <Eyebrow tone="gold-on-ink">{apply.eyebrow}</Eyebrow>
-            <h1 className="mt-6 max-w-[16ch] font-display text-display-xl font-light text-cream">
-              {apply.heading}
-            </h1>
-            <p className="mt-8 max-w-[52ch] text-body-l text-cream/80">
-              {apply.lead}
-            </p>
-          </div>
-        </section>
+        <PageHeader
+          eyebrow={apply.eyebrow}
+          title={apply.heading}
+          lead={apply.lead}
+          titleMax="16ch"
+        />
 
         <section className="surface-cream section-y">
           <div className="container-x grid grid-cols-12 gap-x-4 md:gap-x-8 gap-y-16">
@@ -53,7 +49,7 @@ export default async function ApplyPage() {
                 <ApplicationForm initialForm={form} tiers={tiers} />
               ) : (
                 <div className="space-y-6">
-                  <h2 className="font-display text-display-m text-ink">
+                  <h2 className="font-display text-display-m font-light text-ink">
                     {apply.closed.title}
                   </h2>
                   <p className="max-w-[48ch] text-body text-ink/70">
@@ -74,7 +70,7 @@ export default async function ApplyPage() {
                     {faqs.map((faq) => (
                       <div
                         key={faq.id}
-                        className="border-t border-taupe/40 py-6 last:border-b"
+                        className="border-t border-ink/20 py-6 last:border-b"
                       >
                         <dt className="font-display text-heading text-ink">
                           {faq.question}

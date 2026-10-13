@@ -1,9 +1,6 @@
-"use client";
-
-import { useRef, type PointerEvent as ReactPointerEvent } from "react";
 import { studio } from "@/lib/content";
 import { Reveal } from "./motion/Reveal";
-import { Eyebrow } from "./ui/Eyebrow";
+import { SectionRule } from "./ui/SectionRule";
 
 function initials(name: string) {
   return name
@@ -14,107 +11,75 @@ function initials(name: string) {
 }
 
 /**
- * Horizontal rail.
+ * The team, as a grid of plates.
  *
- * Native overflow scrolling rather than a JS drag transform: trackpad, touch,
- * shift+wheel and keyboard arrow keys all work for free, and there is no
- * library fighting the compositor. The pointer handler only adds mouse-drag for
- * people without a trackpad, and it is gated to pointerType === "mouse" so it
- * never interferes with native touch scrolling.
+ * Five people is a number a grid handles better than a scrolling rail: every
+ * face is visible at once, nothing is hidden off-screen, and there is no drag
+ * handler to maintain. Each plate holds a monogram until portraiture exists --
+ * drop an <Image fill sizes="..."/> into the plate and delete the monogram;
+ * the aspect ratio and border are already right.
  *
- * The card tilts a degree on hover, the way you would pick a print up off a
- * stack. It is one transform, it is on the figure rather than the frame, and it
- * is the only place in the rail that moves.
+ * Gold on ink is 6.15:1, so the monogram is legible. The plate border is
+ * decoration rather than a control boundary, so it is not held to 3:1.
  */
 export function StudioRail() {
-  const railRef = useRef<HTMLUListElement>(null);
-  const drag = useRef({ active: false, startX: 0, startLeft: 0 });
-
-  const onPointerDown = (e: ReactPointerEvent<HTMLUListElement>) => {
-    if (e.pointerType !== "mouse") return;
-    const el = railRef.current;
-    if (!el) return;
-    drag.current = { active: true, startX: e.clientX, startLeft: el.scrollLeft };
-    el.setPointerCapture(e.pointerId);
-  };
-
-  const onPointerMove = (e: ReactPointerEvent<HTMLUListElement>) => {
-    const el = railRef.current;
-    if (!el || !drag.current.active) return;
-    el.scrollLeft = drag.current.startLeft - (e.clientX - drag.current.startX);
-  };
-
-  const onPointerUp = (e: ReactPointerEvent<HTMLUListElement>) => {
-    const el = railRef.current;
-    drag.current.active = false;
-    if (el?.hasPointerCapture(e.pointerId)) {
-      el.releasePointerCapture(e.pointerId);
-    }
-  };
-
   return (
-    <section id="studio" className="surface-ink section-y overflow-hidden">
+    <section id="studio" className="surface-ink section-y">
       <div className="container-x">
-        <div className="flex flex-wrap items-end justify-between gap-8">
-          <div className="max-w-[46ch]">
-            <Reveal y={16}>
-              <Eyebrow tone="on-ink">{studio.eyebrow}</Eyebrow>
-            </Reveal>
-            <Reveal delay={0.08}>
-              <h2 className="mt-6 font-display text-display-l text-cream">
-                {studio.heading}
-              </h2>
-            </Reveal>
-            <Reveal delay={0.14}>
-              <p className="mt-6 text-body text-cream/80">{studio.lead}</p>
-            </Reveal>
-          </div>
-        </div>
-      </div>
+        <SectionRule
+          label={studio.eyebrow}
+          aside={`${String(studio.members.length).padStart(2, "0")} people`}
+        />
 
-      <ul
-        ref={railRef}
-        tabIndex={0}
-        aria-label="Studio team — scroll horizontally"
-        onPointerDown={onPointerDown}
-        onPointerMove={onPointerMove}
-        onPointerUp={onPointerUp}
-        onPointerCancel={onPointerUp}
-        className="no-scrollbar mt-14 flex snap-x snap-mandatory scroll-px-[clamp(1.25rem,4vw,4rem)] gap-6 overflow-x-auto px-[clamp(1.25rem,4vw,4rem)] pb-4 cursor-grab active:cursor-grabbing"
-      >
-        {studio.members.map((member) => (
-          <li
-            key={member.name}
-            className="w-[76vw] shrink-0 snap-start sm:w-[19rem] lg:w-[21rem]"
+        <div className="mt-14 grid grid-cols-12 items-end gap-x-8 gap-y-6 md:mt-20">
+          <Reveal className="col-span-12 md:col-span-7">
+            <h2 className="max-w-[16ch] font-display text-display-l font-light text-cream">
+              {studio.heading}
+            </h2>
+          </Reveal>
+          <Reveal
+            delay={0.1}
+            className="col-span-12 md:col-span-4 md:col-start-9"
           >
-            <figure className="group">
-              <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border border-taupe/20 bg-ink transition-[border-color,transform] duration-500 ease-expo-out group-hover:-rotate-1 group-hover:border-gold/40">
-                {/*
-                  Placeholder art: a gold wash plus the member's initials.
-                  Drop real portraiture in here as <Image fill sizes="21rem" />
-                  when it exists -- the aspect ratio and rounding are ready.
-                */}
-                <div
-                  aria-hidden="true"
-                  className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom,rgba(200,155,60,0.24),transparent_60%)] opacity-60 transition-opacity duration-500 group-hover:opacity-100"
-                />
-                <span
-                  aria-hidden="true"
-                  className="bleed-glyph wonk left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-[7rem] text-gold opacity-[0.12]"
-                >
-                  {initials(member.name)}
-                </span>
-              </div>
-              <figcaption className="mt-5">
-                <div className="font-display text-heading text-cream">
-                  {member.name}
-                </div>
-                <div className="mt-1 text-small text-taupe">{member.role}</div>
-              </figcaption>
-            </figure>
-          </li>
-        ))}
-      </ul>
+            <p className="max-w-[34ch] text-body text-cream/75">
+              {studio.lead}
+            </p>
+          </Reveal>
+        </div>
+
+        <ul className="mt-14 grid grid-cols-2 gap-x-5 gap-y-12 sm:grid-cols-3 md:mt-20 lg:grid-cols-5">
+          {studio.members.map((member, i) => (
+            <li key={member.name}>
+              <Reveal delay={i * 0.06} y={16}>
+                <figure className="group">
+                  <div className="relative aspect-[4/5] overflow-hidden border border-cream/15 bg-cream/[0.03] transition-colors duration-500 group-hover:border-gold/60">
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-4 top-3.5 font-mono text-eyebrow tabular text-taupe"
+                    >
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-0 flex items-center justify-center font-display text-[clamp(3rem,6vw,5.5rem)] font-light tracking-[-0.03em] text-gold transition-transform duration-700 ease-expo-out group-hover:scale-105"
+                    >
+                      {initials(member.name)}
+                    </span>
+                  </div>
+                  <figcaption className="mt-5">
+                    <div className="font-display text-heading font-normal text-cream">
+                      {member.name}
+                    </div>
+                    <div className="mt-1 font-mono text-eyebrow uppercase text-taupe">
+                      {member.role}
+                    </div>
+                  </figcaption>
+                </figure>
+              </Reveal>
+            </li>
+          ))}
+        </ul>
+      </div>
     </section>
   );
 }

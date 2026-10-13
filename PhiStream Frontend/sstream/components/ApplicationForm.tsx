@@ -542,7 +542,7 @@ function ChoiceGroup({
           return (
             <label
               key={option.value}
-              className={`inline-flex cursor-pointer items-center gap-2 rounded-full border px-4 py-2 text-small transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-gold ${
+              className={`inline-flex cursor-pointer items-center gap-2 rounded-[2px] border px-4 py-2 text-small transition-colors focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-gold ${
                 checked
                   ? "border-ink bg-ink text-cream"
                   : error
@@ -612,7 +612,7 @@ function Receipt({
       </h2>
       <p className="max-w-[52ch] text-body text-ink/70">{copy.received.body}</p>
 
-      <dl className="rounded-2xl border border-ink/60 px-5 py-4">
+      <dl className="rounded-[2px] border border-ink/60 px-5 py-4">
         <dt className="font-mono text-eyebrow uppercase text-ink/70">
           {copy.received.referenceLabel}
         </dt>
@@ -642,7 +642,7 @@ function Receipt({
           type="button"
           onClick={check}
           disabled={checking}
-          className="inline-flex items-center justify-center rounded-full border border-ink/60 px-6 py-3 text-small font-medium text-ink transition-colors hover:border-gold-deep hover:bg-gold/10 disabled:opacity-70"
+          className="inline-flex items-center justify-center rounded-[2px] border border-ink/60 px-6 py-3.5 text-small font-medium text-ink transition-colors hover:border-ink hover:bg-ink hover:text-cream disabled:opacity-70"
         >
           {checking ? "Checking…" : copy.received.checkStatus}
         </button>

@@ -2,52 +2,56 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 
 type Variant = "gold" | "ghost-dark" | "ghost-light";
+type Size = "md" | "sm";
 
 type ButtonProps = {
   href: string;
   children: ReactNode;
   variant?: Variant;
+  size?: Size;
   className?: string;
   /** Trailing arrow that slides on hover. */
   arrow?: boolean;
 };
 
 /**
- * Contrast note -- these variants are not stylistic preferences:
+ * Square-cornered, with a fill that rises from the bottom edge on hover. One
+ * mechanism for all three variants: a ::before panel slides up behind the label
+ * and the label changes colour to stay legible on it.
  *
- *   gold         bg #C89B3C + text #2B211A = 6.15:1 AA at any size, and it is
- *                the one pairing that works on ink AND on cream, so the primary
- *                action looks identical no matter which surface it lands on.
- *                Hover flips to cream + ink = 13.7:1 with a gold-deep ring
- *                (4.38:1 on cream, 3.13:1 on ink -- both clear the 3:1
- *                UI-component threshold), so the button gets MORE legible on
- *                interaction rather than less. The hard offset shadow is ink,
- *                so it simply disappears on ink sections instead of going
- *                muddy.
+ * Contrast -- these pairings are not stylistic preferences:
  *
- *   ghost-dark   for ink surfaces. cream 13.7:1 idle, gold 6.15:1 on hover.
- *                Border is full taupe (5.29:1 on ink) -- at /50 it computes to
- *                2.36:1 and a button outline is a UI component, so the 3:1
- *                threshold applies and it would fail.
+ *   gold         bg #C89B3C + text #2B211A = 6.15:1 AA at any size, on EITHER
+ *                surface. Hover raises an INK panel under cream text (13.7:1)
+ *                inside a gold ring, which reads on ink (the ring does the
+ *                work) and on cream (the fill does).
  *
- *   ghost-light  for cream surfaces. text stays ink (13.7:1) because gold-deep
- *                on cream is only 4.38:1 and would fail at this text size. Only
- *                the border warms to gold-deep. Border is ink at 60% (4.04:1 on
- *                cream); at /25 it computes to 1.65:1 and fails the 3:1
- *                UI-component threshold.
+ *   ghost-dark   for ink surfaces. cream 13.7:1 idle; border is full taupe
+ *                (5.29:1) because a button outline is a UI component and needs
+ *                3:1 -- at /50 it would be 2.36:1. Hover raises a gold panel
+ *                under ink text (6.15:1).
+ *
+ *   ghost-light  for cream surfaces. ink text 13.7:1; border is ink at 60%
+ *                (4.04:1 on cream). Hover raises an ink panel under cream text.
  */
 const variants: Record<Variant, string> = {
-  gold: "bg-gold text-ink shadow-[3px_3px_0_0_var(--color-ink)] ring-1 ring-transparent hover:bg-cream hover:ring-gold-deep hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_var(--color-ink)] active:translate-y-0 active:shadow-[2px_2px_0_0_var(--color-ink)]",
+  gold: "bg-gold text-ink ring-1 ring-gold before:bg-ink hover:text-cream",
   "ghost-dark":
-    "border border-taupe text-cream hover:border-gold hover:text-gold",
+    "text-cream ring-1 ring-taupe before:bg-gold hover:text-ink hover:ring-gold",
   "ghost-light":
-    "border border-ink/60 text-ink hover:border-gold-deep hover:bg-gold/10",
+    "text-ink ring-1 ring-ink/60 before:bg-ink hover:text-cream hover:ring-ink",
+};
+
+const sizes: Record<Size, string> = {
+  md: "px-6 py-3.5 text-small",
+  sm: "px-4 py-2.5 text-small",
 };
 
 export function Button({
   href,
   children,
   variant = "gold",
+  size = "md",
   className = "",
   arrow = false,
 }: ButtonProps) {
@@ -58,17 +62,17 @@ export function Button({
   return (
     <Anchor
       href={href}
-      className={`group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-small font-medium transition-[background-color,color,border-color,box-shadow,transform,translate] duration-200 ease-expo-out ${variants[variant]} ${className}`}
+      className={`group relative isolate inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-[2px] font-medium tracking-[0.005em] transition-[color,box-shadow] duration-500 ease-expo-out before:absolute before:inset-0 before:-z-10 before:translate-y-full before:transition-transform before:duration-500 before:ease-expo-out hover:before:translate-y-0 ${sizes[size]} ${variants[variant]} ${className}`}
     >
       {children}
       {arrow ? (
         <svg
           aria-hidden="true"
           viewBox="0 0 16 16"
-          className="h-3.5 w-3.5 transition-transform duration-300 ease-expo-out group-hover:translate-x-1"
+          className="h-3.5 w-3.5 transition-transform duration-500 ease-expo-out group-hover:translate-x-1"
           fill="none"
           stroke="currentColor"
-          strokeWidth="1.6"
+          strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
         >

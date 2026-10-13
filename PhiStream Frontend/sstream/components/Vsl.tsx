@@ -26,7 +26,7 @@ export function Vsl({ source, label }: { source: VideoSource; label: string }) {
     track(event);
   };
 
-  const frame = "aspect-video w-full overflow-hidden rounded-3xl bg-cream/5 ring-1 ring-taupe/40";
+  const frame = "aspect-video w-full overflow-hidden rounded-[2px] bg-cream/5 ring-1 ring-taupe/40";
 
   if (source.kind === "file") {
     return (
@@ -70,7 +70,7 @@ export function Vsl({ source, label }: { source: VideoSource; label: string }) {
       }}
       className={`${frame} group flex items-center justify-center`}
     >
-      <span className="inline-flex items-center gap-3 rounded-full bg-gold px-6 py-3 text-small font-medium text-ink transition-colors group-hover:bg-cream">
+      <span className="inline-flex items-center gap-3 rounded-[2px] bg-gold px-6 py-3.5 text-small font-medium text-ink transition-colors group-hover:bg-cream">
         <svg aria-hidden="true" viewBox="0 0 16 16" className="h-4 w-4" fill="currentColor">
           <path d="M4 2.5v11l9-5.5z" />
         </svg>

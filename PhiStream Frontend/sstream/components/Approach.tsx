@@ -1,54 +1,47 @@
 import { approach } from "@/lib/content";
 import { Reveal } from "./motion/Reveal";
-import { Eyebrow } from "./ui/Eyebrow";
+import { SectionRule } from "./ui/SectionRule";
 
+/**
+ * Four principles in four columns, each under its own rule. The rule is the
+ * only hover affordance: it draws in gold-deep, nothing moves.
+ *
+ * Cream surface: body text is ink/70 (5.47:1) and the index is ink/70 too --
+ * gold-deep on cream is 4.38:1, which fails at this size.
+ */
 export function Approach() {
   return (
     <section id="approach" className="surface-cream section-y">
       <div className="container-x">
-        <div className="grid grid-cols-12 gap-x-4 md:gap-x-8 gap-y-16">
-          <div className="col-span-12 md:col-span-5">
-            <div className="md:sticky md:top-32">
-              <Reveal y={16}>
-                <Eyebrow tone="on-cream">{approach.eyebrow}</Eyebrow>
-              </Reveal>
-              <Reveal delay={0.08}>
-                <h2 className="mt-6 font-display text-display-l text-ink">
-                  {approach.heading}
-                </h2>
-              </Reveal>
-            </div>
-          </div>
+        <SectionRule label={approach.eyebrow} tone="on-cream" />
 
-          <ol className="col-span-12 md:col-span-6 md:col-start-7">
-            {approach.principles.map((principle, i) => (
-              // Reveal goes INSIDE the li: a div between ol and li is invalid,
-              // and the first: variants must target the li itself.
-              <li
-                key={principle.id}
-                className="group border-t border-taupe/40 py-9 first:border-t-0 first:pt-0"
-              >
-                <Reveal delay={i * 0.06} y={20}>
-                  <div className="flex items-baseline gap-5">
-                    {/* The number fills with gold on hover -- ink on gold is
-                        6.15:1, so the marker gets more legible, not less. The
-                        ring itself is decoration and is not held to the 3:1
-                        UI-component threshold. */}
-                    <span className="flex h-7 w-7 shrink-0 translate-y-1 items-center justify-center rounded-full border border-ink/25 font-mono text-eyebrow text-ink/70 transition-colors duration-300 group-hover:border-gold group-hover:bg-gold group-hover:text-ink">
-                      {principle.id}
-                    </span>
-                    <h3 className="font-display text-heading text-ink">
-                      {principle.title}
-                    </h3>
-                  </div>
-                  <p className="mt-4 max-w-[52ch] text-body text-ink/70 md:pl-12">
-                    {principle.body}
-                  </p>
-                </Reveal>
-              </li>
-            ))}
-          </ol>
-        </div>
+        <Reveal>
+          <h2 className="mt-14 max-w-[20ch] font-display text-display-l font-light text-ink md:mt-20">
+            {approach.heading}
+          </h2>
+        </Reveal>
+
+        <ol className="mt-16 grid gap-x-8 gap-y-14 sm:grid-cols-2 lg:mt-24 lg:grid-cols-4">
+          {approach.principles.map((principle, i) => (
+            // Reveal goes INSIDE the li: a div between ol and li is invalid.
+            <li
+              key={principle.id}
+              className="rule-draw rule-draw-top border-t border-ink/25 pt-6"
+            >
+              <Reveal delay={i * 0.08} y={16}>
+                <span className="font-mono text-eyebrow tabular text-ink/70">
+                  {principle.id}
+                </span>
+                <h3 className="mt-8 font-display text-heading font-normal text-ink">
+                  {principle.title}
+                </h3>
+                <p className="mt-4 max-w-[34ch] text-small text-ink/70">
+                  {principle.body}
+                </p>
+              </Reveal>
+            </li>
+          ))}
+        </ol>
       </div>
     </section>
   );

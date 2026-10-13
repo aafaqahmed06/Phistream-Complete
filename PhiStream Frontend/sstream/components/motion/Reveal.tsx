@@ -11,13 +11,16 @@ type RevealProps = {
   className?: string;
   /** Stagger offset in seconds, for hand-sequenced groups. */
   delay?: number;
-  /** Override the travel distance. 24px is the default; 0 fades in place. */
+  /** Override the travel distance. 14px is the default; 0 fades in place. */
   y?: number;
 };
 
 /**
  * Scroll reveal. Fires once, animates transform and opacity only -- never a
  * layout property -- so it cannot contribute to CLS or hurt INP.
+ *
+ * The travel is deliberately small. A 14px drift over 0.9s reads as content
+ * settling into place; 40px reads as an effect.
  *
  * Under reduced motion the content appears without animating. The markup is
  * the same either way: the server cannot know the preference, so branching on
@@ -27,7 +30,7 @@ export function Reveal({
   children,
   className = "",
   delay = 0,
-  y = 24,
+  y = 14,
 }: RevealProps) {
   const reduce = useReducedMotion();
 
@@ -46,11 +49,11 @@ export function Reveal({
 
 const parentVariants: Variants = {
   hidden: {},
-  visible: { transition: { staggerChildren: 0.07 } },
+  visible: { transition: { staggerChildren: 0.08 } },
 };
 
 const childVariants: Variants = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 14 },
   visible: { opacity: 1, y: 0, transition: REVEAL_TRANSITION },
 };
 

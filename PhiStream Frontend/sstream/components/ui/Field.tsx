@@ -13,7 +13,7 @@ import type {
  * aria-describedby, so a screen reader hears them on focus.
  */
 export const controlClass =
-  "w-full rounded-2xl border border-ink/60 bg-transparent px-4 py-3 text-body text-ink transition-colors placeholder:text-ink/70 focus:border-ink focus:outline-none aria-[invalid=true]:border-alert";
+  "w-full rounded-[2px] border border-ink/60 bg-transparent px-4 py-3.5 text-body text-ink transition-[border-color,box-shadow] duration-300 placeholder:text-ink/70 focus:border-ink focus:outline-none focus:ring-1 focus:ring-ink aria-[invalid=true]:border-alert aria-[invalid=true]:ring-alert";
 
 type FieldShellProps = {
   id: string;
@@ -165,7 +165,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-6 py-3 text-small font-medium text-ink shadow-[3px_3px_0_0_var(--color-ink)] ring-1 ring-transparent transition-[background-color,box-shadow,transform,translate] duration-200 ease-expo-out hover:-translate-y-0.5 hover:bg-cream hover:shadow-[5px_5px_0_0_var(--color-ink)] hover:ring-gold-deep active:translate-y-0 disabled:pointer-events-none disabled:opacity-70"
+      className="group relative isolate inline-flex items-center justify-center gap-2.5 overflow-hidden rounded-[2px] bg-gold px-6 py-3.5 text-small font-medium tracking-[0.005em] text-ink ring-1 ring-gold transition-[color] duration-500 ease-expo-out before:absolute before:inset-0 before:-z-10 before:translate-y-full before:bg-ink before:transition-transform before:duration-500 before:ease-expo-out hover:text-cream hover:before:translate-y-0 disabled:pointer-events-none disabled:opacity-70"
     >
       {pending ? pendingLabel : children}
     </button>
@@ -183,7 +183,7 @@ export function FormNotice({
   return (
     <div
       role={tone === "error" ? "alert" : "status"}
-      className={`rounded-2xl border px-5 py-4 text-small ${
+      className={`rounded-[2px] border px-5 py-4 text-small ${
         tone === "error"
           ? "border-alert text-alert"
           : "border-gold-deep bg-gold/15 text-ink"

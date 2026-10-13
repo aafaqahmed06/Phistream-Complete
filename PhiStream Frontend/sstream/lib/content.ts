@@ -49,15 +49,15 @@ export const nav = {
 /* -------------------------------------------------------------------------- */
 
 /**
- * The headline is authored as WORDS, not lines of prose, because it reveals
- * word by word like burned-in captions -- see Hero.tsx and the .rise-word /
- * .pop-word keyframes. A line is a hard break; a word is one animated span.
+ * The headline is authored as WORDS grouped into LINES. Each line rises out of
+ * its own mask (see Hero.tsx and .line-mask in globals.css); a line is a hard
+ * break, and a word marked `highlight` is set in the gold italic accent.
  */
 export type HeroWord = {
   t: string;
-  /** Rendered inside a gold block. Ink on gold, 6.15:1. */
+  /** Set in the gold italic accent (gold on ink, 6.15:1). */
   highlight?: boolean;
-  /** Swaps in the eccentric WONK letterforms. */
+  /** Retained from the previous design; no longer rendered. */
   wonk?: boolean;
 };
 export type HeroLine = HeroWord[];
@@ -92,9 +92,11 @@ export const hero = {
       cta: { label: "See the founder track", href: "/founders" },
     },
   ],
-  rail: "Creators · Founders · Islamabad",
+  rail: "Creators · Founders",
   scrollCue: "Scroll",
   est: "Islamabad",
+  /** Islamabad, as a coordinate -- a quiet detail on the hero's baseline. */
+  coords: "33.6844° N, 73.0479° E",
 } as const;
 
 /* -------------------------------------------------------------------------- */
