@@ -42,36 +42,10 @@ import {
   Vector3,
   WebGLRenderer,
 } from "three";
+import { CARD_SPECS, type CardSpec } from "./cards";
 import { COUNT, INTRO_END, OUTRO_START, clamp, serviceCoord, smooth } from "./timeline";
 
 const TAU = Math.PI * 2;
-
-export type CardSpec = {
-  n: string;
-  title: string;
-  /** One line: what the client gets. */
-  line: string;
-  /** Three deliverables, drawn as chips. */
-  tags: [string, string, string];
-  bg: string;
-  fg: string;
-};
-
-/** Order, titles and colours follow the preview's `L` array; line/tags are the card-face copy. */
-export const CARD_SPECS: CardSpec[] = [
-  { n: "01", title: "Identity & Positioning", line: "Who you are, in one sentence.",
-    tags: ["Positioning", "Brand voice", "Messaging"], bg: "#1A315B", fg: "#ECE9DF" },
-  { n: "02", title: "Audience & Funnel", line: "From a stranger's attention to a paying customer.",
-    tags: ["Funnel map", "Cadence", "Formats"], bg: "#964C37", fg: "#ECE9DF" },
-  { n: "03", title: "Monetization", line: "Revenue that compounds, not resets.",
-    tags: ["Offers", "Pricing", "Products"], bg: "#A69376", fg: "#2A201A" },
-  { n: "04", title: "Content & Format", line: "The team behind the actual uploads.",
-    tags: ["On-camera", "Production", "Formats"], bg: "#1A315B", fg: "#ECE9DF" },
-  { n: "05", title: "Operations", line: "The engine that keeps the business running.",
-    tags: ["Contracts", "Pipeline", "Reporting"], bg: "#964C37", fg: "#ECE9DF" },
-  { n: "06", title: "Scaling", line: "More revenue per view, per follower, per deal.",
-    tags: ["Growth plan", "Per follower", "Per deal"], bg: "#A69376", fg: "#2A201A" },
-];
 
 export type TunnelOptions = {
   canvas: HTMLCanvasElement;
@@ -332,7 +306,27 @@ const STEP = TAU / COUNT;
 /** Where the focused card rests on the ring (radians from facing the camera): front-left, so the
  *  logo stays clear in the middle and the caption has the right-hand side. */
 const SLOT = -0.52;
-const SLOT_PORT = -0.58;
+/** On a phone the focused card rests dead ahead, large, below the logo (see PORT below). */
+const SLOT_PORT = 0;
+/**
+ * Portrait (phone) composition. A phone is tall and narrow, so the desktop layout
+ * (focus card to one side of the logo) shrinks the cards to a quarter of the
+ * width and their text becomes unreadable. Instead the ring is tilted toward the
+ * viewer: the focused card dips in front of and below the logo and fills most of
+ * the width, neighbours peek in from either side, and the far side of the ring
+ * rises behind the logo.
+ */
+const PORT = {
+  radius: 3.6,
+  tilt: 0.5,         // radians the ring leans toward the camera
+  cardScale: 1,      // focus card ends up 1.3x: about 80% of the screen width
+  logoScale: 0.8,
+  logoLift: 1.4,     // the logo rides up as the ring opens, so the focus card has room below it
+  camZ: 9,
+  camBack: 3.2,
+  camY: 0.6,
+  lookY: -1.2,
+};
 
 /** Ring rotation (in cards) for a focus coordinate: advances steadily but lingers on each card. */
 function ringTurn(q: number): number {
@@ -536,7 +530,7 @@ export class TunnelEngine {
     const p = this.sp;
     const port = this.port;
 
-    const radius = port ? 3 : 4.7;
+    const radius = port ? PORT.radius : 4.7;
     const slot = port ? SLOT_PORT : SLOT;
     const bloom = smooth(0.03, 0.19, p);                              // ring spins out of the logo
     const fold = smooth(OUTRO_START - 0.03, OUTRO_START + 0.09, p);   // and folds back into it
@@ -549,10 +543,14 @@ export class TunnelEngine {
       const r = radius * open;
       const front = smooth(-0.3, 0.6, Math.cos(th));                  // far side of the ring is dim
       const focus = smooth(0.84, 0.99, Math.cos(th - slot));
-      const centre = smooth(0.3, 0, Math.abs(Math.atan2(Math.sin(th), Math.cos(th))));   // dead ahead of the lens
-      m.position.set(Math.sin(th) * r * (port ? 1 : 1.15), ((i % 3) - 1) * 0.1 + Math.sin(t * 0.8 + i) * 0.07, Math.cos(th) * r);
+      // dead ahead of the lens; on a phone the focus card rests there, so it is never see-through
+      const centre = port ? 0 : smooth(0.3, 0, Math.abs(Math.atan2(Math.sin(th), Math.cos(th))));
+      const y0 = ((i % 3) - 1) * 0.1 + Math.sin(t * 0.8 + i) * 0.07;
+      // a phone's ring leans toward the viewer: front dips, far side rises
+      const y = port ? y0 * Math.cos(PORT.tilt) - Math.cos(th) * r * Math.sin(PORT.tilt) : y0;
+      m.position.set(Math.sin(th) * r * (port ? 1 : 1.15), y, Math.cos(th) * r);
       m.rotation.y = th;
-      m.scale.setScalar((port ? 0.62 : 1) * (0.8 + 0.5 * focus) * (0.4 + 0.6 * open));
+      m.scale.setScalar((port ? PORT.cardScale : 1) * (0.8 + 0.5 * focus) * (0.4 + 0.6 * open));
       const M = m.material as MeshBasicMaterial;
       M.opacity = (0.1 + 0.9 * front) * open * (1 - 0.55 * centre);   // see-through while crossing the φ
       M.color.setScalar(0.55 + 0.45 * focus);
@@ -562,11 +560,13 @@ export class TunnelEngine {
       l.scale.set(radius * (port ? 1 : 1.15) * Math.max(0.01, open), 1, radius * Math.max(0.01, open));
       (l.material as LineBasicMaterial).opacity = 0.3 * open;
       l.rotation.y = turn * STEP;
+      l.rotation.x = port ? PORT.tilt : 0;
     });
 
     // the φ stays put, rocking gently; it grows a little for the closing
     const close = smooth(OUTRO_START - 0.02, 1, p);
-    this.logo.scale.setScalar((port ? 0.55 : 0.72) * (1 + 0.3 * close));
+    this.logo.scale.setScalar((port ? PORT.logoScale : 0.72) * (1 + 0.3 * close));
+    this.logo.position.y = port ? PORT.logoLift * open : 0;
     this.logo.rotation.y = Math.sin(t * 0.5) * 0.35 + turn * 0.12;
     this.logo.rotation.x = Math.sin(t * 0.37) * 0.05;
     (this.halo.material as SpriteMaterial).opacity = (0.75 + 0.25 * Math.sin(t * 1.3)) * (0.85 + 0.3 * close);
@@ -576,9 +576,9 @@ export class TunnelEngine {
 
     // camera: starts close on the φ, eases back to take in the ring
     const back = smooth(0, INTRO_END, p);
-    const z = (port ? 9 : 9.6) + back * (port ? 3.2 : 2.9);
-    this.cam.position.set(Math.sin(t * 0.3) * 0.25, port ? 0.6 : 0.8, z);
-    this.cam.lookAt(0, port ? -1 : -0.8, 0);
+    const z = (port ? PORT.camZ : 9.6) + back * (port ? PORT.camBack : 2.9);
+    this.cam.position.set(Math.sin(t * 0.3) * 0.25, port ? PORT.camY : 0.8, z);
+    this.cam.lookAt(0, port ? PORT.lookY : -0.8, 0);
 
     this.R.render(this.S, this.cam);
     this.o.onFrame?.(p);

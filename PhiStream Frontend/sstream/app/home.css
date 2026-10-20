@@ -120,6 +120,56 @@ html[data-hero="gone"] .pf-stage { display: none; }
 }
 .pf-stage.pf-static { position: relative; min-height: 100svh; }
 .pf-stage.pf-static canvas, .pf-stage.pf-static .pf-hint { display: none; }
+/* Static mode set by script (Save-Data, WebGL unavailable): there is no scroll-driven
+   hero, so no 600vh spacer either. (Reduce Motion zeroes it in the media query above.) */
+.pf-stage.pf-static ~ .pf-spacer { height: 0; }
+
+/* The service card strip: hidden in the 3D hero, shown in the static one */
+.pf-strip {
+  display: none;
+  container-type: inline-size;
+  background: var(--ink);
+  padding: clamp(28px, 5vw, 56px) 0 clamp(40px, 6vw, 72px);
+}
+@media (prefers-reduced-motion: reduce) { .pf-strip { display: block; } }
+.pf-stage.pf-static + .pf-strip { display: block; }
+
+.pf-strip-list {
+  list-style: none; margin: 0; padding: 0 var(--edge);
+  display: flex; gap: 14px;
+  overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-inline: var(--edge);
+  scrollbar-width: none;
+}
+.pf-strip-list::-webkit-scrollbar { display: none; }
+.pf-strip-list > li { flex: 0 0 min(80cqi, 340px); scroll-snap-align: start; display: flex; }
+@media (min-width: 900px) {
+  .pf-strip-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 18px; overflow: visible; }
+  .pf-strip-list > li { flex: none; }
+}
+
+.pf-sc {
+  flex: 1; display: grid; align-content: start; gap: 10px;
+  padding: 20px 20px 22px; border-radius: 18px;
+  background: var(--bg); color: var(--fg);
+  border: 1.5px solid var(--ac); text-decoration: none;
+}
+.pf-sc:hover .pf-sc-t { text-decoration: underline; text-underline-offset: .2em; }
+.pf-sc-top { display: flex; align-items: center; justify-content: space-between; }
+.pf-sc-n { font: 500 15px var(--serif); opacity: .85; }
+.pf-art { width: 76px; height: 76px; }
+.pf-art .fg-s { stroke: var(--fg); }
+.pf-art .fg-f { fill: var(--fg); }
+.pf-art .ac-s { stroke: var(--ac); }
+.pf-art .ac-f { fill: var(--ac); }
+.pf-art .coin { fill: var(--bg); font-family: sans-serif; }
+.pf-art .check { stroke: var(--bg); }
+.pf-sc-t { font: 600 24px/1.1 var(--serif); letter-spacing: -.01em; }
+.pf-sc-l { font: 400 16px/1.45 var(--serif); opacity: .92; }
+.pf-sc-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.pf-sc-tags span {
+  border: 1px solid color-mix(in srgb, currentColor 55%, transparent);
+  border-radius: 99px; padding: 2px 11px; font: 500 13px/1.5 var(--serif);
+}
 
 /* ─────────────────────────────────────────────────
    4. Nav
@@ -164,12 +214,14 @@ html[data-hero="gone"] .pf-stage { display: none; }
 
 /* A6: ink/blur background once the hero is passed */
 html[data-hero="past"] .pf-nav,
-html[data-hero="gone"] .pf-nav {
+html[data-hero="gone"] .pf-nav,
+html[data-hero="static"] .pf-nav {
   background: rgba(42,32,26,.9); backdrop-filter: blur(12px);
   border-bottom: 1px solid rgba(166,147,118,.25);
 }
 html[data-hero="past"] .pf-nav-in,
-html[data-hero="gone"] .pf-nav-in { padding-block: max(14px, 1.6cqi); }
+html[data-hero="gone"] .pf-nav-in,
+html[data-hero="static"] .pf-nav-in { padding-block: max(14px, 1.6cqi); }
 
 /* Hamburger — below 600px */
 .pf-nav-burger {

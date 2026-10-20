@@ -1,6 +1,7 @@
 import { getHomeContent } from "@/lib/api";
 import { contactEmail } from "@/lib/content-home";
 import { siteUrl } from "@/lib/site";
+import { CardStrip } from "@/components/home/CardStrip";
 import { HeroStage } from "@/components/home/HeroStage";
 import { HomeNav } from "@/components/home/HomeNav";
 import { WhatWeDo } from "@/components/home/WhatWeDo";
@@ -50,6 +51,7 @@ export default async function Home() {
       />
       <HomeNav />
       <HeroStage />
+      <CardStrip />
       <div id="pf-spacer" className="pf-spacer" aria-hidden="true" />
       <main id="main" className="pf-main">
         <WhatWeDo />
