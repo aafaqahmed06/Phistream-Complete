@@ -1,51 +1,65 @@
-import { Approach } from "@/components/Approach";
-import { CtaBand } from "@/components/CtaBand";
-import { Footer } from "@/components/Footer";
-import { Hero } from "@/components/Hero";
-import { Nav } from "@/components/Nav";
-import { Services } from "@/components/Services";
-import { StatsBand } from "@/components/StatsBand";
-import { StudioRail } from "@/components/StudioRail";
-import { Thinking } from "@/components/Thinking";
-import { Work } from "@/components/Work";
 import { getHomeContent } from "@/lib/api";
-import { showSection } from "@/lib/content";
-
-/** Matches the backend's Cache-Control max-age on public content. */
-export const revalidate = 60;
+import { contactEmail } from "@/lib/content-home";
+import { siteUrl } from "@/lib/site";
+import { HeroStage } from "@/components/home/HeroStage";
+import { HomeNav } from "@/components/home/HomeNav";
+import { WhatWeDo } from "@/components/home/WhatWeDo";
+import { WorkExamples } from "@/components/home/WorkExamples";
+import { HowWeWork } from "@/components/home/HowWeWork";
+import { StudioTeam } from "@/components/home/StudioTeam";
+import { HomeCta } from "@/components/home/HomeCta";
+import { Marquee } from "@/components/home/Marquee";
+import { HomeFooter } from "@/components/home/HomeFooter";
 
 /**
- * Section order is the conversion argument:
- * hook (two paths) -> numbers -> what we do -> how it plays out ->
- * how we think -> who we are -> our thinking -> ask.
+ * v7 home page assembly (Phase 5).
+ * Matches the backend Cache-Control max-age.
  *
- *   ink   ink    cream     ink   cream     ink     ink       cream  ink
- *   hero  stats  services  work  approach  studio  thinking  CTA    footer
+ * Stacking: nav z-50 > main z-5 > stage z-0.
+ * The 600vh spacer keeps main below the fixed stage; main then slides
+ * over the fixed canvas as the user scrolls into it — exactly the preview.
  *
- * The stats band and Thinking are hidden until their real content exists --
- * see `showSection` in lib/content.ts.
- *
- * Only the contact email and the socials come from the backend
- * (GET /api/v1/content/home). `home` is null when the API is down, and both
- * then fall back to lib/content.ts.
+ * Old components (Hero, Services, Work, Approach, StudioRail, CtaBand,
+ * Footer, Nav) are unchanged in the repo so inner pages are unaffected.
  */
+export const revalidate = 60;
+
 export default async function Home() {
   const home = await getHomeContent();
 
+  // Who the site is about, for search engines: name, address, contact, profiles.
+  const organization = {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Phistreams",
+    url: siteUrl,
+    logo: `${siteUrl}/icon.svg`,
+    email: home?.contact.email ?? contactEmail,
+    description:
+      "A studio for creators and founders. Funnels, operations, identity and scaling.",
+    address: { "@type": "PostalAddress", addressLocality: "Islamabad", addressCountry: "PK" },
+    ...(home?.socialLinks?.length ? { sameAs: home.socialLinks.map((s) => s.url) } : {}),
+  };
+
   return (
-    <>
-      <Nav />
-      <main id="main">
-        <Hero />
-        {showSection.stats ? <StatsBand /> : null}
-        <Services />
-        <Work />
-        <Approach />
-        <StudioRail />
-        {showSection.thinking ? <Thinking /> : null}
-        <CtaBand email={home?.contact.email} />
+    <div className="pf-root">
+      <script
+        type="application/ld+json"
+        // "<" is escaped so no value can close the script tag.
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organization).replace(/</g, "\\u003c") }}
+      />
+      <HomeNav />
+      <HeroStage />
+      <div id="pf-spacer" className="pf-spacer" aria-hidden="true" />
+      <main id="main" className="pf-main">
+        <WhatWeDo />
+        <WorkExamples />
+        <HowWeWork />
+        <StudioTeam />
+        <HomeCta email={home?.contact.email ?? undefined} />
+        <Marquee />
+        <HomeFooter email={home?.contact.email ?? undefined} socialLinks={home?.socialLinks ?? undefined} />
       </main>
-      <Footer socialLinks={home?.socialLinks} />
-    </>
+    </div>
   );
 }

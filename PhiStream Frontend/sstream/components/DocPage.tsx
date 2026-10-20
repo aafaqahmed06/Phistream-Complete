@@ -1,14 +1,25 @@
 import type { Metadata } from "next";
 import { getHomeContent } from "@/lib/api";
+import { shareImage } from "@/lib/site";
 import type { Doc } from "@/lib/content";
-import { CtaBand } from "./CtaBand";
-import { Footer } from "./Footer";
-import { Nav } from "./Nav";
+import { SiteCta, SiteFooter, SiteNav } from "./SiteChrome";
 import { Button } from "./ui/Button";
 import { Eyebrow } from "./ui/Eyebrow";
 
-export function docMetadata(page: Doc): Metadata {
-  return { title: `${page.name} — Phistreams`, description: page.lead };
+export function docMetadata(page: Doc, path: string): Metadata {
+  return {
+    title: page.name,
+    description: page.lead,
+    alternates: { canonical: path },
+    openGraph: {
+      title: `${page.name} — Phistreams`,
+      description: page.lead,
+      url: path,
+      type: "website",
+      siteName: "Phistreams",
+      images: [shareImage],
+    },
+  };
 }
 
 /**
@@ -23,7 +34,7 @@ export async function DocPage({ page }: { page: Doc }) {
 
   return (
     <>
-      <Nav />
+      <SiteNav />
       <main id="main">
         <section className="surface-ink pb-16 pt-40 md:pb-24 md:pt-48">
           <div className="container-x">
@@ -66,7 +77,7 @@ export async function DocPage({ page }: { page: Doc }) {
                     <ul className="max-w-[60ch] space-y-3">
                       {section.points.map((point) => (
                         <li key={point} className="flex gap-3 text-body text-ink">
-                          <span aria-hidden="true" className="text-gold-deep">
+                          <span aria-hidden="true" className="text-terra">
                             φ
                           </span>
                           {point}
@@ -91,9 +102,9 @@ export async function DocPage({ page }: { page: Doc }) {
           </div>
         </section>
 
-        {page.cta === false ? null : <CtaBand email={home?.contact.email} />}
+        {page.cta === false ? null : <SiteCta email={home?.contact.email} />}
       </main>
-      <Footer socialLinks={home?.socialLinks} />
+      <SiteFooter email={home?.contact.email} socialLinks={home?.socialLinks} />
     </>
   );
 }

@@ -1,0 +1,586 @@
+/* ==========================================================================
+   Phistreams v7 home — home.css
+   ALL selectors prefixed .pf- and scoped to .pf-root / .pf-main.
+   Imported once from app/layout.tsx. The home page renders these components
+   directly; every other public page gets the header, closing call to action and
+   footer through components/SiteChrome.tsx.
+
+   Sections in order:
+   1.  Tokens
+   2.  Box-sizing reset (§10.1 Tailwind v4 preflight fix)
+   3.  Hero stage
+   4.  Nav
+   5.  #what
+   6.  #work
+   7.  #approach
+   8.  #studio
+   9.  #contact (CTA + form) — Appendix A
+   10. Marquee
+   11. Footer
+   12. Reveal
+   13. Keyframes
+   ========================================================================== */
+
+/* ─────────────────────────────────────────────────
+   1. Tokens
+───────────────────────────────────────────────── */
+.pf-root {
+  --ink: #2A201A;
+  --cream: #ECE9DF;
+  --gold: #C89B3B;
+  --taupe: #A69376;
+  --navy: #1A315B;
+  --terra: #964C37;
+  --err-on-ink: #F0A48C;
+
+  /* One left/right edge for the nav, hero caption, sections and footer. */
+  --gutter: clamp(20px, 5vw, 64px);
+  --edge: calc(var(--gutter) + max(0px, (100cqi - 2 * var(--gutter) - 1280px) / 2));
+
+  --serif: "Freight Text Pro", "Freight Text", var(--font-newsreader), Georgia, serif;
+
+  background: var(--ink);
+  color: var(--cream);
+  font-family: var(--serif);
+  line-height: normal; /* preview had browser-default line-height; Tailwind preflight sets 1.5 */
+}
+
+/* ─────────────────────────────────────────────────
+   2. Box-sizing reset (§10.1)
+───────────────────────────────────────────────── */
+/* The preview was content-box for everything but explicit inputs. Reproduce. */
+.pf-root *, .pf-root *::before, .pf-root *::after { box-sizing: content-box; }
+.pf-root input, .pf-root textarea { box-sizing: border-box; }
+
+/* ─────────────────────────────────────────────────
+   3. Hero stage
+───────────────────────────────────────────────── */
+.pf-stage {
+  position: fixed; inset: 0; z-index: 0;
+  container-type: size;      /* cqi/cqb: 1cqi = 1vw, 1cqb = 1vh because it's full-viewport */
+  overflow: hidden;
+  background: radial-gradient(ellipse at 50% 45%, #3a2b22, #2A201A 70%);
+}
+.pf-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+html[data-hero="gone"] .pf-stage { display: none; }
+
+.pf-spacer { height: 600vh; } /* PREVIEW-PARITY: #sc{height:600vh} */
+.pf-main   { position: relative; z-index: 5; }
+
+/* Caption */
+.pf-cap {
+  position: absolute; z-index: 2; left: var(--edge); bottom: 7cqb;
+  max-width: min(560px, 88%);
+  pointer-events: none;
+  transition: opacity .35s, transform .35s;
+}
+.pf-cap.pf-r { left: auto; right: var(--edge); }
+.pf-cap.pf-o { opacity: 0; transform: translateY(12px); }
+.pf-cap small {
+  display: block; font-weight: 500; color: var(--taupe);
+  font-size: clamp(12px, 1.35cqi, 14px); margin-bottom: .8em;
+}
+.pf-cap h1, .pf-cap h2 {
+  letter-spacing: -.015em;
+  font: 600 clamp(22px, 5.2cqi, 54px)/1.06 var(--serif);
+  margin: 0 0 .4em;
+}
+.pf-cap p { margin: 0; opacity: .85; line-height: 1.5; font-size: clamp(12px, 1.7cqi, 16px); }
+.pf-cap .pf-pill {
+  display: inline-block; margin-top: 1em; background: var(--gold); color: var(--ink);
+  padding: .7em 1.3em; border-radius: 99px; text-decoration: none; pointer-events: auto; /* A7 */
+  font: 500 clamp(11px, 1.6cqi, 15px) var(--serif); font-style: normal;
+}
+
+/* Hint */
+.pf-hint {
+  position: absolute; z-index: 2; right: var(--edge); bottom: 7cqb;
+  font-size: clamp(12px, 1.3cqi, 14px); color: var(--taupe);
+  transition: opacity .3s;
+  pointer-events: none;
+}
+
+/* Poster φ (before 3D loads / static mode) */
+.pf-poster {
+  position: absolute; left: 50%; top: 50%; height: 78svh; width: auto;
+  transform: translate(-50%, -50%);
+  opacity: 1; transition: opacity .4s; pointer-events: none;
+}
+.pf-poster path, .pf-poster rect { fill: var(--gold); fill-opacity: 1; }
+.pf-poster.pf-poster-off { opacity: 0; }
+@media (max-aspect-ratio: 1/1) { .pf-poster { height: 36svh; top: 40%; } }
+
+/* Static fallback (A8): CSS-first for reduced motion so no JS is needed */
+@media (prefers-reduced-motion: reduce) {
+  .pf-spacer { height: 0; }
+  .pf-stage { position: relative; min-height: 100svh; }
+  .pf-stage canvas, .pf-hint { display: none; }
+  .pf-tc { opacity: 1 !important; --in: 0deg !important; --tz: 0px !important; transition: none !important; }
+  .pf-rv { opacity: 1 !important; transform: none !important; transition: none !important; }
+}
+.pf-stage.pf-static { position: relative; min-height: 100svh; }
+.pf-stage.pf-static canvas, .pf-stage.pf-static .pf-hint { display: none; }
+
+/* ─────────────────────────────────────────────────
+   4. Nav
+───────────────────────────────────────────────── */
+.pf-nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 50;
+  container-type: inline-size;
+  transition: background .3s, border-color .3s, padding .3s;
+}
+.pf-nav-in {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 4cqi var(--edge);
+  font: 400 clamp(15px, 2.4cqi, 22px) var(--serif);
+}
+.pf-nav-logo {
+  color: var(--cream); text-decoration: none;
+}
+.pf-nav-logo:hover { color: var(--gold); }
+/* φ character: Georgia fallback (§10.4) */
+.pf-phi { font-family: Georgia, "Times New Roman", serif; color: var(--gold); font-weight: 400; }
+
+.pf-nav-links {
+  display: none; gap: 22px; color: var(--taupe);
+  font: 400 clamp(13px, 1.5cqi, 16px) var(--serif);
+}
+@container (min-width: 600px) { .pf-nav-links { display: flex; } }
+.pf-nav-links a { color: inherit; text-decoration: none; font-style: italic; } /* §10.5 */
+.pf-nav-links a:hover { color: var(--gold); }
+/* The page you are on */
+.pf-nav-links a[aria-current="page"], .pf-nav-mobile-link[aria-current="page"] {
+  color: var(--cream);
+  text-decoration: underline; text-decoration-color: var(--gold);
+  text-decoration-thickness: 1px; text-underline-offset: .35em;
+}
+
+/* Inner pages (SiteNav): a dark bar from the first pixel */
+.pf-solid .pf-nav {
+  background: rgba(42,32,26,.92); backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(166,147,118,.25);
+}
+.pf-solid .pf-nav-in { padding-block: max(14px, 1.6cqi); }
+
+/* A6: ink/blur background once the hero is passed */
+html[data-hero="past"] .pf-nav,
+html[data-hero="gone"] .pf-nav {
+  background: rgba(42,32,26,.9); backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(166,147,118,.25);
+}
+html[data-hero="past"] .pf-nav-in,
+html[data-hero="gone"] .pf-nav-in { padding-block: max(14px, 1.6cqi); }
+
+/* Hamburger — below 600px */
+.pf-nav-burger {
+  display: none; background: none; border: none; cursor: pointer;
+  color: var(--cream); width: 44px; height: 44px;
+  align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: color .2s;
+}
+.pf-nav-burger svg { width: 20px; height: 20px; }
+.pf-nav-burger:hover { color: var(--gold); }
+@container (max-width: 599px) { .pf-nav-burger { display: flex; } }
+
+/* Mobile panel */
+.pf-nav-mobile {
+  background: var(--ink); border-top: 1px solid rgba(166,147,118,.25);
+  padding: 12px 0 24px;
+}
+.pf-nav-mobile-link {
+  display: block; padding: 14px var(--edge); font: 400 20px var(--serif);
+  color: var(--cream); text-decoration: none; font-style: italic;
+  border-bottom: 1px solid rgba(166,147,118,.1);
+}
+.pf-nav-mobile-link:hover { color: var(--gold); }
+
+/* ─────────────────────────────────────────────────
+   5. #what (cream)
+───────────────────────────────────────────────── */
+.pf-what {
+  background: var(--cream); color: var(--ink);
+  padding: clamp(70px,10vw,140px) clamp(20px,5vw,64px);
+}
+.pf-w2 { max-width: 1280px; margin: 0 auto; }
+.pf-g {
+  display: grid;
+  grid-template-columns: minmax(0,5fr) minmax(0,7fr);
+  gap: clamp(30px,6vw,90px);
+}
+@media (max-width: 820px) { .pf-g { grid-template-columns: 1fr; } }
+
+.pf-what h2 {
+  font: 500 clamp(38px,6.2vw,96px)/.96 var(--serif);
+  letter-spacing: -.015em;
+  margin: 18px 0 22px; color: var(--ink);
+}
+.pf-lead { font-size: 18px; line-height: 1.6; color: rgba(42,32,26,.72); max-width: 34ch; margin: 0 0 28px; }
+/* Outline pill button */
+.pf-bt {
+  display: inline-block; padding: .7em 1.4em; border-radius: 99px;
+  border: 1.5px solid var(--ink); color: var(--ink); text-decoration: none;
+  font: 500 15px var(--serif); transition: background .25s, color .25s;
+}
+.pf-bt:hover { background: var(--ink); color: var(--cream); }
+
+/* Service rows */
+.pf-row {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 20px; padding: 30px 0;
+  border-top: 1px solid rgba(42,32,26,.2);
+}
+.pf-row h3 { font: 600 clamp(26px,2.8vw,40px)/1.05 var(--serif); letter-spacing: -.03em; color: var(--ink); margin: 0; }
+.pf-row p  { font-size: 15px; line-height: 1.6; color: rgba(42,32,26,.75); margin: 6px 0 0; }
+@media (max-width: 820px) {
+  .pf-row { grid-template-columns: 1fr; gap: 8px; }
+}
+
+/* ─────────────────────────────────────────────────
+   6. #work (ink)
+───────────────────────────────────────────────── */
+.pf-work {
+  background: var(--ink); color: var(--cream);
+  padding: clamp(70px,10vw,140px) clamp(20px,5vw,64px);
+}
+.pf-work-hd { margin-bottom: clamp(36px,5vw,64px); }
+.pf-work h2 {
+  font: 500 clamp(38px,6.2vw,96px)/.96 var(--serif);
+  letter-spacing: -.015em;
+  margin: 18px 0 16px; color: var(--cream);
+}
+.pf-sub2 { font-size: 18px; line-height: 1.6; color: var(--taupe); margin: 0; }
+.pf-chip {
+  display: inline-block; border: 1px solid var(--gold); color: var(--gold);
+  font: 500 13px var(--serif);
+  padding: .25em .75em; border-radius: 99px; white-space: nowrap;
+}
+
+/* Work card grid */
+.pf-tk-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+@media (max-width: 820px) { .pf-tk-grid { grid-template-columns: 1fr; } }
+/* Cards in a row match heights (each sits in a wrapper div). */
+.pf-tk-grid > div { display: flex; }
+.pf-tk-grid .pf-tk { width: 100%; }
+
+/* Work card */
+.pf-tk {
+  position: relative; overflow: hidden;
+  border-radius: 22px;
+  border: 1px solid rgba(200,155,59,.25);
+  background: linear-gradient(160deg, var(--a, rgba(150,76,55,.62)), #241b15 68%);
+  padding: clamp(24px,3vw,40px);
+  display: flex; flex-direction: column; gap: 16px;
+  transition: transform .5s, border-color .5s;
+}
+.pf-tk:hover { transform: translateY(-6px); border-color: var(--gold); }
+/* Ghost letter */
+.pf-tk::before {
+  content: attr(data-l);
+  position: absolute; right: -1%; top: -12%;
+  font: 700 clamp(240px,26vw,400px)/1 var(--serif);
+  color: rgba(236,233,223,.06);
+  pointer-events: none; user-select: none;
+}
+
+.pf-tk-top { display: flex; justify-content: space-between; align-items: flex-start; }
+.pf-wh { font-size: 14px; color: var(--taupe); }
+
+/* Flow chips row */
+.pf-fl { display: flex; align-items: center; gap: 0; }
+.pf-fl-inner { display: flex; align-items: center; }
+.pf-connector {
+  flex: 1; min-width: 14px; max-width: 48px; height: 1px;
+  background: linear-gradient(to right, var(--gold), rgba(200,155,59,.2));
+  margin: 0 4px;
+}
+
+.pf-tk h3 { font: 500 clamp(22px,2.8vw,36px)/1.1 var(--serif); color: var(--cream); margin: 0; }
+.pf-tk p  { font-size: 15px; line-height: 1.6; color: rgba(236,233,223,.75); margin: 0; }
+.pf-mt { font-size: 14px; color: rgba(236,233,223,.72); margin: 0; padding-top: 28px; margin-top: auto; }
+.pf-mt b { color: var(--gold); font-weight: 600; }
+.pf-lk {
+  display: inline-flex; align-items: center; gap: 8px; align-self: flex-start;
+  font-size: 15px; color: var(--gold); text-decoration: none;
+}
+.pf-lk svg { width: 14px; height: 14px; transition: transform .3s; }
+.pf-lk:hover { text-decoration: underline; }
+.pf-lk:hover svg { transform: translateX(4px); }
+
+/* ─────────────────────────────────────────────────
+   7. #approach (cream)
+───────────────────────────────────────────────── */
+.pf-approach {
+  background: var(--cream); color: var(--ink);
+  padding: clamp(70px,10vw,140px) clamp(20px,5vw,64px);
+}
+.pf-approach h2 {
+  font: 500 clamp(38px,6.2vw,96px)/.96 var(--serif);
+  letter-spacing: -.015em;
+  margin: 18px 0 16px;
+}
+.pf-approach .pf-sub2 { font-size: 18px; line-height: 1.6; max-width: 44ch; color: rgba(42,32,26,.72); margin: 0 0 clamp(36px,5vw,60px); }
+
+/* Steps grid */
+.pf-steps {
+  display: grid; grid-template-columns: repeat(4, 1fr);
+  border-top: 1px solid rgba(42,32,26,.25);
+}
+.pf-st { padding: 28px 24px 8px 0; }
+.pf-st + .pf-st { padding-left: 24px; border-left: 1px solid rgba(42,32,26,.15); }
+.pf-st-num {
+  font: 400 clamp(56px,6vw,88px)/1 var(--serif);
+  color: var(--terra); letter-spacing: -.04em; display: block; margin-bottom: 18px;
+}
+.pf-st h3 { font: 600 clamp(18px,2vw,26px)/1.1 var(--serif); margin: 0 0 10px; color: var(--ink); }
+.pf-st p  { font-size: 15px; line-height: 1.6; color: rgba(42,32,26,.7); margin: 0; }
+
+@media (max-width: 980px) {
+  .pf-steps { grid-template-columns: 1fr 1fr; }
+  .pf-st:nth-child(3) { padding-left: 0; border-left: none; }
+  .pf-st:nth-child(n+3) { border-top: 1px solid rgba(42,32,26,.15); margin-top: 20px; padding-top: 20px; }
+}
+@media (max-width: 560px) {
+  .pf-steps { grid-template-columns: 1fr; }
+  .pf-st + .pf-st { padding-left: 0; border-left: none; border-top: 1px solid rgba(42,32,26,.15); margin-top: 20px; padding-top: 20px; }
+}
+
+/* ─────────────────────────────────────────────────
+   8. #studio (ink radial)
+───────────────────────────────────────────────── */
+.pf-studio {
+  background: radial-gradient(ellipse at 50% 100%, #3a2a1c, var(--ink) 65%);
+  color: var(--cream);
+  padding: clamp(70px,10vw,140px) clamp(20px,5vw,64px);
+}
+.pf-studio h2 {
+  font: 500 clamp(38px,6.2vw,96px)/.96 var(--serif);
+  letter-spacing: -.015em;
+  max-width: 10em; margin: 18px 0 16px;
+}
+.pf-studio .pf-sub { font-size: 18px; color: var(--taupe); margin: 0 0 56px; }
+
+/* Team grid */
+.pf-team {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px,1fr));
+  gap: 20px;
+}
+
+/* Team card */
+.pf-tc {
+  position: relative; aspect-ratio: 3/4; border-radius: 16px;
+  background: linear-gradient(165deg, #3b2d22, #241b15);
+  border: 1px solid rgba(200,155,59,.3);
+  box-shadow: 0 30px 60px -20px rgba(0,0,0,.6);
+  transform-style: preserve-3d;
+  --rx: 0deg; --ry: 0deg; --in: 0deg; --tz: 0px;
+  /* Each card carries its own perspective, so cards at the edges of the row
+     tilt in place instead of drifting sideways around a shared vanishing point. */
+  transform: perspective(1000px) rotateX(var(--rx)) rotateY(calc(var(--ry) + var(--in))) translateZ(var(--tz));
+  transition: transform .9s cubic-bezier(.2,.7,.2,1), opacity .9s, border-color .15s;
+  cursor: default;
+}
+.pf-tc.pf-on { --in: 0deg; --tz: 0px; opacity: 1; }
+.pf-tc.pf-hv { transition: transform .15s, opacity .9s, border-color .15s; --tz: 36px; border-color: var(--gold); }
+
+/* Photo area */
+.pf-pp {
+  position: absolute; inset: 10px 10px 74px 10px; border-radius: 10px;
+  background: #1c1510;
+  transform: translateZ(18px);
+  display: flex; align-items: center; justify-content: center;
+}
+.pf-initials {
+  font: 400 clamp(48px,6vw,84px)/1 var(--serif);
+  color: rgba(200,155,59,.3);
+  user-select: none;
+}
+
+/* Name plate */
+.pf-nm {
+  position: absolute; left: 16px; right: 16px; bottom: 14px;
+  transform: translateZ(40px);
+  display: flex; flex-direction: column; gap: 4px;
+}
+.pf-nm-name { font: 500 18px var(--serif); color: var(--cream); }
+.pf-nm-role { font-size: 13px; color: var(--taupe); }
+
+/* ─────────────────────────────────────────────────
+   9. #contact — CTA + form (Appendix A, effective CSS)
+───────────────────────────────────────────────── */
+.pf-cta {
+  position: relative; overflow: hidden;
+  background: #FFFFFF; color: var(--ink);
+  padding: clamp(80px,11vw,150px) clamp(20px,5vw,64px);
+}
+/* Big φ watermark — §4.5 sizing trap */
+.pf-cta-mark {
+  position: absolute; left: 50%; top: 50%;
+  width: min(64vw,720px);
+  height: min(660px, calc(100vh - 150px)); /* §4.5: must set height to match v7 */
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+.pf-cta-mark path { fill: var(--terra); fill-opacity: .07; }
+.pf-cta-mark rect { fill: var(--terra); fill-opacity: .1; }
+
+.pf-cta-grid {
+  position: relative;
+  max-width: 640px; margin: 0 auto; text-align: center;
+}
+
+.pf-cta h2 {
+  font: 500 clamp(60px,9vw,132px)/.96 var(--serif);
+  letter-spacing: -.03em; text-transform: none;
+  margin: 16px 0 26px; color: var(--ink);
+}
+.pf-cta .pf-lead { font-size: 18px; line-height: 1.6; color: rgba(42,32,26,.75); max-width: 36ch; margin: 0 auto 30px; }
+
+/* Steps list */
+.pf-sx { list-style: none; margin: 0 auto 28px; padding: 0; max-width: 40ch; text-align: left; }
+.pf-sx li { display: flex; gap: 16px; padding: 13px 0; border-top: 1px solid rgba(42,32,26,.16); font-size: 15px; color: var(--ink); }
+.pf-sx b { color: var(--terra); font: 600 12px var(--serif); letter-spacing: .14em; padding-top: 3px; }
+
+.pf-email { color: var(--ink); font-size: 15px; text-decoration: none; border-bottom: 1px solid var(--terra); }
+.pf-email:hover { color: var(--terra); }
+
+/* Primary action: the application. Big enough to be the thing the eye lands on. */
+.pf-cta .pf-apply {
+  display: flex; align-items: center; justify-content: space-between; gap: 20px;
+  box-sizing: border-box; width: 100%; max-width: 520px; margin: 0 auto 36px;
+  padding: 14px 14px 14px clamp(24px, 3vw, 36px);
+  min-height: clamp(84px, 9vw, 104px);
+  background: var(--terra); color: #fff; text-decoration: none;
+  border-radius: 99px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 22px 44px -22px rgba(150,76,55,.75);
+  transition: background .3s, box-shadow .3s, transform .15s;
+}
+.pf-cta .pf-apply:hover { background: var(--ink); box-shadow: inset 0 1px 0 rgba(255,255,255,.12), 0 22px 44px -22px rgba(42,32,26,.7); }
+.pf-cta .pf-apply:active { transform: translateY(1px); }
+.pf-cta .pf-apply:focus-visible { outline: 3px solid var(--ink); outline-offset: 4px; }
+.pf-apply-text { display: grid; gap: 4px; min-width: 0; text-align: left; }
+.pf-apply-label { font: 500 clamp(24px, 2.6vw, 32px)/1.1 var(--serif); letter-spacing: -.01em; }
+.pf-apply-note { font: 400 clamp(13px, 1.3vw, 15px)/1.3 var(--serif); color: rgba(255,255,255,.82); }
+.pf-apply-chip {
+  flex: none; display: grid; place-items: center;
+  width: clamp(56px, 6vw, 72px); aspect-ratio: 1; border-radius: 50%;
+  background: var(--gold); color: var(--ink);
+}
+.pf-apply-chip svg { transition: transform .3s; }
+.pf-cta .pf-apply:hover .pf-apply-chip svg { transform: translateX(5px); }
+@media (prefers-reduced-motion: reduce) {
+  .pf-cta .pf-apply, .pf-apply-chip svg { transition: none; }
+}
+
+/* CTA responsive */
+@media (max-width: 820px) {
+  .pf-cta-mark { opacity: .6; }
+}
+
+/* ─────────────────────────────────────────────────
+   10. Marquee
+───────────────────────────────────────────────── */
+.pf-mq {
+  background: var(--ink);
+  border-top: 1px solid rgba(200,155,59,.15);
+  border-bottom: 1px solid rgba(166,147,118,.25);
+  padding: 20px 0; overflow: hidden; white-space: nowrap;
+}
+.pf-mq-inner {
+  display: inline-block;
+  animation: pf-mq 40s linear infinite;
+}
+.pf-mq-phrase {
+  font: 500 clamp(20px,2.2vw,28px) var(--serif);
+  color: var(--taupe);
+  padding: 0 clamp(20px,2.6vw,36px);
+}
+/* φ separator after each phrase */
+.pf-mq-phrase::after {
+  content: "φ";
+  font-size: .7em; color: rgba(166,147,118,.7);
+  margin-left: clamp(20px,2.6vw,36px);
+  font-family: Georgia, "Times New Roman", serif; /* §10.4 */
+}
+
+/* ─────────────────────────────────────────────────
+   11. Footer
+───────────────────────────────────────────────── */
+.pf-footer {
+  background: var(--ink); color: var(--cream);
+  container-type: inline-size;
+  padding: clamp(36px,5vw,64px) 0 clamp(22px,3.4vw,40px);
+  overflow: hidden; isolation: isolate;
+  font: 400 16px/1.7 var(--serif);
+}
+.pf-tp {
+  display: grid;
+  grid-template-columns: minmax(0,1.25fr) repeat(3, minmax(0,1fr));
+  gap: 28px;
+  padding: 0 var(--edge);
+}
+@media (max-width: 820px) {
+  .pf-tp { grid-template-columns: 1fr 1fr; }
+  .pf-tp > *:first-child { grid-column: 1 / -1; }
+}
+
+.pf-tp strong { display: block; color: var(--cream); font-weight: 600; font-size: 18px; }
+.pf-copy { display: block; color: rgba(236,233,223,.7); margin-top: 4px; font-size: 15px; }
+.pf-tp h4 { color: var(--taupe); font: 600 15px var(--serif); margin: 0 0 10px; }
+.pf-tp ul { list-style: none; margin: 0; padding: 0; }
+.pf-tp li { overflow-wrap: anywhere; }
+.pf-tp a, .pf-tp button, .pf-tp li > span {
+  color: rgba(236,233,223,.85); text-decoration: none;
+  background: none; border: none; cursor: pointer;
+  font: 400 16px/1.7 var(--serif);
+  padding: 0;
+  transition: color .2s;
+}
+.pf-tp li > span { cursor: default; }
+.pf-tp a:hover, .pf-tp button:hover { color: var(--gold); }
+
+/* Bottom rail */
+.pf-ru {
+  display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+  margin: clamp(22px,3vw,36px) var(--edge) 0;
+  padding-top: 16px;
+  border-top: .5px solid rgba(236,233,223,.2);
+}
+.pf-ru-legal { display: flex; gap: 20px; }
+.pf-ru a, .pf-ru button {
+  display: inline-flex; align-items: center; gap: 8px;
+  color: rgba(236,233,223,.85); text-decoration: none;
+  background: none; border: none; cursor: pointer;
+  font: 400 15px var(--serif);
+  padding: 0; transition: color .2s;
+}
+.pf-ru svg { width: 14px; height: 14px; }
+.pf-ru a:hover, .pf-ru button:hover { color: var(--gold); }
+
+/* ─────────────────────────────────────────────────
+   12. Reveal
+───────────────────────────────────────────────── */
+/* Sections are simply there. The hero is the one orchestrated moment, and
+   content that starts hidden is blank without JavaScript. (The previous
+   fade-and-slide-up lived here: .pf-rv { opacity: 0; transform: translateY(28px);
+   transition: opacity .8s, transform .8s } with .pf-rv.pf-on revealing it.) */
+.pf-rv { opacity: 1; transform: none; }
+
+/* ─────────────────────────────────────────────────
+   13. Keyframes
+───────────────────────────────────────────────── */
+@keyframes pf-mq {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pf-mq-inner { animation: none; }
+}
+
+/* Light sections use an ink focus ring; the default (gold) is for dark ones.
+   Gold on cream or white is about 2.1:1, below the 3:1 a focus ring needs. */
+.pf-what, .pf-approach, .pf-cta { --focus-ring: var(--ink); }

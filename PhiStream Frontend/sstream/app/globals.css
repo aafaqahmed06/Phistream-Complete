@@ -1,96 +1,97 @@
 @import "tailwindcss";
 
 /* ============================================================================
-   Phistreams design tokens
+   Phistreams design tokens (one palette and one type family for the whole site)
    ----------------------------------------------------------------------------
-   COLOUR ROLES (from the brand guide)
-     gold      #C89B3C  icons, CTAs, links, key statistics,
-                        highlight fills, live indicators
-     ink       #2B211A  primary surface / wordmark ink
-     cream     #F3EFE6  light backgrounds, cards on dark
-     taupe     #A69377  captions, muted text, dividers
-     gold-deep #8A6A2A  hover / active, secondary emphasis
+   COLOUR ROLES
+     gold      #C89B3B  accents and primary actions ON DARK, key statistics
+     ink       #2A201A  primary dark surface, text on light
+     cream     #ECE9DF  light surfaces, text on dark
+     taupe     #A69376  captions, muted text and dividers ON DARK
+     terra     #964C37  accent and primary actions ON LIGHT
+     navy      #1A315B  card fills (the 3D service cards)
+     gold-deep #8A6A2A  hairline emphasis on light (large text only)
 
    VERIFIED CONTRAST (WCAG 2.1 relative luminance, computed, not eyeballed)
 
-     ON INK #2B211A  (L 0.0168)
-       cream       13.70 : 1   AAA  any size
-       gold         6.15 : 1   AA   any size
-       taupe        5.29 : 1   AA   any size
-       gold-deep    3.13 : 1   AA   LARGE TEXT ONLY
+     ON INK
+       cream       13.10 : 1   AAA  any size
+       gold         6.22 : 1   AA   any size
+       taupe        5.35 : 1   AA   any size
+       gold-deep    3.16 : 1   large text only
+       terra        2.57 : 1   FAIL  (never text on ink)
 
-     ON CREAM #F3EFE6  (L 0.8650)
-       ink         13.70 : 1   AAA  any size
-       ink / 70%    5.47 : 1   AA   any size   <-- the muted-text floor on cream
-       gold-deep    4.38 : 1   AA   LARGE TEXT ONLY
-       taupe        2.59 : 1   FAIL
-       gold         2.23 : 1   FAIL
+     ON CREAM
+       ink         13.10 : 1   AAA  any size
+       ink / 70%    5.40 : 1   AA   any size   <-- the muted-text floor on cream
+       terra        5.11 : 1   AA   any size   <-- the accent on light surfaces
+       gold-deep    4.14 : 1   large text only
+       taupe        2.45 : 1   FAIL
+       gold         2.11 : 1   FAIL
 
-   And the fill pairings, which is where gold earns its keep:
-       ink on gold         6.15 : 1   AA  any size -- on EITHER surface
-       ink/70 on gold      3.53 : 1   FAIL -- so muted text on a gold fill is
-                                             full ink, never 70%
+     ON WHITE
+       terra        6.20 : 1   AA   any size
 
-   THE TWO RULES
-     1. Taupe and gold are DARK-SURFACE text colours. On cream, muted text is
-        ink at 70% and emphasis is gold-deep. Gold text on cream is 2.23:1 and
-        fails; taupe on cream is 2.59:1 and fails.
-     2. Gold is a FILL and an accent, never a large background. The brand guide
-        is explicit about this, which is why the client-crawl band is cream and
-        the footer phrase band is ink rather than either of them being a field
-        of gold. Where gold does fill -- a button, an inline highlight, a row
-        marker -- it carries ink text at 6.15:1, which is more contrast than the
-        body copy around it, not less.
+   Fills:  ink on gold 6.22 : 1   |   white on terra 6.20 : 1
+
+   THE RULES
+     1. Taupe and gold are DARK-SURFACE colours. On cream or white, muted text is
+        ink at 70% and the accent is terra. Gold text on cream fails.
+     2. One primary action per surface: a gold button on dark, a terracotta
+        button on light. Never a field of gold.
+     3. The focus ring follows the surface: gold on dark, ink on light.
    ========================================================================= */
 
 @theme {
   /* ---- palette: generates bg-ink, text-gold, border-taupe, ... ---- */
-  --color-ink: #2b211a;
-  --color-cream: #f3efe6;
-  --color-gold: #c89b3c;
+  --color-ink: #2a201a;
+  --color-cream: #ece9df;
+  --color-gold: #c89b3b;
   --color-gold-deep: #8a6a2a;
-  --color-taupe: #a69377;
+  --color-taupe: #a69376;
+  --color-terra: #964c37;
+  --color-navy: #1a315b;
   /* Form errors only, cream surfaces only: 6.8:1 on cream. Not a brand
      colour -- it exists because "this field is wrong" cannot be gold. */
   --color-alert: #9b2c1f;
 
   /* ---- type families: wired to next/font CSS variables ---- */
-  --font-display: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SFMono-Regular", monospace;
+  --font-display: "Freight Text Pro", "Freight Text", var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-sans: "Freight Text Pro", "Freight Text", var(--font-newsreader), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-jetbrains-mono, ui-monospace), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 
   /* ---- fluid type scale ---- */
   /* Capped at 6rem, not 8rem: at 8rem "the only currency left." measures wider
      than a 1440px viewport and wraps mid-phrase. */
   --text-display-xl: clamp(2.5rem, 6.5vw, 6rem);
   --text-display-xl--line-height: 0.94;
-  --text-display-xl--letter-spacing: -0.03em;
+  --text-display-xl--letter-spacing: -0.015em;
 
   /* Reserved for SHORT lines -- it is 8rem at the top of its clamp and anything
      past ~14 characters will wrap. Only CtaBand's "Your move." uses it. */
   --text-display-2xl: clamp(3.25rem, 9vw, 8rem);
   --text-display-2xl--line-height: 0.88;
-  --text-display-2xl--letter-spacing: -0.04em;
+  --text-display-2xl--letter-spacing: -0.02em;
 
   --text-display-l: clamp(2.5rem, 5.5vw, 4.5rem);
   --text-display-l--line-height: 0.98;
-  --text-display-l--letter-spacing: -0.025em;
+  --text-display-l--letter-spacing: -0.015em;
 
   --text-display-m: clamp(1.75rem, 3vw, 2.75rem);
   --text-display-m--line-height: 1.08;
-  --text-display-m--letter-spacing: -0.02em;
+  --text-display-m--letter-spacing: -0.01em;
 
   --text-heading: clamp(1.25rem, 1.8vw, 1.75rem);
   --text-heading--line-height: 1.2;
-  --text-heading--letter-spacing: -0.01em;
+  --text-heading--letter-spacing: -0.005em;
 
-  --text-body-l: 1.125rem;
+  --text-body-l: 1.25rem;
   --text-body-l--line-height: 1.65;
 
-  --text-body: 1rem;
+  --text-body: 1.0625rem;
   --text-body--line-height: 1.7;
 
-  --text-small: 0.875rem;
+  --text-small: 0.9375rem;
   --text-small--line-height: 1.55;
 
   --text-eyebrow: 0.75rem;
@@ -129,18 +130,22 @@
     color: var(--color-ink);
   }
 
-  /* One focus ring for both surfaces: gold passes AA on ink (6.15:1) and is a
-     non-text indicator on cream, where the 3:1 UI-component threshold applies. */
+  /* One focus ring that follows the surface it sits on. Gold is 6.15:1 on ink
+     but only ~2.1:1 on cream or white, below the 3:1 a focus indicator needs,
+     so light surfaces switch to ink (13.7:1). Surfaces set --focus-ring; the
+     default is gold because the body is ink. */
   :focus-visible {
-    outline: 2px solid var(--color-gold);
+    outline: 2px solid var(--focus-ring, var(--color-gold));
     outline-offset: 3px;
     border-radius: 2px;
   }
-
-  /* Optical sizing plus a touch of SOFT on the display face. WONK is applied
-     per-element where the eccentricity is wanted. */
-  .font-display {
-    font-variation-settings: "SOFT" 20, "WONK" 0, "opsz" 100;
+  .surface-cream,
+  .bg-cream {
+    --focus-ring: var(--color-ink);
+  }
+  .surface-ink,
+  .bg-ink {
+    --focus-ring: var(--color-gold);
   }
 
   .wonk {
@@ -155,14 +160,36 @@
 }
 
 /* ============================================================================
+   Control room (/admin)
+   ----------------------------------------------------------------------------
+   Internal data tool: tables and forms read better in a sans at the original
+   compact sizes, so the public site's serif and larger sizes are re-scoped here.
+   ========================================================================= */
+
+.admin-scope {
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains-mono, ui-monospace), ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --text-body-l: 1.125rem;
+  --text-body: 1rem;
+  --text-small: 0.875rem;
+  font-family: var(--font-sans);
+}
+
+/* ============================================================================
    Layout primitives
    ========================================================================= */
 
+/* The shared page edge: the same gutter and 1280px measure the header, hero
+   caption, home sections and footer use, so every page's content lines up. */
+:root {
+  --gutter: clamp(20px, 5vw, 64px);
+}
+
 .container-x {
   width: 100%;
-  max-width: 90rem;
+  max-width: calc(1280px + 2 * var(--gutter));
   margin-inline: auto;
-  padding-inline: clamp(1.25rem, 4vw, 4rem);
+  padding-inline: var(--gutter);
 }
 
 .section-y {

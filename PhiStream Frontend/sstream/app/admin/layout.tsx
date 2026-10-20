@@ -1,7 +1,21 @@
 import type { Metadata } from "next";
+import { DM_Sans, JetBrains_Mono } from "next/font/google";
 import type { ReactNode } from "react";
 import { AdminSessionProvider } from "@/components/admin/AdminSession";
 import { AdminGate } from "@/components/admin/AdminShell";
+
+/** Control-room-only fonts: loaded here, so public pages never download them. */
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 /**
  * /admin is the studio's back office: none of the marketing chrome (nav,
@@ -16,8 +30,10 @@ export const metadata: Metadata = {
 
 export default function AdminLayout({ children }: { children: ReactNode }) {
   return (
-    <AdminSessionProvider>
-      <AdminGate>{children}</AdminGate>
-    </AdminSessionProvider>
+    <div className={`admin-scope ${dmSans.variable} ${jetbrainsMono.variable}`}>
+      <AdminSessionProvider>
+        <AdminGate>{children}</AdminGate>
+      </AdminSessionProvider>
+    </div>
   );
 }

@@ -39,7 +39,7 @@ export function Sticker({
 }: StickerProps) {
   return (
     <span
-      className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 font-mono text-eyebrow uppercase ${tones[tone]} ${className}`}
+      className={`inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-small font-medium ${tones[tone]} ${className}`}
     >
       {children}
     </span>

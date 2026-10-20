@@ -222,8 +222,8 @@ export function ApplicationForm({
       if (err instanceof ApiError && err.code === "FORM_VERSION_OUTDATED") {
         // Reload the questions, keep the contact details, drop old answers.
         const fresh = await getApplicationForm();
-        if (fresh) {
-          setForm(fresh);
+        if (fresh.status === "open") {
+          setForm(fresh.form);
           setAnswers({});
           setNotice(copy.outdated);
           return;
@@ -613,7 +613,7 @@ function Receipt({
       <p className="max-w-[52ch] text-body text-ink/70">{copy.received.body}</p>
 
       <dl className="rounded-2xl border border-ink/60 px-5 py-4">
-        <dt className="font-mono text-eyebrow uppercase text-ink/70">
+        <dt className="text-small font-medium text-ink/70">
           {copy.received.referenceLabel}
         </dt>
         <dd className="mt-1 font-mono text-heading text-ink">
@@ -621,7 +621,7 @@ function Receipt({
         </dd>
         {status ? (
           <>
-            <dt className="mt-4 font-mono text-eyebrow uppercase text-ink/70">
+            <dt className="mt-4 text-small font-medium text-ink/70">
               Status
             </dt>
             <dd className="mt-1 text-body text-ink">{copy.status[status]}</dd>

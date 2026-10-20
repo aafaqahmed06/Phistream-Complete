@@ -91,7 +91,7 @@ export function BookingAccess() {
       <div className="space-y-6" aria-live="polite">
         <h2 className="font-display text-display-m text-ink">{copy.ready.title}</h2>
         <p className="max-w-[48ch] text-body text-ink/70">{copy.ready.body}</p>
-        <Button href={state.url} arrow>
+        <Button href={state.url} variant="terra" arrow>
           {copy.ready.button}
         </Button>
         <p className="text-small text-ink/70">
@@ -111,7 +111,7 @@ export function BookingAccess() {
       <h2 className="font-display text-display-m text-ink">{notice.title}</h2>
       <p className="max-w-[48ch] text-body text-ink/70">{notice.body}</p>
       <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
-        <Button href={copy.contact.href} arrow>
+        <Button href={copy.contact.href} variant="terra" arrow>
           {copy.contact.label}
         </Button>
         {state.kind === "failed" ? (

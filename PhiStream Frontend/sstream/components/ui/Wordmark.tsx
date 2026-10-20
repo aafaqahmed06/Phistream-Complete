@@ -1,35 +1,21 @@
 import type { ReactNode } from "react";
 
 /**
- * The φstreams wordmark: a gold phi leading lowercase "stream" in the display
- * serif, with a gold superscript "s" trailing. Fraunces has no Greek, so the φ
- * falls back to Georgia -- which is a decent phi, so it is left that way.
+ * The wordmark: a gold φ and "Phistreams", the same lockup as the site header.
  *
- * Gold on ink is 6.15:1 -- AA at any size, and the warmest thing in the nav.
- * It only ever appears on ink (nav and footer), which is what keeps it legal:
- * the same gold on cream would be 2.23:1.
+ * Gold on ink is 6.22:1, AA at any size. It only ever appears on ink; the same
+ * gold on cream would be 2.11:1.
  *
- * The glyphs are aria-hidden and the accessible name is supplied once, so a
- * screen reader says "Phistreams" rather than spelling out the styling spans.
+ * The φ is aria-hidden and the accessible name is the word beside it, so a
+ * screen reader says "Phistreams" once.
  */
-export function Wordmark({ className = "", mark = true }: { className?: string; mark?: boolean }) {
+export function Wordmark({ className = "" }: { className?: string }) {
   return (
-    <span
-      className={`inline-flex items-baseline font-display leading-none tracking-[-0.02em] ${className}`}
-    >
-      <span aria-hidden="true" className="text-gold">
+    <span className={`inline-flex items-baseline gap-[0.3em] leading-none ${className}`}>
+      <span aria-hidden="true" className="text-gold" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
         φ
       </span>
-      <span aria-hidden="true">stream</span>
-      {mark ? (
-        <span
-          aria-hidden="true"
-          className="ml-[0.06em] self-start text-[0.52em] leading-none text-gold"
-        >
-          s
-        </span>
-      ) : null}
-      <span className="sr-only">Phistreams</span>
+      <span>Phistreams</span>
     </span>
   );
 }

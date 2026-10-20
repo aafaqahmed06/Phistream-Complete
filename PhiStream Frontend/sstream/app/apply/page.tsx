@@ -1,15 +1,25 @@
 import type { Metadata } from "next";
 import { ApplicationForm } from "@/components/ApplicationForm";
-import { Footer } from "@/components/Footer";
-import { Nav } from "@/components/Nav";
+import { SiteFooter, SiteNav } from "@/components/SiteChrome";
+import { RetryButton } from "@/components/RetryButton";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { getApplicationForm, getHomeContent, getServiceTiers } from "@/lib/api";
 import { apply } from "@/lib/content";
+import { shareImage } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Apply — Phistreams",
+  title: "Apply",
   description: apply.lead,
+  alternates: { canonical: "/apply" },
+  openGraph: {
+    title: "Apply — Phistreams",
+    description: apply.lead,
+    url: "/apply",
+    type: "website",
+    siteName: "Phistreams",
+    images: [shareImage],
+  },
 };
 
 /**
@@ -23,7 +33,7 @@ export const dynamic = "force-dynamic";
  *   intro   form + FAQs      footer
  */
 export default async function ApplyPage() {
-  const [form, tiers, home] = await Promise.all([
+  const [result, tiers, home] = await Promise.all([
     getApplicationForm(),
     getServiceTiers(),
     getHomeContent(),
@@ -32,7 +42,7 @@ export default async function ApplyPage() {
 
   return (
     <>
-      <Nav />
+      <SiteNav />
       <main id="main">
         <section className="surface-ink pb-16 pt-40 md:pb-24 md:pt-48">
           <div className="container-x">
@@ -49,8 +59,23 @@ export default async function ApplyPage() {
         <section className="surface-cream section-y">
           <div className="container-x grid grid-cols-12 gap-x-4 md:gap-x-8 gap-y-16">
             <div className="col-span-12 lg:col-span-7">
-              {form ? (
-                <ApplicationForm initialForm={form} tiers={tiers} />
+              {result.status === "open" ? (
+                <ApplicationForm initialForm={result.form} tiers={tiers} />
+              ) : result.status === "unavailable" ? (
+                <div className="space-y-6">
+                  <h2 className="font-display text-display-m text-ink">
+                    {apply.unavailable.title}
+                  </h2>
+                  <p className="max-w-[48ch] text-body text-ink/70">
+                    {apply.unavailable.body}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-4">
+                    <RetryButton>{apply.unavailable.retry}</RetryButton>
+                    <Button href={apply.unavailable.contact.href} variant="ghost-light">
+                      {apply.unavailable.contact.label}
+                    </Button>
+                  </div>
+                </div>
               ) : (
                 <div className="space-y-6">
                   <h2 className="font-display text-display-m text-ink">
@@ -59,7 +84,7 @@ export default async function ApplyPage() {
                   <p className="max-w-[48ch] text-body text-ink/70">
                     {apply.closed.body}
                   </p>
-                  <Button href={apply.closed.link.href} arrow>
+                  <Button href={apply.closed.link.href} variant="terra" arrow>
                     {apply.closed.link.label}
                   </Button>
                 </div>
@@ -91,7 +116,7 @@ export default async function ApplyPage() {
           </div>
         </section>
       </main>
-      <Footer socialLinks={home?.socialLinks} />
+      <SiteFooter email={home?.contact.email} socialLinks={home?.socialLinks} />
     </>
   );
 }

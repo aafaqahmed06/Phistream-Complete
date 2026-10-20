@@ -29,7 +29,7 @@ export function Eyebrow({
 }: EyebrowProps) {
   return (
     <span
-      className={`block font-mono text-eyebrow uppercase ${tones[tone]} ${className}`}
+      className={`block text-small font-medium ${tones[tone]} ${className}`}
     >
       {children}
     </span>

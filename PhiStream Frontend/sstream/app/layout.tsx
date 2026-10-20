@@ -1,42 +1,33 @@
 import type { Metadata } from "next";
-import { DM_Sans, Fraunces, JetBrains_Mono } from "next/font/google";
-import { Scanlines } from "@/components/ui/Scanlines";
+import { Newsreader } from "next/font/google";
+import { siteUrl } from "@/lib/site";
 import "./globals.css";
+import "./home.css";
 
 /**
- * Fraunces carries the whole typographic idea, so its variable axes matter:
- * SOFT rounds the terminals and WONK swaps in the eccentric letterforms. At
- * WONK 0 it reads as an expensive corporate serif; cranked up it gets strange.
- * That range is the "expensive serif wearing a gold sticker" brief expressed in
- * a single family -- the light end sets the sentences, the heavy wonky end sets
- * the four or five words that have to land.
- *
- * If the build ever fails on this call, the `axes` line is the culprit -- the
- * axis names must match what Google Fonts reports. Dropping `axes` builds
- * cleanly but loses the personality, leaving only wght variable.
+ * The site's one type family. Newsreader stands in for Freight Text Pro (not
+ * licensed for self-hosting); the font stack names Freight first so it is used
+ * where installed. No italic, matching the approved preview. The control
+ * room's own fonts are loaded in app/admin/layout.tsx, so public visitors never
+ * download them.
  */
-const fraunces = Fraunces({
+const newsreader = Newsreader({
   subsets: ["latin"],
-  axes: ["SOFT", "WONK", "opsz"],
-  style: ["normal", "italic"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
-
-const dmSans = DM_Sans({
-  subsets: ["latin"],
-  variable: "--font-dm-sans",
-  display: "swap",
-});
-
-const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-newsreader",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Phistreams — A studio for creators and founders",
+  metadataBase: new URL(siteUrl),
+  // Pages give a short title; the template adds the name once.
+  title: {
+    default: "Phistreams — A studio for creators and founders",
+    template: "%s — Phistreams",
+  },
+  applicationName: "Phistreams",
+  // "./" resolves against metadataBase to each page's own URL.
+  alternates: { canonical: "./" },
   description:
     "Phistreams builds the business behind the audience, and the audience behind the business. Funnels, operations, identity and scaling. Islamabad.",
   keywords: [
@@ -52,7 +43,11 @@ export const metadata: Metadata = {
     description:
       "Creators become founders. Founders become creators. Phistreams turns attention into equity.",
     type: "website",
+    siteName: "Phistreams",
+    locale: "en_US",
   },
+  // The share image comes from app/opengraph-image.png; Twitter falls back to it.
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({
@@ -61,7 +56,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${fraunces.variable} ${dmSans.variable} ${jetbrainsMono.variable}`}
+      className={`${newsreader.variable}`}
     >
       {/*
         suppressHydrationWarning here is for browser extensions, not for us.
@@ -87,8 +82,6 @@ export default function RootLayout({
           Skip to content
         </a>
         {children}
-        {/* Fixed CRT raster over the whole document, below the nav. */}
-        <Scanlines />
       </body>
     </html>
   );

@@ -38,7 +38,7 @@ export function SignIn() {
             <Eyebrow tone="gold-on-ink">Control room</Eyebrow>
           </div>
           <h1 className="rise mt-6 font-display text-display-xl font-light text-cream" style={{ animationDelay: "0.12s" }}>
-            Back of the <span className="highlight-tilt wonk">house.</span>
+            Back of the house.
           </h1>
           <p className="rise mt-8 max-w-[40ch] text-body-l text-cream/80" style={{ animationDelay: "0.24s" }}>
             Applications, messages and leads from the site, in one place. For studio staff only.

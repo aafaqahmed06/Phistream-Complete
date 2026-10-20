@@ -1,16 +1,25 @@
 import type { Metadata } from "next";
-import { Footer } from "@/components/Footer";
-import { Nav } from "@/components/Nav";
+import { SiteFooter, SiteNav } from "@/components/SiteChrome";
 import { Button } from "@/components/ui/Button";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { TrackOnView, Vsl } from "@/components/Vsl";
 import { getHomeContent, getOnboardingContent } from "@/lib/api";
 import { onboarding } from "@/lib/content";
+import { shareImage } from "@/lib/site";
 import { videoSource } from "@/lib/video";
 
 export const metadata: Metadata = {
-  title: "Start here — Phistreams",
+  title: "Start here",
   description: onboarding.lead,
+  alternates: { canonical: "/onboarding" },
+  openGraph: {
+    title: "Start here — Phistreams",
+    description: onboarding.lead,
+    url: "/onboarding",
+    type: "website",
+    siteName: "Phistreams",
+    images: [shareImage],
+  },
 };
 
 export const revalidate = 60;
@@ -41,7 +50,7 @@ export default async function OnboardingPage() {
   return (
     <>
       <TrackOnView event="onboarding_view" />
-      <Nav />
+      <SiteNav />
       <main id="main">
         <section className="surface-ink pb-16 pt-40 md:pb-24 md:pt-48">
           <div className="container-x">
@@ -64,7 +73,7 @@ export default async function OnboardingPage() {
             <ol className="mt-8 grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 xl:grid-cols-4">
               {steps.map((step, i) => (
                 <li key={step.title} className="border-t border-ink/60 pt-6">
-                  <span className="font-mono text-eyebrow text-gold-deep">
+                  <span className="text-small font-medium text-terra">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h2 className="mt-3 font-display text-heading text-ink">{step.title}</h2>
@@ -75,14 +84,14 @@ export default async function OnboardingPage() {
               ))}
             </ol>
             <div className="mt-14">
-              <Button href={onboarding.cta.href} arrow>
+              <Button href={onboarding.cta.href} variant="terra" arrow>
                 {onboarding.cta.label}
               </Button>
             </div>
           </div>
         </section>
       </main>
-      <Footer socialLinks={home?.socialLinks} />
+      <SiteFooter email={home?.contact.email} socialLinks={home?.socialLinks} />
     </>
   );
 }

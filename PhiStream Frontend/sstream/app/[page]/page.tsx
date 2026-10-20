@@ -13,8 +13,9 @@ export function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: Props) {
-  const page = pages[(await params).page];
-  return page ? docMetadata(page) : {};
+  const slug = (await params).page;
+  const page = pages[slug];
+  return page ? docMetadata(page, `/${slug}`) : {};
 }
 
 export default async function Page({ params }: Props) {

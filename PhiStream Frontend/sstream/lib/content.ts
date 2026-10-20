@@ -344,8 +344,15 @@ export const apply = {
   urlPlaceholder: "yoursite.com or youtube.com/@you",
   closed: {
     title: "Applications are closed right now.",
-    body: "We are not taking new applications at the moment. You can still send us a note from the homepage.",
-    link: { label: "Get in touch", href: "/#contact" },
+    body: "We are not taking new applications at the moment. You can still email us and we will reply.",
+    link: { label: "Email the studio", href: `mailto:${studioEmail}` },
+  },
+  /** The form could not be loaded (the site's fault, not a decision to close). */
+  unavailable: {
+    title: "We could not load the application form.",
+    body: "That is a problem on our side, not yours. Try again in a minute. If it keeps happening, email us and we will take your application by hand.",
+    retry: "Try again",
+    contact: { label: "Email the studio", href: `mailto:${studioEmail}` },
   },
   outdated:
     "The questions changed while you were filling them in. We have loaded the new version — your contact details are kept.",
@@ -609,7 +616,6 @@ export const pages: Record<string, Doc> = {
     sections: services.items.map((s) => ({
       ...deliverables[s.slug],
       id: s.slug,
-      eyebrow: s.id,
       body: [s.body, ...deliverables[s.slug].body],
     })),
   },
@@ -640,7 +646,7 @@ export const pages: Record<string, Doc> = {
         link: { label: "All six disciplines", href: "/services" },
       },
       {
-        eyebrow: `${creatorWork.track} · ${work.chip}`,
+        eyebrow: `${creatorWork.track}, ${work.chip.toLowerCase()}`,
         heading: creatorWork.title,
         body: [creatorWork.body],
         link: { label: work.open, href: `/work/${creatorWork.id}` },
@@ -680,7 +686,7 @@ export const pages: Record<string, Doc> = {
         link: { label: "All six disciplines", href: "/services" },
       },
       {
-        eyebrow: `${founderWork.track} · ${work.chip}`,
+        eyebrow: `${founderWork.track}, ${work.chip.toLowerCase()}`,
         heading: founderWork.title,
         body: [founderWork.body],
         link: { label: work.open, href: `/work/${founderWork.id}` },
@@ -848,7 +854,7 @@ export const pages: Record<string, Doc> = {
       {
         heading: "Our content",
         body: [
-          "The text, the design and the φstreams mark belong to Phistreams. Work marked as illustrative is a representative example of how an engagement runs, not a real client result.",
+          "The text, the design and the Phistreams φ mark belong to Phistreams. Work marked as illustrative is a representative example of how an engagement runs, not a real client result.",
         ],
       },
       {
@@ -875,7 +881,7 @@ export const pages: Record<string, Doc> = {
 export const caseStudies: Record<string, Doc> = {
   [creatorWork.id]: {
     name: creatorWork.title,
-    eyebrow: `${creatorWork.track} · ${work.chip}`,
+    eyebrow: `${creatorWork.track}, ${work.chip.toLowerCase()}`,
     title: creatorWork.title,
     lead: work.disclaimer,
     sections: [
@@ -908,7 +914,7 @@ export const caseStudies: Record<string, Doc> = {
   },
   [founderWork.id]: {
     name: founderWork.title,
-    eyebrow: `${founderWork.track} · ${work.chip}`,
+    eyebrow: `${founderWork.track}, ${work.chip.toLowerCase()}`,
     title: founderWork.title,
     lead: work.disclaimer,
     sections: [

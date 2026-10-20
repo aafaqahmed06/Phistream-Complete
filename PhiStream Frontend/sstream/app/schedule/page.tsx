@@ -1,13 +1,12 @@
 import type { Metadata } from "next";
 import { BookingAccess } from "@/components/BookingAccess";
-import { Footer } from "@/components/Footer";
-import { Nav } from "@/components/Nav";
+import { SiteFooter, SiteNav } from "@/components/SiteChrome";
 import { Eyebrow } from "@/components/ui/Eyebrow";
 import { schedule } from "@/lib/content";
 
 /** Reached only from an acceptance email, so kept out of search engines. */
 export const metadata: Metadata = {
-  title: "Book your call — Phistreams",
+  title: "Book your call",
   description: schedule.lead,
   robots: { index: false, follow: false },
 };
@@ -19,7 +18,7 @@ export const metadata: Metadata = {
 export default function SchedulePage() {
   return (
     <>
-      <Nav />
+      <SiteNav />
       <main id="main">
         <section className="surface-ink pb-16 pt-40 md:pb-24 md:pt-48">
           <div className="container-x">
@@ -37,7 +36,7 @@ export default function SchedulePage() {
           </div>
         </section>
       </main>
-      <Footer />
+      <SiteFooter />
     </>
   );
 }

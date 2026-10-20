@@ -287,14 +287,27 @@ export type PublicApplicationStatus =
   | "WITHDRAWN"
   | "CLOSED";
 
-/** null when no form is published (applications closed) or the API is down. */
-export async function getApplicationForm(): Promise<ApplicationForm | null> {
+/**
+ * What the application page can be in. "closed" and "unavailable" must not be
+ * confused: telling someone applications are closed during an outage turns away
+ * people who would have applied.
+ */
+export type ApplicationFormResult =
+  | { status: "open"; form: ApplicationForm }
+  | { status: "closed" }
+  | { status: "unavailable" };
+
+export async function getApplicationForm(): Promise<ApplicationFormResult> {
   try {
-    return await request<ApplicationForm>("/applications/form", {
+    const form = await request<ApplicationForm>("/applications/form", {
       cache: "no-store",
     });
-  } catch {
-    return null;
+    return { status: "open", form };
+  } catch (error) {
+    // The backend answers 404 NOT_FOUND when no form is published: that is
+    // "closed". A network failure or a 5xx is the site's problem, not a decision.
+    if (error instanceof ApiError && error.status === 404) return { status: "closed" };
+    return { status: "unavailable" };
   }
 }
 

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import type { ReactNode } from "react";
 
-type Variant = "gold" | "ghost-dark" | "ghost-light";
+type Variant = "gold" | "terra" | "ghost-dark" | "ghost-light";
 
 type ButtonProps = {
   href: string;
@@ -13,35 +13,36 @@ type ButtonProps = {
 };
 
 /**
- * Contrast note -- these variants are not stylistic preferences:
+ * One primary action per surface, so there is one rule to learn:
  *
- *   gold         bg #C89B3C + text #2B211A = 6.15:1 AA at any size, and it is
- *                the one pairing that works on ink AND on cream, so the primary
- *                action looks identical no matter which surface it lands on.
- *                Hover flips to cream + ink = 13.7:1 with a gold-deep ring
- *                (4.38:1 on cream, 3.13:1 on ink -- both clear the 3:1
- *                UI-component threshold), so the button gets MORE legible on
- *                interaction rather than less. The hard offset shadow is ink,
- *                so it simply disappears on ink sections instead of going
- *                muddy.
+ *   gold         for DARK surfaces. bg #C89B3B + text #2A201A = 6.22:1, AA at
+ *                any size. Hover flips to cream + ink (13.1:1).
  *
- *   ghost-dark   for ink surfaces. cream 13.7:1 idle, gold 6.15:1 on hover.
- *                Border is full taupe (5.29:1 on ink) -- at /50 it computes to
- *                2.36:1 and a button outline is a UI component, so the 3:1
- *                threshold applies and it would fail.
+ *   terra        for LIGHT surfaces (cream or white). bg #964C37 + white text =
+ *                6.20:1, AA at any size. Hover flips to ink (13.1:1 with the
+ *                white text), matching the closing call to action on the home
+ *                page.
  *
- *   ghost-light  for cream surfaces. text stays ink (13.7:1) because gold-deep
- *                on cream is only 4.38:1 and would fail at this text size. Only
- *                the border warms to gold-deep. Border is ink at 60% (4.04:1 on
- *                cream); at /25 it computes to 1.65:1 and fails the 3:1
- *                UI-component threshold.
+ *   ghost-dark   for dark surfaces. cream 13.1:1 idle, gold 6.22:1 on hover.
+ *                Border is full taupe (5.35:1 on ink): at /50 it computes to
+ *                about 2.4:1 and a button outline is a UI component, so the 3:1
+ *                threshold applies.
+ *
+ *   ghost-light  for light surfaces. Text stays ink (13.1:1). Border is ink at
+ *                60% (4.0:1 on cream); at /25 it would be about 1.7:1 and fail
+ *                the 3:1 UI-component threshold.
+ *
+ * Previously the primary button was always gold with a hard offset shadow, which
+ * is 2.1:1 against a cream page. The shadow is gone and the colour now follows
+ * the surface.
  */
 const variants: Record<Variant, string> = {
-  gold: "bg-gold text-ink shadow-[3px_3px_0_0_var(--color-ink)] ring-1 ring-transparent hover:bg-cream hover:ring-gold-deep hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_var(--color-ink)] active:translate-y-0 active:shadow-[2px_2px_0_0_var(--color-ink)]",
+  gold: "bg-gold text-ink hover:bg-cream active:translate-y-px",
+  terra: "bg-terra text-white hover:bg-ink active:translate-y-px",
   "ghost-dark":
     "border border-taupe text-cream hover:border-gold hover:text-gold",
   "ghost-light":
-    "border border-ink/60 text-ink hover:border-gold-deep hover:bg-gold/10",
+    "border border-ink/60 text-ink hover:border-terra hover:bg-terra/10",
 };
 
 export function Button({
@@ -58,7 +59,7 @@ export function Button({
   return (
     <Anchor
       href={href}
-      className={`group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-small font-medium transition-[background-color,color,border-color,box-shadow,transform,translate] duration-200 ease-expo-out ${variants[variant]} ${className}`}
+      className={`group inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-small font-medium transition-[background-color,color,border-color,transform] duration-200 ease-expo-out ${variants[variant]} ${className}`}
     >
       {children}
       {arrow ? (

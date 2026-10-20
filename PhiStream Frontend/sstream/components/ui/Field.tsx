@@ -151,7 +151,7 @@ export function Honeypot({
   );
 }
 
-/** Submit button matching Button's gold variant, as a real <button>. */
+/** Submit button matching Button's terra variant (forms sit on light surfaces), as a real <button>. */
 export function SubmitButton({
   children,
   pending,
@@ -165,7 +165,7 @@ export function SubmitButton({
     <button
       type="submit"
       disabled={pending}
-      className="inline-flex items-center justify-center gap-2 rounded-full bg-gold px-6 py-3 text-small font-medium text-ink shadow-[3px_3px_0_0_var(--color-ink)] ring-1 ring-transparent transition-[background-color,box-shadow,transform,translate] duration-200 ease-expo-out hover:-translate-y-0.5 hover:bg-cream hover:shadow-[5px_5px_0_0_var(--color-ink)] hover:ring-gold-deep active:translate-y-0 disabled:pointer-events-none disabled:opacity-70"
+      className="inline-flex items-center justify-center gap-2 rounded-full bg-terra px-6 py-3 text-small font-medium text-white transition-[background-color,transform] duration-200 ease-expo-out hover:bg-ink active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
     >
       {pending ? pendingLabel : children}
     </button>
