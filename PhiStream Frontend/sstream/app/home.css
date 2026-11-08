@@ -76,6 +76,7 @@ html[data-hero="gone"] .pf-stage { display: none; }
 }
 .pf-cap.pf-r { left: auto; right: var(--edge); }
 .pf-cap.pf-o { opacity: 0; transform: translateY(12px); }
+.pf-cap.pf-intro-hidden { opacity: 0; }
 .pf-cap small {
   display: block; font-weight: 500; color: var(--taupe);
   font-size: clamp(12px, 1.35cqi, 14px); margin-bottom: .8em;

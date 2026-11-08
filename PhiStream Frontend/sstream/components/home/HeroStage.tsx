@@ -30,6 +30,7 @@ export function HeroStage() {
   const [hint, setHint] = useState(true);
   const [ready, setReady] = useState(false);   // first 3D frame drawn → fade the poster φ
   const [posterLoaded, setPosterLoaded] = useState(false);
+  const [introDone, setIntroDone] = useState(false);
   const cur = useRef(0);
 
   useEffect(() => {
@@ -41,6 +42,7 @@ export function HeroStage() {
     let engine: import("@/lib/tunnel/engine").TunnelEngine | undefined;
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    const introTimer = setTimeout(() => setIntroDone(true), 2500);
     const spacer = document.getElementById("pf-spacer")!;
 
     const read = () => {
@@ -110,6 +112,7 @@ export function HeroStage() {
     return () => {
       cancelled = true;
       clearTimeout(timer);
+      clearTimeout(introTimer);
       removeEventListener("scroll", read);
       removeEventListener("resize", read);
       document.removeEventListener("visibilitychange", read);
@@ -124,18 +127,19 @@ export function HeroStage() {
   const isService = shown >= 10;
   const right = isService; // the focused card rests on the left of the ring
   const Title = shown === 0 ? "h1" : "h2";
+  const fadePoster = mode === "3d" && ready && posterLoaded && introDone;
 
   return (
     <section id="top" className={`pf-stage${mode === "static" ? " pf-static" : ""}`} aria-label="Phistreams">
-      {/* Poster φ: shown until the first 3D frame (and permanently in static mode). */}
+      {/* Full logo intro stays for 2.5s, then fades once the first 3D frame is ready. */}
       <PhiMark
-        className={`pf-poster${mode === "3d" && ready && posterLoaded ? " pf-poster-off" : ""}`}
+        className={`pf-poster${fadePoster ? " pf-poster-off" : ""}`}
         onLoad={() => setPosterLoaded(true)}
       />
       <canvas ref={canvasRef} aria-hidden="true" />
       <div
         ref={capRef}
-        className={`pf-cap${right ? " pf-r" : ""}${out ? " pf-o" : ""}`}
+        className={`pf-cap${right ? " pf-r" : ""}${out ? " pf-o" : ""}${!introDone ? " pf-intro-hidden" : ""}`}
         aria-hidden={isService || undefined}
       >
         <small>{c.eyebrow}</small>
@@ -143,7 +147,7 @@ export function HeroStage() {
         <p>{c.body}</p>
         {c.cta ? <a className="pf-pill" href={c.cta.href}>{c.cta.label}</a> : null}
       </div>
-      <div className="pf-hint" style={{ opacity: hint ? 1 : 0 }}>Scroll ↓</div>
+      <div className="pf-hint" style={{ opacity: hint && introDone ? 1 : 0 }}>Scroll ↓</div>
     </section>
   );
 }
