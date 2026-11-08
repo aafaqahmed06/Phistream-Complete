@@ -6,9 +6,10 @@ interface PhiMarkProps {
   className?: string;
   markOnly?: boolean;
   "aria-hidden"?: boolean | "true" | "false";
+  onLoad?: () => void;
 }
 
-export function PhiMark({ className, markOnly = false, ...rest }: PhiMarkProps) {
+export function PhiMark({ className, markOnly = false, onLoad, ...rest }: PhiMarkProps) {
   return (
     <Image
       src={markOnly ? "/phi-mark.webp" : "/logo-mark.webp"}
@@ -17,6 +18,7 @@ export function PhiMark({ className, markOnly = false, ...rest }: PhiMarkProps) 
       height={markOnly ? 360 : 380}
       className={className}
       aria-hidden={rest["aria-hidden"] ?? true}
+      onLoad={onLoad}
       priority={className?.includes("pf-poster") ?? false}
       sizes="(max-width: 700px) 86vw, 720px"
     >

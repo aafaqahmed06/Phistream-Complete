@@ -29,6 +29,7 @@ export function HeroStage() {
   const [out, setOut] = useState(false);       // fading out
   const [hint, setHint] = useState(true);
   const [ready, setReady] = useState(false);   // first 3D frame drawn → fade the poster φ
+  const [posterLoaded, setPosterLoaded] = useState(false);
   const cur = useRef(0);
 
   useEffect(() => {
@@ -127,7 +128,10 @@ export function HeroStage() {
   return (
     <section id="top" className={`pf-stage${mode === "static" ? " pf-static" : ""}`} aria-label="Phistreams">
       {/* Poster φ: shown until the first 3D frame (and permanently in static mode). */}
-      <PhiMark className={`pf-poster${mode === "3d" && ready ? " pf-poster-off" : ""}`} />
+      <PhiMark
+        className={`pf-poster${mode === "3d" && ready && posterLoaded ? " pf-poster-off" : ""}`}
+        onLoad={() => setPosterLoaded(true)}
+      />
       <canvas ref={canvasRef} aria-hidden="true" />
       <div
         ref={capRef}
