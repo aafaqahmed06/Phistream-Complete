@@ -102,7 +102,7 @@ html[data-hero="gone"] .pf-stage { display: none; }
 
 /* Poster φ (before 3D loads / static mode) */
 .pf-poster {
-  position: absolute; left: 50%; top: 50%; width: min(42vw, 300px); height: auto;
+  position: absolute; z-index: 1; left: 50%; top: 50%; width: min(42vw, 300px); height: auto;
   transform: translate(-50%, -50%);
   opacity: 1; transition: opacity .55s ease-out; pointer-events: none;
   object-fit: contain;
