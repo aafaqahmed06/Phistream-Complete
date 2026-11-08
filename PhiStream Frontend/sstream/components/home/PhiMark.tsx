@@ -19,7 +19,7 @@ export function PhiMark({ className, markOnly = false, onLoad, ...rest }: PhiMar
       className={className}
       aria-hidden={rest["aria-hidden"] ?? true}
       onLoad={onLoad}
-      priority={className?.includes("pf-poster") ?? false}
+      priority={className?.includes("pf-poster") || className?.includes("pf-cta-mark") || false}
       sizes="(max-width: 700px) 86vw, 720px"
     >
     </Image>

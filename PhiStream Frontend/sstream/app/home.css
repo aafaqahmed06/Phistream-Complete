@@ -510,6 +510,7 @@ html[data-hero="static"] .pf-nav-in { padding-block: max(14px, 1.6cqi); }
   width: min(64vw,720px);
   height: min(660px, calc(100vh - 150px)); /* §4.5: must set height to match v7 */
   transform: translate(-50%, -50%);
+  display: block;
   pointer-events: none;
   object-fit: contain;
   opacity: .14;
@@ -565,7 +566,11 @@ html[data-hero="static"] .pf-nav-in { padding-block: max(14px, 1.6cqi); }
 
 /* CTA responsive */
 @media (max-width: 820px) {
-  .pf-cta-mark { opacity: .6; }
+  .pf-cta-mark {
+    width: min(88vw, 520px);
+    height: min(520px, 72vw);
+    opacity: .22;
+  }
 }
 
 /* ─────────────────────────────────────────────────
