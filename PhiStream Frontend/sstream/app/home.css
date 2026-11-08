@@ -493,18 +493,6 @@ html[data-hero="static"] .pf-nav-in { padding-block: max(14px, 1.6cqi); }
   mask-image: linear-gradient(to top, #000 18%, transparent 100%);
   pointer-events: none;
 }
-/* Big φ watermark — §4.5 sizing trap */
-.pf-cta-mark {
-  position: absolute; z-index: 0; left: 50%; top: 50%;
-  width: min(64vw,720px);
-  height: min(660px, calc(100vh - 150px)); /* §4.5: must set height to match v7 */
-  transform: translate(-50%, -50%);
-  display: block;
-  pointer-events: none;
-  object-fit: contain;
-  opacity: .14;
-}
-
 .pf-cta-grid {
   position: relative; z-index: 1;
   max-width: 640px; margin: 0 auto; text-align: center;
@@ -551,15 +539,6 @@ html[data-hero="static"] .pf-nav-in { padding-block: max(14px, 1.6cqi); }
 .pf-cta .pf-apply:hover .pf-apply-chip svg { transform: translateX(5px); }
 @media (prefers-reduced-motion: reduce) {
   .pf-cta .pf-apply, .pf-apply-chip svg { transition: none; }
-}
-
-/* CTA responsive */
-@media (max-width: 820px) {
-  .pf-cta-mark {
-    width: min(88vw, 520px);
-    height: min(520px, 72vw);
-    opacity: .22;
-  }
 }
 
 /* ─────────────────────────────────────────────────

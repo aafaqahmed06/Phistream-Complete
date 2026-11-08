@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ctaSection, contactEmail as defaultEmail } from "@/lib/content-home";
-import { PhiMark } from "./PhiMark";
 
 interface HomeCtaProps {
   /** Overrides the default email with backend-provided value if available. */
@@ -20,9 +19,6 @@ export function HomeCta({ email }: HomeCtaProps) {
 
   return (
     <section id="contact" className="pf-cta">
-      {/* Big φ watermark — aria-hidden, positioned absolutely */}
-      <PhiMark className="pf-cta-mark" aria-hidden="true" />
-
       <div className="pf-cta-grid">
         <div>
           <h2>{d.heading}</h2>
