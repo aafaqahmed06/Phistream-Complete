@@ -291,8 +291,8 @@ export class TunnelEngine {
 
   constructor(private o: TunnelOptions) {
     // throws if WebGL is unavailable — caller catches and shows the static hero
-    this.R = new WebGLRenderer({ canvas: o.canvas, antialias: window.innerWidth >= 900, alpha: true });
-    this.pr = Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.5);
+    this.R = new WebGLRenderer({ canvas: o.canvas, antialias: true, alpha: true });
+    this.pr = Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.75 : 1.5);
     this.R.toneMapping = ACESFilmicToneMapping;
     this.R.setClearColor(0, 0);
     // the camera sits ~12 from the logo, so only the far side of the ring and the dust fade
@@ -434,13 +434,13 @@ export class TunnelEngine {
 
   /* ───────── internals ───────── */
 
-  /** Quality guard: first 120 frames averaging > 30 ms ⇒ drop DPR to 1, hide the tracks + sparks. */
+  /** Quality guard: only reduce secondary details when sustained frame time is high. */
   private guard(dt: number) {
     if (this.frames >= 120) return;
     if (this.frames > 0) this.acc += dt;
     this.frames++;
-    if (this.frames === 120 && this.acc / 119 > 0.03) {
-      this.pr = 1;
+    if (this.frames === 120 && this.acc / 119 > 0.045) {
+      this.pr = Math.min(this.pr, 1.25);
       this.rings.forEach((l) => (l.visible = false));
       this.sparks.visible = false;
       this.resize(this.w, this.h);
