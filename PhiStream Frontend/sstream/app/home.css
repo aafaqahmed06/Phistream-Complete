@@ -76,7 +76,6 @@ html[data-hero="gone"] .pf-stage { display: none; }
 }
 .pf-cap.pf-r { left: auto; right: var(--edge); }
 .pf-cap.pf-o { opacity: 0; transform: translateY(12px); }
-.pf-cap.pf-intro-hidden { opacity: 0; }
 .pf-cap small {
   display: block; font-weight: 500; color: var(--taupe);
   font-size: clamp(12px, 1.35cqi, 14px); margin-bottom: .8em;
@@ -100,16 +99,6 @@ html[data-hero="gone"] .pf-stage { display: none; }
   transition: opacity .3s;
   pointer-events: none;
 }
-
-/* Poster φ (before 3D loads / static mode) */
-.pf-poster {
-  position: absolute; z-index: 1; left: 50%; top: 50%; width: min(42vw, 300px); height: auto;
-  transform: translate(-50%, -50%);
-  opacity: 1; transition: opacity .55s ease-out; pointer-events: none;
-  object-fit: contain;
-}
-.pf-poster.pf-poster-off { opacity: 0; }
-@media (max-aspect-ratio: 1/1) { .pf-poster { width: min(62vw, 260px); top: 42%; } }
 
 /* Static fallback (A8): CSS-first for reduced motion so no JS is needed */
 @media (prefers-reduced-motion: reduce) {
