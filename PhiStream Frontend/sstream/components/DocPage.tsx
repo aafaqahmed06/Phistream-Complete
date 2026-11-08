@@ -77,7 +77,7 @@ export async function DocPage({ page }: { page: Doc }) {
                     <ul className="max-w-[60ch] space-y-3">
                       {section.points.map((point) => (
                         <li key={point} className="flex gap-3 text-body text-ink">
-                          <span aria-hidden="true" className="text-terra">
+                          <span aria-hidden="true" className="text-gold-deep">
                             φ
                           </span>
                           {point}

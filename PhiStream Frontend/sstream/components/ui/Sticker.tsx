@@ -13,8 +13,8 @@ type StickerProps = {
  * zine/thumbnail punctuation between long stretches of editorial layout.
  *
  * Tone is contrast-locked, same as everywhere else:
- *   gold           ink on #C89B3C      6.15:1    works on ANY surface
- *   cream          ink on #F3EFE6     13.70:1    works on ANY surface
+ *   gold           ink on #E9B44C      strong contrast on dark surfaces
+ *   cream          ink on #F4EDE0     strong contrast on light surfaces
  *   ink-outline    cream text + taupe border     ink surfaces only (5.29:1)
  *   cream-outline  ink text + ink/60 border      cream surfaces only
  *

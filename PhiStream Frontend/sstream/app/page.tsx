@@ -7,7 +7,6 @@ import { HomeNav } from "@/components/home/HomeNav";
 import { WhatWeDo } from "@/components/home/WhatWeDo";
 import { WorkExamples } from "@/components/home/WorkExamples";
 import { HowWeWork } from "@/components/home/HowWeWork";
-import { StudioTeam } from "@/components/home/StudioTeam";
 import { HomeCta } from "@/components/home/HomeCta";
 import { Marquee } from "@/components/home/Marquee";
 import { HomeFooter } from "@/components/home/HomeFooter";
@@ -57,7 +56,6 @@ export default async function Home() {
         <WhatWeDo />
         <WorkExamples />
         <HowWeWork />
-        <StudioTeam />
         <HomeCta email={home?.contact.email ?? undefined} />
         <Marquee />
         <HomeFooter email={home?.contact.email ?? undefined} socialLinks={home?.socialLinks ?? undefined} />

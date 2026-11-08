@@ -15,7 +15,7 @@ import { Eyebrow } from "./ui/Eyebrow";
  * taupe-on-ink (5.29:1) are all legible whereas the same accents on cream are
  * not.
  *
- * It is an INK fill and not a gold one because the palette note on #C89B3C is
+ * It is an INK fill and not a gold one because the palette note on #E9B44C is
  * "never used for large body backgrounds" -- a full-width hovered row is
  * exactly that. Gold stays where the palette wants it: on the row number and
  * in the rules.

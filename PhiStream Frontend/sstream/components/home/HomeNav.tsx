@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { nav } from "@/lib/content-home";
+import { Wordmark } from "@/components/ui/Wordmark";
 
 const FOCUSABLE = "a[href], button:not([disabled])";
 
@@ -77,9 +78,9 @@ export function HomeNav() {
   return (
     <header ref={headerRef} className="pf-nav" role="banner">
       <div className="pf-nav-in">
-        {/* Wordmark — φ is a text glyph via Georgia (§10.4) */}
+        {/* Wordmark */}
         <Link href="/#top" className="pf-nav-logo">
-          <b className="pf-phi">φ</b> Phistreams
+          <Wordmark />
         </Link>
 
         {/* Desktop links (≥600px via container query) */}
@@ -97,6 +98,10 @@ export function HomeNav() {
             );
           })}
         </nav>
+
+        <Link className="pf-nav-apply" href="/apply">
+          Start an application
+        </Link>
 
         {/* Hamburger — below 600px only */}
         <button

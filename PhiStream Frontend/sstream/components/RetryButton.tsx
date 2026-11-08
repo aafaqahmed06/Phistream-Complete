@@ -17,7 +17,7 @@ export function RetryButton({ children }: { children: ReactNode }) {
       type="button"
       disabled={pending}
       onClick={() => startTransition(() => router.refresh())}
-      className="inline-flex items-center justify-center rounded-full bg-terra px-6 py-3 text-small font-medium text-white transition-[background-color,transform] duration-200 ease-expo-out hover:bg-ink active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
+      className="inline-flex items-center justify-center rounded-full bg-terra px-6 py-3 text-small font-medium text-ink transition-[background-color,transform] duration-200 ease-expo-out hover:bg-ink hover:text-cream active:translate-y-px disabled:pointer-events-none disabled:opacity-70"
     >
       {pending ? "Trying again…" : children}
     </button>

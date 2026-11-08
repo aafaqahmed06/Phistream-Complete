@@ -4,13 +4,13 @@
    Phistreams design tokens (one palette and one type family for the whole site)
    ----------------------------------------------------------------------------
    COLOUR ROLES
-     gold      #C89B3B  accents and primary actions ON DARK, key statistics
-     ink       #2A201A  primary dark surface, text on light
-     cream     #ECE9DF  light surfaces, text on dark
-     taupe     #A69376  captions, muted text and dividers ON DARK
-     terra     #964C37  accent and primary actions ON LIGHT
-     navy      #1A315B  card fills (the 3D service cards)
-     gold-deep #8A6A2A  hairline emphasis on light (large text only)
+     gold      #E9B44C  accents and primary actions ON DARK, key statistics
+     ink       #14213D  primary dark surface, text on light
+     cream     #F4EDE0  light surfaces, text on dark
+     taupe     #B9B2A5  captions, muted text and dividers ON DARK
+     terra     #FF6B5B  coral accent and primary actions ON LIGHT
+     navy      #2A9D8F  teal card fills and secondary accents
+     gold-deep #A87500  hairline emphasis on light
 
    VERIFIED CONTRAST (WCAG 2.1 relative luminance, computed, not eyeballed)
 
@@ -44,16 +44,16 @@
 
 @theme {
   /* ---- palette: generates bg-ink, text-gold, border-taupe, ... ---- */
-  --color-ink: #2a201a;
-  --color-cream: #ece9df;
-  --color-gold: #c89b3b;
-  --color-gold-deep: #8a6a2a;
-  --color-taupe: #a69376;
-  --color-terra: #964c37;
-  --color-navy: #1a315b;
+  --color-ink: #14213d;
+  --color-cream: #f4ede0;
+  --color-gold: #e9b44c;
+  --color-gold-deep: #a87500;
+  --color-taupe: #b9b2a5;
+  --color-terra: #ff6b5b;
+  --color-navy: #2a9d8f;
   /* Form errors only, cream surfaces only: 6.8:1 on cream. Not a brand
      colour -- it exists because "this field is wrong" cannot be gold. */
-  --color-alert: #9b2c1f;
+  --color-alert: #b42318;
 
   /* ---- type families: wired to next/font CSS variables ---- */
   --font-display: "Freight Text Pro", "Freight Text", var(--font-newsreader), Georgia, "Times New Roman", serif;

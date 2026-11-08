@@ -4,10 +4,6 @@ import { services } from "@/lib/content-home";
 import { CARD_SPECS } from "@/lib/tunnel/cards";
 import { CardArt } from "./CardArt";
 
-const GOLD = "#C89B3B";
-const INK = "#2A201A";
-const TAUPE = "#A69376";
-
 /**
  * The six service cards as plain HTML: what visitors get instead of the 3D orbit
  * when they have Reduce Motion or Data Saver on (or WebGL is unavailable).
@@ -29,8 +25,7 @@ export function CardStrip() {
                 {
                   "--bg": card.bg,
                   "--fg": card.fg,
-                  // gold is an accent on dark cards only; the taupe card uses ink
-                  "--ac": card.bg === TAUPE ? INK : GOLD,
+                  "--ac": card.ac,
                 } as CSSProperties
               }
             >

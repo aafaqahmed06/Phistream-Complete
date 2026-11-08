@@ -32,7 +32,6 @@ const navLinks: { label: string; href: string }[] = [
   { label: "Work", href: "/#work" },
   { label: "Services", href: "/services" },
   { label: "How we work", href: "/how-we-work" },
-  { label: "Studio", href: "/#studio" },
 ];
 // The Thinking section is hidden until real posts exist (see showSection).
 if (showSection.thinking) navLinks.push({ label: "Thinking", href: "/#thinking" });

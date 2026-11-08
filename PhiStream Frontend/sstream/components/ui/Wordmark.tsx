@@ -1,21 +1,21 @@
 import type { ReactNode } from "react";
 
 /**
- * The wordmark: a gold φ and "Phistreams", the same lockup as the site header.
+ * The wordmark: a coral φ and "Phistream", the same lockup as the site header.
  *
  * Gold on ink is 6.22:1, AA at any size. It only ever appears on ink; the same
  * gold on cream would be 2.11:1.
  *
  * The φ is aria-hidden and the accessible name is the word beside it, so a
- * screen reader says "Phistreams" once.
+ * screen reader says "Phistream" once.
  */
 export function Wordmark({ className = "" }: { className?: string }) {
   return (
     <span className={`inline-flex items-baseline gap-[0.3em] leading-none ${className}`}>
-      <span aria-hidden="true" className="text-gold" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+      <span aria-hidden="true" className="text-terra" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
         φ
       </span>
-      <span>Phistreams</span>
+      <span>Phistream</span>
     </span>
   );
 }

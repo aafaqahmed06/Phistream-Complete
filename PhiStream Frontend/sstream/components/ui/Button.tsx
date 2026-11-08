@@ -15,13 +15,12 @@ type ButtonProps = {
 /**
  * One primary action per surface, so there is one rule to learn:
  *
- *   gold         for DARK surfaces. bg #C89B3B + text #2A201A = 6.22:1, AA at
+ *   gold         for DARK surfaces. bg #E9B44C + text #14213D, AA at
  *                any size. Hover flips to cream + ink (13.1:1).
  *
- *   terra        for LIGHT surfaces (cream or white). bg #964C37 + white text =
- *                6.20:1, AA at any size. Hover flips to ink (13.1:1 with the
- *                white text), matching the closing call to action on the home
- *                page.
+ *   terra        for LIGHT surfaces (cream or white). bg #FF6B5B + ink text.
+ *                Hover flips to ink and cream, matching the closing call to
+ *                action on the home page.
  *
  *   ghost-dark   for dark surfaces. cream 13.1:1 idle, gold 6.22:1 on hover.
  *                Border is full taupe (5.35:1 on ink): at /50 it computes to
@@ -38,7 +37,7 @@ type ButtonProps = {
  */
 const variants: Record<Variant, string> = {
   gold: "bg-gold text-ink hover:bg-cream active:translate-y-px",
-  terra: "bg-terra text-white hover:bg-ink active:translate-y-px",
+  terra: "bg-terra text-ink hover:bg-ink hover:text-cream active:translate-y-px",
   "ghost-dark":
     "border border-taupe text-cream hover:border-gold hover:text-gold",
   "ghost-light":

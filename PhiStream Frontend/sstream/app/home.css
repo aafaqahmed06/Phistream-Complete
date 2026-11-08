@@ -25,12 +25,12 @@
    1. Tokens
 ───────────────────────────────────────────────── */
 .pf-root {
-  --ink: #2A201A;
-  --cream: #ECE9DF;
-  --gold: #C89B3B;
-  --taupe: #A69376;
-  --navy: #1A315B;
-  --terra: #964C37;
+  --ink: #14213D;
+  --cream: #F4EDE0;
+  --gold: #E9B44C;
+  --taupe: #B9B2A5;
+  --navy: #2A9D8F;
+  --terra: #FF6B5B;
   --err-on-ink: #F0A48C;
 
   /* One left/right edge for the nav, hero caption, sections and footer. */
@@ -59,7 +59,7 @@
   position: fixed; inset: 0; z-index: 0;
   container-type: size;      /* cqi/cqb: 1cqi = 1vw, 1cqb = 1vh because it's full-viewport */
   overflow: hidden;
-  background: radial-gradient(ellipse at 50% 45%, #3a2b22, #2A201A 70%);
+  background: radial-gradient(ellipse at 50% 45%, #24375D, #14213D 70%);
 }
 .pf-stage canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
 html[data-hero="gone"] .pf-stage { display: none; }
@@ -102,13 +102,13 @@ html[data-hero="gone"] .pf-stage { display: none; }
 
 /* Poster φ (before 3D loads / static mode) */
 .pf-poster {
-  position: absolute; left: 50%; top: 50%; height: 78svh; width: auto;
+  position: absolute; left: 50%; top: 50%; width: min(42vw, 300px); height: auto;
   transform: translate(-50%, -50%);
-  opacity: 1; transition: opacity .4s; pointer-events: none;
+  opacity: 1; transition: opacity .55s ease-out; pointer-events: none;
+  object-fit: contain;
 }
-.pf-poster path, .pf-poster rect { fill: var(--gold); fill-opacity: 1; }
 .pf-poster.pf-poster-off { opacity: 0; }
-@media (max-aspect-ratio: 1/1) { .pf-poster { height: 36svh; top: 40%; } }
+@media (max-aspect-ratio: 1/1) { .pf-poster { width: min(62vw, 260px); top: 42%; } }
 
 /* Static fallback (A8): CSS-first for reduced motion so no JS is needed */
 @media (prefers-reduced-motion: reduce) {
@@ -185,8 +185,10 @@ html[data-hero="gone"] .pf-stage { display: none; }
   font: 400 clamp(15px, 2.4cqi, 22px) var(--serif);
 }
 .pf-nav-logo {
+  display: inline-flex; align-items: center;
   color: var(--cream); text-decoration: none;
 }
+.pf-nav-logo img { width: clamp(86px, 11cqi, 108px); height: auto; }
 .pf-nav-logo:hover { color: var(--gold); }
 /* φ character: Georgia fallback (§10.4) */
 .pf-phi { font-family: Georgia, "Times New Roman", serif; color: var(--gold); font-weight: 400; }
@@ -203,6 +205,21 @@ html[data-hero="gone"] .pf-stage { display: none; }
   color: var(--cream);
   text-decoration: underline; text-decoration-color: var(--gold);
   text-decoration-thickness: 1px; text-underline-offset: .35em;
+}
+.pf-nav-apply {
+  display: inline-flex; align-items: center; justify-content: center;
+  padding: 9px 14px; border: 1px solid var(--terra); border-radius: 999px;
+  background: var(--terra); color: #fff;
+  font: 600 clamp(12px, 1.3cqi, 14px)/1 var(--serif);
+  text-decoration: none; white-space: nowrap;
+  transition: background .2s, color .2s, border-color .2s, transform .2s;
+}
+.pf-nav-apply:hover {
+  background: var(--ink); border-color: var(--ink); color: #fff;
+  transform: translateY(-1px);
+}
+.pf-nav-apply:focus-visible {
+  outline: 3px solid var(--cream); outline-offset: 3px;
 }
 
 /* Inner pages (SiteNav): a dark bar from the first pixel */
@@ -466,22 +483,39 @@ html[data-hero="static"] .pf-nav-in { padding-block: max(14px, 1.6cqi); }
 ───────────────────────────────────────────────── */
 .pf-cta {
   position: relative; overflow: hidden;
-  background: #FFFFFF; color: var(--ink);
+  background: var(--cream); color: var(--ink);
   padding: clamp(80px,11vw,150px) clamp(20px,5vw,64px);
+}
+/* Quiet diagonal texture gives the lower breathing room a little structure. */
+.pf-cta::after {
+  content: "";
+  position: absolute; z-index: 0; inset: auto 0 0;
+  height: clamp(130px, 22vw, 260px);
+  background: repeating-linear-gradient(
+    135deg,
+    rgba(20,33,61,.11) 0,
+    rgba(20,33,61,.11) 2px,
+    transparent 2px,
+    transparent 15px
+  );
+  opacity: .9;
+  -webkit-mask-image: linear-gradient(to top, #000 18%, transparent 100%);
+  mask-image: linear-gradient(to top, #000 18%, transparent 100%);
+  pointer-events: none;
 }
 /* Big φ watermark — §4.5 sizing trap */
 .pf-cta-mark {
-  position: absolute; left: 50%; top: 50%;
+  position: absolute; z-index: 0; left: 50%; top: 50%;
   width: min(64vw,720px);
   height: min(660px, calc(100vh - 150px)); /* §4.5: must set height to match v7 */
   transform: translate(-50%, -50%);
   pointer-events: none;
+  object-fit: contain;
+  opacity: .14;
 }
-.pf-cta-mark path { fill: var(--terra); fill-opacity: .07; }
-.pf-cta-mark rect { fill: var(--terra); fill-opacity: .1; }
 
 .pf-cta-grid {
-  position: relative;
+  position: relative; z-index: 1;
   max-width: 640px; margin: 0 auto; text-align: center;
 }
 

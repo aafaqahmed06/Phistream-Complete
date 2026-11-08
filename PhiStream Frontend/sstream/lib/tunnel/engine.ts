@@ -9,7 +9,6 @@
  */
 import {
   ACESFilmicToneMapping,
-  AdditiveBlending,
   AmbientLight,
   BackSide,
   BoxGeometry,
@@ -19,26 +18,21 @@ import {
   Color,
   DirectionalLight,
   DoubleSide,
-  ExtrudeGeometry,
   Fog,
   Group,
   Line,
   LineBasicMaterial,
   Mesh,
   MeshBasicMaterial,
-  MeshPhysicalMaterial,
-  Path,
   PerspectiveCamera,
   PlaneGeometry,
   PMREMGenerator,
   Points,
   PointsMaterial,
   Scene,
-  Shape,
   SphereGeometry,
-  Sprite,
-  SpriteMaterial,
   SRGBColorSpace,
+  TextureLoader,
   Vector3,
   WebGLRenderer,
 } from "three";
@@ -57,70 +51,7 @@ export type TunnelOptions = {
   onFirstFrame?: () => void;
 };
 
-type Phi = { ring: ExtrudeGeometry; bar: ExtrudeGeometry };
-
-function buildPhiGeometry(): Phi {
-  // Deep, finely stepped bevels are what make the edges catch light like cut metal.
-  const ex = {
-    depth: 0.3, bevelEnabled: true, bevelThickness: 0.045, bevelSize: 0.035,
-    bevelSegments: 10, curveSegments: 128,
-  };
-  // ring: ellipse with an elliptical hole (heavy sides, hairline top/bottom, like a broad-nib stroke)
-  const s = new Shape();
-  s.absellipse(0, 0.15, 1.55, 1.575, 0, TAU, false);
-  const hole = new Path();
-  hole.absellipse(0, 0.15, 1.16, 1.5, 0, TAU, true);
-  s.holes.push(hole);
-  // bar: slim at the waist, flaring slightly into round terminals
-  const we = 0.125, wc = 0.085, t = 2.66, c = 2 * wc - we;
-  const b = new Shape();
-  b.moveTo(-we, -t + we);
-  b.absarc(0, -t + we, we, Math.PI, TAU, false);
-  b.quadraticCurveTo(c, 0, we, t - we);
-  b.absarc(0, t - we, we, 0, Math.PI, false);
-  b.quadraticCurveTo(-c, 0, -we, -t + we);
-  return { ring: new ExtrudeGeometry(s, ex), bar: new ExtrudeGeometry(b, ex) };
-}
-
-function makePhi(g: Phi, mat: MeshPhysicalMaterial, scale: number): Group {
-  const grp = new Group();
-  const ring = new Mesh(g.ring, mat);
-  const bar = new Mesh(g.bar, mat);
-  ring.position.z = bar.position.z = -0.15;
-  grp.add(ring, bar);
-  grp.scale.setScalar(scale);
-  return grp;
-}
-
-/** Soft gold bloom drawn behind a φ so it glows against the dark instead of sitting on it. */
-function makeHalo(map: CanvasTexture): Sprite {
-  const m = new SpriteMaterial({
-    map, color: 0xffffff, transparent: true, opacity: 0,
-    blending: AdditiveBlending, depthWrite: false, fog: false,
-  });
-  const sp = new Sprite(m);
-  sp.position.z = -0.6;
-  sp.scale.setScalar(13);
-  return sp;
-}
-
-function haloTexture(): CanvasTexture {
-  const cv = document.createElement("canvas");
-  cv.width = cv.height = 256;
-  const x = cv.getContext("2d")!;
-  const g = x.createRadialGradient(128, 128, 0, 128, 128, 128);
-  g.addColorStop(0, "rgba(214,168,72,0.55)");
-  g.addColorStop(0.3, "rgba(200,155,59,0.2)");
-  g.addColorStop(0.65, "rgba(200,155,59,0.05)");
-  g.addColorStop(1, "rgba(200,155,59,0)");
-  x.fillStyle = g; x.fillRect(0, 0, 256, 256);
-  const tx = new CanvasTexture(cv);
-  tx.colorSpace = SRGBColorSpace;
-  return tx;
-}
-
-const GOLD = "#C89B3B";
-const INK = "#2A201A";
+const INK = "#14213D";
 const CARD_W = 1024;
 const CARD_H = 640;
 
@@ -234,13 +165,12 @@ export function drawCard(c: CardSpec, i: number, font: string): HTMLCanvasElemen
   const cv = document.createElement("canvas");
   cv.width = CARD_W; cv.height = CARD_H;
   const x = cv.getContext("2d")!;
-  // Gold is a text/accent colour on dark surfaces only (brand rule), so the taupe cards use ink.
-  const light = c.bg === "#A69376";
-  const ac = light ? INK : GOLD;
+  // Each card keeps the same dark foundation while its accent changes.
+  const ac = c.ac;
 
   x.fillStyle = c.bg; x.fillRect(0, 0, CARD_W, CARD_H);
   const glow = x.createRadialGradient(CARD_W * 0.78, CARD_H * 0.3, 20, CARD_W * 0.78, CARD_H * 0.3, CARD_W * 0.6);
-  glow.addColorStop(0, light ? "rgba(255,255,255,0.22)" : "rgba(255,255,255,0.12)");
+  glow.addColorStop(0, "rgba(255,255,255,0.12)");
   glow.addColorStop(1, "rgba(255,255,255,0)");
   x.fillStyle = glow; x.fillRect(0, 0, CARD_W, CARD_H);
   const shade = x.createLinearGradient(0, CARD_H * 0.55, 0, CARD_H);
@@ -340,7 +270,6 @@ export class TunnelEngine {
   private S = new Scene();
   private cam = new PerspectiveCamera(40, 1, 0.1, 80);
   private logo: Group;
-  private halo: Sprite;
   private cards: Mesh[] = [];
   private rings: Line[] = [];
   private dust: Points;
@@ -362,12 +291,12 @@ export class TunnelEngine {
 
   constructor(private o: TunnelOptions) {
     // throws if WebGL is unavailable — caller catches and shows the static hero
-    this.R = new WebGLRenderer({ canvas: o.canvas, antialias: true, alpha: true });
-    this.pr = Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.5 : 1.75);
+    this.R = new WebGLRenderer({ canvas: o.canvas, antialias: window.innerWidth >= 900, alpha: true });
+    this.pr = Math.min(window.devicePixelRatio, window.innerWidth < 700 ? 1.25 : 1.5);
     this.R.toneMapping = ACESFilmicToneMapping;
     this.R.setClearColor(0, 0);
     // the camera sits ~12 from the logo, so only the far side of the ring and the dust fade
-    this.S.fog = new Fog(0x2a201a, 13, 30);
+    this.S.fog = new Fog(0x14213d, 13, 30);
 
     // ── studio environment (PMREM from a small emissive scene) ──
     // A gradient dome plus softboxes: polished gold is only as good as what it reflects, and
@@ -376,9 +305,9 @@ export class TunnelEngine {
     const dome = new SphereGeometry(20, 48, 32);
     const pos = dome.getAttribute("position");
     const cols = new Float32Array(pos.count * 3);
-    const top = new Color(0xffe6bd).multiplyScalar(1.5);
-    const mid = new Color(0x4a3524);
-    const low = new Color(0x120b07);
+    const top = new Color(0xffe0c8).multiplyScalar(1.5);
+    const mid = new Color(0x24375d);
+    const low = new Color(0x081329);
     const tmp = new Color();
     for (let i = 0; i < pos.count; i++) {
       const u = pos.getY(i) / 20;
@@ -391,7 +320,7 @@ export class TunnelEngine {
       [-9, 2, 3, 0.3, 9, 6, 0xffe2a8, 1.8],      // warm key strip, left
       [9, 1, -3, 0.3, 9, 6, 0xffffff, 2.8],      // cool-white strip, right
       [0, 1, 11, 12, 6, 0.3, 0xfff1d6, 0.9],     // front fill (what a face-on φ reflects)
-      [0, -4, 6, 12, 0.3, 6, 0xc89b3b, 2.2],     // warm floor bounce
+      [0, -4, 6, 12, 0.3, 6, 0xe9b44c, 2.2],     // warm floor bounce
     ] as const).forEach(([x, y, z, w, h, d, c, k]) => {
       const m = new Mesh(new BoxGeometry(w, h, d), new MeshBasicMaterial({ color: new Color(c).multiplyScalar(k) }));
       m.position.set(x, y, z);
@@ -405,11 +334,11 @@ export class TunnelEngine {
     this.owned.push(envRT);
 
     // ── lights ──
-    const dl = new DirectionalLight(0xffffff, 1.1);
+    const dl = new DirectionalLight(0xffffff, 0.85);
     dl.position.set(3, 5, 6);
-    const rim = new DirectionalLight(0xffe2a8, 0.9);
+    const rim = new DirectionalLight(0xffe2a8, 0.55);
     rim.position.set(-4, 1, -5);
-    this.S.add(dl, rim, new AmbientLight(0xffffff, 0.25));
+    this.S.add(dl, rim, new AmbientLight(0xffffff, 0.18));
 
     // ── dust and sparks, drifting in a shell around the logo ──  (Math.random call ORDER matters for QA seeding)
     const shellPt = (): [number, number, number] => {
@@ -425,8 +354,8 @@ export class TunnelEngine {
       this.owned.push(G, M);
       return new Points(G, M);
     };
-    this.dust = pts(900, 0xece9df, 0.035, 0.7);
-    this.sparks = pts(140, 0xc89b3b, 0.06, 0.9);
+    this.dust = pts(650, 0xf4ede0, 0.035, 0.7);
+    this.sparks = pts(100, 0xe9b44c, 0.06, 0.9);
     this.S.add(this.dust, this.sparks);
 
     // ── two thin gold tracks, above and below the cards ──
@@ -434,7 +363,7 @@ export class TunnelEngine {
       const v: Vector3[] = [];
       for (let i = 0; i <= 160; i++) v.push(new Vector3(Math.sin((i / 160) * TAU), y, Math.cos((i / 160) * TAU)));
       const G = new BufferGeometry().setFromPoints(v);
-      const M = new LineBasicMaterial({ color: 0xc89b3b, transparent: true, opacity: 0 });
+      const M = new LineBasicMaterial({ color: 0xe9b44c, transparent: true, opacity: 0 });
       this.owned.push(G, M);
       const l = new Line(G, M);
       this.S.add(l);
@@ -455,18 +384,16 @@ export class TunnelEngine {
       this.cards.push(m);
     });
 
-    // ── φ ──
-    const gold = new MeshPhysicalMaterial({
-      color: 0xc89b3b, metalness: 1, roughness: 0.2,
-      clearcoat: 0.4, clearcoatRoughness: 0.1, envMapIntensity: 1.15,
+    // ── logo ──
+    const logoTexture = new TextureLoader().load("/phi-mark.webp");
+    const logoMaterial = new MeshBasicMaterial({
+      map: logoTexture, color: 0xe39a68, transparent: true,
+      side: DoubleSide, toneMapped: false,
     });
-    const haloMap = haloTexture();
-    const geo = buildPhiGeometry();
-    this.owned.push(gold, geo.ring, geo.bar, haloMap);
-    this.logo = makePhi(geo, gold, 0.72);
-    this.halo = makeHalo(haloMap);
-    this.owned.push(this.halo.material);
-    this.logo.add(this.halo);
+    const logoGeometry = new PlaneGeometry(2.2, 2.2);
+    this.owned.push(logoTexture, logoMaterial, logoGeometry);
+    this.logo = new Group();
+    this.logo.add(new Mesh(logoGeometry, logoMaterial));
     this.S.add(this.logo);
   }
 
@@ -569,8 +496,6 @@ export class TunnelEngine {
     this.logo.position.y = port ? PORT.logoLift * open : 0;
     this.logo.rotation.y = Math.sin(t * 0.5) * 0.35 + turn * 0.12;
     this.logo.rotation.x = Math.sin(t * 0.37) * 0.05;
-    (this.halo.material as SpriteMaterial).opacity = (0.75 + 0.25 * Math.sin(t * 1.3)) * (0.85 + 0.3 * close);
-
     this.dust.rotation.y = t * 0.02 + p * 0.9;
     this.sparks.rotation.y = t * 0.03 - p * 0.6;
 

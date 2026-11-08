@@ -4,11 +4,11 @@
  * composed at runtime) rather than a Tailwind class.
  */
 export const palette = {
-  ink: "#2B211A",
-  cream: "#F3EFE6",
-  gold: "#C89B3C",
-  goldDeep: "#8A6A2A",
-  taupe: "#A69377",
+  ink: "#14213D",
+  cream: "#F4EDE0",
+  gold: "#E9B44C",
+  goldDeep: "#A87500",
+  taupe: "#B9B2A5",
 } as const;
 
 export type PaletteToken = keyof typeof palette;

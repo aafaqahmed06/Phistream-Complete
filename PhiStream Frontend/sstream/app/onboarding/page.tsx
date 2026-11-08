@@ -73,7 +73,7 @@ export default async function OnboardingPage() {
             <ol className="mt-8 grid grid-cols-1 gap-x-8 gap-y-10 md:grid-cols-2 xl:grid-cols-4">
               {steps.map((step, i) => (
                 <li key={step.title} className="border-t border-ink/60 pt-6">
-                  <span className="text-small font-medium text-terra">
+                  <span className="text-small font-medium text-gold-deep">
                     {String(i + 1).padStart(2, "0")}
                   </span>
                   <h2 className="mt-3 font-display text-heading text-ink">{step.title}</h2>

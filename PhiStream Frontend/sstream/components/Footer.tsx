@@ -22,7 +22,7 @@ export function Footer({
   return (
     <footer className="relative isolate">
       {/* Full-bleed crawl on the seam between the page and the footer. It is
-          INK and not a field of gold, because the palette note on #C89B3C is
+          INK and not a field of gold, because the palette note on #E9B44C is
           "never used for large body backgrounds" -- so the band reads as the
           top of the footer, with the gold carried by the type at 6.15:1. */}
       <div className="surface-ink overflow-hidden border-b border-taupe/25 py-5">
